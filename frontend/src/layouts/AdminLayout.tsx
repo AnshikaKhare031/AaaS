@@ -1,11 +1,10 @@
 import React from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Boxes,
   ShoppingBag,
   FolderTree,
-  ClipboardList,
   Sparkles,
   MessageSquare,
   Settings,
@@ -18,11 +17,10 @@ import { Logo } from '../components/common/Logo';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminLayout: React.FC = () => {
-  const { user, isAdmin, setDemoUser, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  // If user is not admin, show secure 403 authorization guard screen
+  // If user is not admin, show secure authorization guard screen
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#F8F5F0] flex items-center justify-center p-6 text-center">
@@ -37,20 +35,12 @@ export const AdminLayout: React.FC = () => {
             You do not have administrative permissions to view this portal. Only authorized AaaS managers and master artisans can access this workspace.
           </p>
 
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setDemoUser('admin')}
-              className="w-full py-2.5 px-4 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] transition-colors"
-            >
-              Switch to Admin Mode (Demo)
-            </button>
-            <Link
-              to="/"
-              className="w-full py-2.5 px-4 border border-[#E7DFD7] text-xs font-semibold text-[#5A4335] rounded-xl hover:bg-[#F8F5F0] transition-colors flex items-center justify-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to Storefront
-            </Link>
-          </div>
+          <Link
+            to="/"
+            className="w-full py-2.5 px-4 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Storefront
+          </Link>
         </div>
       </div>
     );
@@ -61,7 +51,6 @@ export const AdminLayout: React.FC = () => {
     { name: 'Inventory Hub', path: '/admin/inventory', icon: Boxes },
     { name: 'Products', path: '/admin/products', icon: ShoppingBag },
     { name: 'Categories', path: '/admin/categories', icon: FolderTree },
-    { name: 'Orders', path: '/admin/orders', icon: ClipboardList },
     { name: 'Custom Orders', path: '/admin/custom-orders', icon: Sparkles },
     { name: 'Reviews', path: '/admin/reviews', icon: MessageSquare },
     { name: 'Store Settings', path: '/admin/settings', icon: Settings },
@@ -118,16 +107,20 @@ export const AdminLayout: React.FC = () => {
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-2 overflow-hidden">
               <div className="w-8 h-8 rounded-full bg-[#5A4335] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                A
+                {user?.full_name ? user.full_name[0].toUpperCase() : 'A'}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#3D2E24] truncate">Master Artisan</p>
-                <p className="text-[10px] text-[#7B6656] truncate">admin@aaascrochet.com</p>
+                <p className="text-xs font-bold text-[#3D2E24] truncate">
+                  {user?.full_name || 'Master Artisan'}
+                </p>
+                <p className="text-[10px] text-[#7B6656] truncate">
+                  {user?.email || 'admin@aaascrochet.com'}
+                </p>
               </div>
             </div>
             <button
               onClick={signOut}
-              className="p-1.5 text-[#7B6656] hover:text-[#C96A6A] rounded-lg transition-colors"
+              className="p-1.5 text-[#7B6656] hover:text-[#C96A6A] rounded-lg transition-colors cursor-pointer"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />

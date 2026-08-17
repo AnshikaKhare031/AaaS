@@ -21,6 +21,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 import { ProductCard } from '../../components/products/ProductCard';
+import { buildAmazonSingleItemUrl } from '../../utils/amazon';
 
 export const ProductDetailsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -118,12 +119,16 @@ export const ProductDetailsPage: React.FC = () => {
   const isFavorited = isInWishlist(product.id);
 
   const handleBuyNow = () => {
-    if (product.stock_quantity <= 0) {
-      error('Sorry, this product is out of stock.');
+    if (!product.amazon_asin || product.amazon_asin.trim().length === 0) {
+      error('Amazon link for this creation is coming soon!');
       return;
     }
-    addToCart(product, quantity);
-    navigate('/checkout');
+    const amazonUrl = buildAmazonSingleItemUrl(product.amazon_asin, quantity);
+    if (amazonUrl) {
+      window.open(amazonUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      error('Amazon link for this creation is coming soon!');
+    }
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -306,11 +311,16 @@ export const ProductDetailsPage: React.FC = () => {
 
               <button
                 type="button"
-                disabled={!stockInfo.isAvailable}
+                disabled={!stockInfo.isAvailable || !product.amazon_asin}
                 onClick={handleBuyNow}
-                className="flex-1 py-3.5 px-6 rounded-xl text-xs font-bold uppercase tracking-widest bg-[#C6A15B] hover:bg-[#b08d47] text-[#3D2E24] transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
+                title={!product.amazon_asin ? 'Amazon link coming soon' : 'Buy directly on Amazon'}
+                className={`flex-1 py-3.5 px-6 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 ${
+                  product.amazon_asin && stockInfo.isAvailable
+                    ? 'bg-[#C6A15B] hover:bg-[#b08d47] text-[#3D2E24]'
+                    : 'bg-[#DDD6CF] text-[#7B6656] cursor-not-allowed'
+                }`}
               >
-                Buy Now
+                {product.amazon_asin ? 'Buy on Amazon' : 'Amazon Link Coming Soon'}
               </button>
 
               <button

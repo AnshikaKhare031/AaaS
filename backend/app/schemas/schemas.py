@@ -52,6 +52,7 @@ class ProductBase(BaseModel):
     description: str
     price: float = Field(..., ge=0)
     sale_price: Optional[float] = Field(None, ge=0)
+    amazon_asin: Optional[str] = None
     stock_quantity: int = Field(0, ge=0)
     low_stock_threshold: int = Field(3, ge=0)
     material: Optional[str] = "100% Premium Milk Cotton Yarn"
@@ -73,6 +74,7 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = Field(None, ge=0)
     sale_price: Optional[float] = Field(None, ge=0)
+    amazon_asin: Optional[str] = None
     stock_quantity: Optional[int] = Field(None, ge=0)
     low_stock_threshold: Optional[int] = Field(None, ge=0)
     material: Optional[str] = None
@@ -142,86 +144,6 @@ class WishlistItem(BaseModel):
     product: Product
     created_at: Optional[str] = None
 
-# ==========================================
-# Order Schemas
-# ==========================================
-class OrderItemCreate(BaseModel):
-    product_id: str
-    quantity: int = Field(..., ge=1)
-
-class OrderCreate(BaseModel):
-    items: List[OrderItemCreate]
-    shipping_name: str
-    shipping_email: EmailStr
-    shipping_phone: str
-    shipping_address: str
-    shipping_city: str
-    shipping_state: str
-    shipping_pincode: str
-    shipping_country: str = "India"
-    notes: Optional[str] = None
-
-class OrderItem(BaseModel):
-    id: str
-    order_id: str
-    product_id: Optional[str] = None
-    product_name: str
-    product_image: Optional[str] = None
-    quantity: int
-    unit_price: float
-    subtotal: float
-
-class Order(BaseModel):
-    id: str
-    user_id: Optional[str] = None
-    order_number: str
-    subtotal: float
-    shipping_fee: float
-    total: float
-    currency: str = "INR"
-    payment_status: str
-    order_status: str
-    shipping_name: str
-    shipping_email: str
-    shipping_phone: str
-    shipping_address: str
-    shipping_city: str
-    shipping_state: str
-    shipping_pincode: str
-    shipping_country: str = "India"
-    tracking_number: Optional[str] = None
-    notes: Optional[str] = None
-    items: List[OrderItem] = []
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
-
-class OrderStatusUpdate(BaseModel):
-    status: str
-    tracking_number: Optional[str] = None
-
-# ==========================================
-# Razorpay Payment Schemas
-# ==========================================
-class RazorpayOrderCreate(BaseModel):
-    order_id: str
-    amount: float
-
-class RazorpayOrderResponse(BaseModel):
-    razorpay_order_id: str
-    amount: int  # in paise
-    currency: str
-    key_id: str
-
-class PaymentVerifyPayload(BaseModel):
-    razorpay_order_id: str
-    razorpay_payment_id: str
-    razorpay_signature: str
-    order_id: str
-
-class PaymentVerifyResponse(BaseModel):
-    success: bool
-    message: str
-    order: Optional[Order] = None
 
 # ==========================================
 # Custom Order Schemas
@@ -316,18 +238,9 @@ class AdminSettingsUpdate(BaseModel):
     instagram_url: Optional[str] = None
     is_store_open: Optional[bool] = None
 
-class RevenueTrendItem(BaseModel):
-    date: str
-    amount: float
-
 class AdminDashboardMetrics(BaseModel):
-    total_revenue: float
-    total_orders: int
-    pending_orders: int
-    completed_orders: int
     total_products: int
     low_stock_count: int
     total_customers: int
     custom_order_count: int
-    recent_orders: List[Order] = []
-    revenue_trend: List[RevenueTrendItem] = []
+    pending_reviews_count: int

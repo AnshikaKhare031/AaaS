@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Sparkles } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ExternalLink, ShoppingBag, Sparkles, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 import { formatPrice } from '../../utils/helpers';
+import { buildAmazonCartUrl } from '../../utils/amazon';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -22,6 +24,34 @@ export const CartDrawer: React.FC = () => {
   } = useCart();
 
   const navigate = useNavigate();
+  const { error: showToastError } = useToast();
+
+  const itemsWithAsin = items.filter(
+    (i) => i.product.amazon_asin && i.product.amazon_asin.trim().length > 0
+  );
+  const skippedCount = items.length - itemsWithAsin.length;
+
+  const handleProceedToAmazon = () => {
+    if (itemsWithAsin.length === 0) {
+      showToastError("These items don't have Amazon links yet — please check back soon.");
+      return;
+    }
+
+    const amazonUrl = buildAmazonCartUrl(
+      itemsWithAsin.map((item) => ({
+        asin: item.product.amazon_asin!,
+        quantity: item.quantity,
+      }))
+    );
+
+    if (!amazonUrl) {
+      showToastError("These items don't have Amazon links yet — please check back soon.");
+      return;
+    }
+
+    closeCartDrawer();
+    window.open(amazonUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const freeShippingProgress = Math.min(
     100,
@@ -156,8 +186,19 @@ export const CartDrawer: React.FC = () => {
                           </button>
                         </div>
 
-                        <div className="text-xs text-[#7B6656]">
-                          {formatPrice(unitPrice)} each
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#7B6656]">
+                            {formatPrice(unitPrice)} each
+                          </span>
+                          {item.product.amazon_asin ? (
+                            <span className="text-[9px] font-medium text-[#8FA57D] bg-[#8FA57D]/10 px-1 py-0.5 rounded">
+                              Amazon
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-medium text-[#C96A6A] bg-[#C96A6A]/10 px-1 py-0.5 rounded">
+                              Custom
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between pt-2 mt-1 border-t border-[#E7DFD7]/60">
@@ -218,15 +259,21 @@ export const CartDrawer: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2">
+                {skippedCount > 0 && itemsWithAsin.length > 0 && (
+                  <div className="p-2.5 bg-[#EADCCF]/60 rounded-xl border border-[#E7DFD7] flex items-start gap-2 text-[11px] text-[#7B6656]">
+                    <AlertCircle className="w-3.5 h-3.5 text-[#C6A15B] flex-shrink-0 mt-0.5" />
+                    <p>
+                      Note: <strong className="text-[#3D2E24]">{skippedCount} item(s)</strong> without Amazon links won't be included.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2 pt-1">
                   <button
-                    onClick={() => {
-                      closeCartDrawer();
-                      navigate('/checkout');
-                    }}
+                    onClick={handleProceedToAmazon}
                     className="w-full py-3 bg-[#5A4335] hover:bg-[#3D2E24] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
                   >
-                    Proceed to Checkout <ArrowRight className="w-4 h-4" />
+                    Continue to Amazon <ExternalLink className="w-4 h-4" />
                   </button>
 
                   <button
@@ -238,6 +285,11 @@ export const CartDrawer: React.FC = () => {
                   >
                     View Full Shopping Bag
                   </button>
+
+                  <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] text-[#7B6656]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#8FA57D]" />
+                    <span>Secure Amazon Checkout</span>
+                  </div>
                 </div>
               </div>
             )}

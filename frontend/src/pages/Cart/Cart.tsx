@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Sparkles, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trash2, Plus, Minus, ExternalLink, ShoppingBag, Sparkles, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 import { formatPrice } from '../../utils/helpers';
+import { buildAmazonCartUrl } from '../../utils/amazon';
 
 export const CartPage: React.FC = () => {
   const {
@@ -20,7 +22,33 @@ export const CartPage: React.FC = () => {
   } = useCart();
 
   const [giftNote, setGiftNote] = useState('');
-  const navigate = useNavigate();
+  const { error: showToastError } = useToast();
+
+  const itemsWithAsin = items.filter(
+    (i) => i.product.amazon_asin && i.product.amazon_asin.trim().length > 0
+  );
+  const skippedCount = items.length - itemsWithAsin.length;
+
+  const handleProceedToAmazon = () => {
+    if (itemsWithAsin.length === 0) {
+      showToastError("These items don't have Amazon links yet — please check back soon.");
+      return;
+    }
+
+    const amazonUrl = buildAmazonCartUrl(
+      itemsWithAsin.map((item) => ({
+        asin: item.product.amazon_asin!,
+        quantity: item.quantity,
+      }))
+    );
+
+    if (!amazonUrl) {
+      showToastError("These items don't have Amazon links yet — please check back soon.");
+      return;
+    }
+
+    window.open(amazonUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const freeShippingProgress = Math.min(
     100,
@@ -63,7 +91,7 @@ export const CartPage: React.FC = () => {
             to="/shop"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] transition-colors shadow-md"
           >
-            Explore Collection <ArrowRight className="w-4 h-4" />
+            Explore Collection <ExternalLink className="w-4 h-4" />
           </Link>
         </div>
       ) : (
@@ -120,7 +148,18 @@ export const CartPage: React.FC = () => {
                         >
                           {item.product.name}
                         </Link>
-                        <p className="text-xs text-[#7B6656]">{formatPrice(unitPrice)} each</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-[#7B6656]">{formatPrice(unitPrice)} each</p>
+                          {item.product.amazon_asin ? (
+                            <span className="text-[10px] font-medium text-[#8FA57D] bg-[#8FA57D]/10 px-1.5 py-0.5 rounded">
+                              Amazon item
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-medium text-[#C96A6A] bg-[#C96A6A]/10 px-1.5 py-0.5 rounded">
+                              Custom item
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -206,16 +245,26 @@ export const CartPage: React.FC = () => {
                 <span className="text-2xl text-[#5A4335]">{formatPrice(total)}</span>
               </div>
 
+              {/* Graceful skip warning if some items have no ASIN */}
+              {skippedCount > 0 && itemsWithAsin.length > 0 && (
+                <div className="p-3 bg-[#EADCCF]/60 rounded-xl border border-[#E7DFD7] flex items-start gap-2 text-[11px] text-[#7B6656]">
+                  <AlertCircle className="w-4 h-4 text-[#C6A15B] flex-shrink-0 mt-0.5" />
+                  <p>
+                    Note: <strong className="text-[#3D2E24]">{skippedCount} item(s)</strong> in your bag don't have an Amazon link yet and won't be included.
+                  </p>
+                </div>
+              )}
+
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={handleProceedToAmazon}
                 className="w-full py-4 bg-[#5A4335] hover:bg-[#3D2E24] text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
               >
-                Proceed to Checkout <ArrowRight className="w-4 h-4" />
+                Continue to Amazon <ExternalLink className="w-4 h-4" />
               </button>
 
-              <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-[#7B6656]">
-                <ShieldCheck className="w-4 h-4 text-[#8FA57D]" />
-                <span>100% Secure Razorpay Checkout</span>
+              <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-[#7B6656] text-center">
+                <ShieldCheck className="w-4 h-4 text-[#8FA57D] flex-shrink-0" />
+                <span>You'll complete your purchase securely on Amazon.</span>
               </div>
             </div>
           </div>

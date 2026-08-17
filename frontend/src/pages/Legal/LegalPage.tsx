@@ -60,9 +60,9 @@ export const LegalPage: React.FC = () => {
             </section>
 
             <section className="space-y-2">
-              <h3 className="font-serif text-lg font-bold text-[#3D2E24]">2. Pricing & Payments</h3>
+              <h3 className="font-serif text-lg font-bold text-[#3D2E24]">2. Pricing & Orders</h3>
               <p>
-                All prices are listed in Indian Rupees (INR / ₹) inclusive of applicable taxes. Payments are processed securely through Razorpay. We do not store your financial payment credentials.
+                All prices are listed in Indian Rupees (INR / ₹) inclusive of applicable taxes. Catalog purchases are fulfilled securely via Amazon India. Bespoke custom commissions are arranged directly with our master artisan.
               </p>
             </section>
           </>

@@ -49,6 +49,7 @@ export const AdminInventoryPage: React.FC = () => {
     description: '',
     price: 899,
     sale_price: null as number | null,
+    amazon_asin: '',
     stock_quantity: 10,
     low_stock_threshold: 3,
     material: '100% Premium Milk Cotton Yarn',
@@ -137,6 +138,7 @@ export const AdminInventoryPage: React.FC = () => {
         description: prod.description,
         price: prod.price,
         sale_price: prod.sale_price ?? null,
+        amazon_asin: prod.amazon_asin || '',
         stock_quantity: prod.stock_quantity,
         low_stock_threshold: prod.low_stock_threshold,
         material: prod.material,
@@ -157,6 +159,7 @@ export const AdminInventoryPage: React.FC = () => {
         description: '',
         price: 899,
         sale_price: null,
+        amazon_asin: '',
         stock_quantity: 10,
         low_stock_threshold: 3,
         material: '100% Premium Milk Cotton Yarn',
@@ -309,7 +312,14 @@ export const AdminInventoryPage: React.FC = () => {
                             <p className="font-serif text-sm font-bold text-[#3D2E24] truncate">
                               {prod.name}
                             </p>
-                            <p className="font-mono text-[10px] text-[#7B6656]">{prod.slug}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-mono text-[10px] text-[#7B6656]">{prod.slug}</p>
+                              {prod.amazon_asin && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#EADCCF]/80 text-[#5A4335]">
+                                  ASIN: {prod.amazon_asin}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -548,7 +558,7 @@ export const AdminInventoryPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-semibold text-[#5A4335] mb-1">Stock Quantity *</label>
                   <input
@@ -559,6 +569,17 @@ export const AdminInventoryPage: React.FC = () => {
                     onChange={(e) =>
                       setProductForm({ ...productForm, stock_quantity: Number(e.target.value) })
                     }
+                    className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A4335] mb-1">Amazon ASIN (Optional)</label>
+                  <input
+                    type="text"
+                    value={productForm.amazon_asin}
+                    onChange={(e) => setProductForm({ ...productForm, amazon_asin: e.target.value })}
+                    placeholder="e.g. B0CXXXXXXX"
                     className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
                   />
                 </div>

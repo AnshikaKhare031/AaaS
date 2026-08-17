@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { UserProfile, UserRole } from '../types';
 import { useToast } from './ToastContext';
 
 interface AuthContextType {
   user: UserProfile | null;
+  supabaseUser: User | null;
+  session: Session | null;
   role: UserRole;
   isAdmin: boolean;
   isAuthenticated: boolean;
@@ -14,36 +17,19 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
-  setDemoUser: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEMO_USERS: Record<UserRole, UserProfile> = {
-  customer: {
-    id: 'demo-customer-uuid-001',
-    email: 'customer@aaascrochet.com',
-    full_name: 'Ananya Sharma',
-    phone: '+91 98765 12345',
-    role: 'customer',
-  },
-  admin: {
-    id: 'demo-admin-uuid-001',
-    email: 'admin@aaascrochet.com',
-    full_name: 'AaaS Master Artisan (Admin)',
-    phone: '+91 98765 43210',
-    role: 'admin',
-  },
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { success, error: toastError } = useToast();
 
-  // Load profile from Supabase profiles table
+  // Load real profile from Supabase profiles table
   const fetchProfile = useCallback(async (userId: string, email: string) => {
-    if (!isSupabaseConfigured) return;
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -52,21 +38,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile from Supabase:', error);
       }
 
       if (data) {
         setUser({
           id: data.id,
           email: data.email || email,
-          full_name: data.full_name || 'Valued Customer',
+          full_name: data.full_name || email.split('@')[0],
           phone: data.phone,
           avatar_url: data.avatar_url,
-          role: data.role || 'customer',
+          role: (data.role === 'admin' ? 'admin' : 'customer') as UserRole,
           created_at: data.created_at,
         });
       } else {
-        // Fallback profile
+        // Fallback default profile with customer role
         setUser({
           id: userId,
           email,
@@ -76,78 +62,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error('Profile fetch failed:', err);
+      setUser({
+        id: userId,
+        email,
+        full_name: email.split('@')[0],
+        role: 'customer',
+      });
     }
   }, []);
 
-  // Initialize auth state
+  // Initialize auth session on mount & subscribe to real auth changes
   useEffect(() => {
+    let isMounted = true;
+
     const initAuth = async () => {
       setIsLoading(true);
-
-      // Check local storage for demo or saved state
-      const savedDemoRole = localStorage.getItem('aaas_demo_role') as UserRole | null;
-      if (savedDemoRole && DEMO_USERS[savedDemoRole]) {
-        setUser(DEMO_USERS[savedDemoRole]);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!isSupabaseConfigured) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          localStorage.setItem('aaas_auth_token', session.access_token);
-          await fetchProfile(session.user.id, session.user.email || '');
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        if (currentSession?.user) {
+          setSession(currentSession);
+          setSupabaseUser(currentSession.user);
+          localStorage.setItem('aaas_auth_token', currentSession.access_token);
+          await fetchProfile(currentSession.user.id, currentSession.user.email || '');
+        } else {
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          localStorage.removeItem('aaas_auth_token');
         }
       } catch (err) {
         console.error('Auth initialization error:', err);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     initAuth();
 
-    if (isSupabaseConfigured) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (session?.user) {
-            localStorage.setItem('aaas_auth_token', session.access_token);
-            await fetchProfile(session.user.id, session.user.email || '');
-          } else if (event === 'SIGNED_OUT') {
-            localStorage.removeItem('aaas_auth_token');
-            setUser(null);
-          }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        if (newSession?.user) {
+          setSession(newSession);
+          setSupabaseUser(newSession.user);
+          localStorage.setItem('aaas_auth_token', newSession.access_token);
+          await fetchProfile(newSession.user.id, newSession.user.email || '');
+        } else if (event === 'SIGNED_OUT' || !newSession) {
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          localStorage.removeItem('aaas_auth_token');
         }
-      );
+        setIsLoading(false);
+      }
+    );
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
-      if (!isSupabaseConfigured) {
-        // Demo sign in based on email
-        const role: UserRole = email.toLowerCase().includes('admin') ? 'admin' : 'customer';
-        setDemoUser(role);
-        success(`Welcome back, ${DEMO_USERS[role].full_name}!`);
-        return { error: null };
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toastError(error.message);
         return { error };
       }
 
       if (data.session) {
+        setSession(data.session);
+        setSupabaseUser(data.user);
         localStorage.setItem('aaas_auth_token', data.session.access_token);
         await fetchProfile(data.user.id, data.user.email || '');
         success('Signed in successfully');
@@ -161,26 +154,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUpWithEmail = async (email: string, password: string, fullName: string) => {
     try {
-      if (!isSupabaseConfigured) {
-        const newUser: UserProfile = {
-          id: `customer-${Date.now()}`,
-          email,
-          full_name: fullName,
-          role: 'customer',
-        };
-        setUser(newUser);
-        localStorage.setItem('aaas_demo_role', 'customer');
-        success(`Welcome to AaaS, ${fullName}!`);
-        return { error: null };
-      }
-
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           data: {
-            full_name: fullName,
-            role: 'customer',
+            full_name: fullName.trim(),
           },
         },
       });
@@ -192,6 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         success('Account created successfully!');
+        if (data.session) {
+          setSession(data.session);
+          setSupabaseUser(data.user);
+          localStorage.setItem('aaas_auth_token', data.session.access_token);
+          await fetchProfile(data.user.id, data.user.email || '');
+        }
       }
       return { error: null };
     } catch (err: any) {
@@ -202,11 +187,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      if (!isSupabaseConfigured) {
-        setDemoUser('customer');
-        success('Google Sign-in demo activated');
-        return;
-      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -220,11 +200,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    localStorage.removeItem('aaas_demo_role');
     localStorage.removeItem('aaas_auth_token');
-    if (isSupabaseConfigured) {
+    try {
       await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Supabase signOut error:', err);
     }
+    setSession(null);
+    setSupabaseUser(null);
     setUser(null);
     success('You have signed out');
   };
@@ -232,13 +215,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
     try {
-      if (isSupabaseConfigured) {
-        const { error } = await supabase
-          .from('profiles')
-          .update(data)
-          .eq('id', user.id);
-        if (error) throw error;
-      }
+      const { error } = await supabase
+        .from('profiles')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) throw error;
       setUser((prev) => (prev ? { ...prev, ...data } : null));
       success('Profile updated successfully');
     } catch (err: any) {
@@ -246,20 +228,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setDemoUser = (role: UserRole) => {
-    const demo = DEMO_USERS[role];
-    setUser(demo);
-    localStorage.setItem('aaas_demo_role', role);
-  };
-
   const role = user?.role || 'customer';
   const isAdmin = role === 'admin';
-  const isAuthenticated = Boolean(user);
+  const isAuthenticated = Boolean(user && session);
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
+        session,
         role,
         isAdmin,
         isAuthenticated,
@@ -269,7 +247,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         signOut,
         updateProfile,
-        setDemoUser,
       }}
     >
       {children}

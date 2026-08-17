@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, ScrollRestoration } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -18,11 +18,7 @@ import { CustomOrdersPage } from './pages/CustomOrders/CustomOrders';
 import { ContactPage } from './pages/Contact/Contact';
 import { WishlistPage } from './pages/Wishlist/Wishlist';
 import { CartPage } from './pages/Cart/Cart';
-import { CheckoutPage } from './pages/Checkout/Checkout';
-import { OrderSuccessPage } from './pages/OrderSuccess/OrderSuccess';
 import { MyAccountPage } from './pages/Account/MyAccount';
-import { MyOrdersPage } from './pages/Orders/MyOrders';
-import { OrderDetailPage } from './pages/Orders/OrderDetail';
 import { LoginPage } from './pages/Auth/Login';
 import { RegisterPage } from './pages/Auth/Register';
 import { ForgotPasswordPage } from './pages/Auth/ForgotPassword';
@@ -34,10 +30,11 @@ import { AdminDashboardPage } from './pages/Admin/AdminDashboard';
 import { AdminInventoryPage } from './pages/Admin/AdminInventory';
 import { AdminProductsPage } from './pages/Admin/AdminProducts';
 import { AdminCategoriesPage } from './pages/Admin/AdminCategories';
-import { AdminOrdersPage } from './pages/Admin/AdminOrders';
 import { AdminCustomOrdersPage } from './pages/Admin/AdminCustomOrders';
 import { AdminReviewsPage } from './pages/Admin/AdminReviews';
 import { AdminSettingsPage } from './pages/Admin/AdminSettings';
+
+import { AdminRoute, CustomerRoute } from './components/auth/ProtectedRoute';
 
 export function App() {
   return (
@@ -58,9 +55,14 @@ export function App() {
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/cart" element={<CartPage />} />
-                  <Route path="/account" element={<MyAccountPage />} />
-                  <Route path="/account/orders" element={<MyOrdersPage />} />
-                  <Route path="/account/orders/:orderId" element={<OrderDetailPage />} />
+                  <Route
+                    path="/account"
+                    element={
+                      <CustomerRoute>
+                        <MyAccountPage />
+                      </CustomerRoute>
+                    }
+                  />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -69,17 +71,19 @@ export function App() {
                   <Route path="/shipping-returns" element={<LegalPage />} />
                 </Route>
 
-                {/* Distraction-Free Checkout and Order Confirmation */}
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
-
                 {/* Protected Admin Portal Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout />
+                    </AdminRoute>
+                  }
+                >
                   <Route index element={<AdminDashboardPage />} />
                   <Route path="inventory" element={<AdminInventoryPage />} />
                   <Route path="products" element={<AdminProductsPage />} />
                   <Route path="categories" element={<AdminCategoriesPage />} />
-                  <Route path="orders" element={<AdminOrdersPage />} />
                   <Route path="custom-orders" element={<AdminCustomOrdersPage />} />
                   <Route path="reviews" element={<AdminReviewsPage />} />
                   <Route path="settings" element={<AdminSettingsPage />} />

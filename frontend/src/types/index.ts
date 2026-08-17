@@ -39,6 +39,7 @@ export interface Product {
   description: string;
   price: number;
   sale_price?: number | null;
+  amazon_asin?: string | null;
   stock_quantity: number;
   low_stock_threshold: number;
   material: string;
@@ -81,65 +82,6 @@ export interface Address {
   pincode: string;
   country: string;
   is_default?: boolean;
-}
-
-export type OrderStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'cancelled';
-
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
-
-export interface OrderItem {
-  id: string;
-  order_id?: string;
-  product_id: string;
-  product_name: string;
-  product_image?: string;
-  quantity: number;
-  unit_price: number;
-  subtotal: number;
-}
-
-export interface Order {
-  id: string;
-  user_id?: string;
-  order_number: string;
-  subtotal: number;
-  shipping_fee: number;
-  total: number;
-  currency: string;
-  payment_status: PaymentStatus;
-  order_status: OrderStatus;
-  shipping_name: string;
-  shipping_email: string;
-  shipping_phone: string;
-  shipping_address: string;
-  shipping_city: string;
-  shipping_state: string;
-  shipping_pincode: string;
-  shipping_country: string;
-  tracking_number?: string;
-  notes?: string;
-  items: OrderItem[];
-  payment?: PaymentRecord;
-  created_at: string;
-  updated_at?: string;
-}
-
-export interface PaymentRecord {
-  id?: string;
-  order_id: string;
-  razorpay_order_id: string;
-  razorpay_payment_id?: string;
-  razorpay_signature?: string;
-  amount: number;
-  currency: string;
-  status: 'created' | 'authorized' | 'captured' | 'failed' | 'refunded';
-  error_message?: string;
 }
 
 export type CustomOrderStatus =
@@ -199,40 +141,9 @@ export interface AdminSettings {
 }
 
 export interface AdminDashboardMetrics {
-  total_revenue: number;
-  total_orders: number;
-  pending_orders: number;
-  completed_orders: number;
   total_products: number;
   low_stock_count: number;
   total_customers: number;
   custom_order_count: number;
-  recent_orders: Order[];
-  revenue_trend: { date: string; amount: number }[];
-}
-
-export interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  image?: string;
-  order_id: string;
-  handler: (response: {
-    razorpay_payment_id: string;
-    razorpay_order_id: string;
-    razorpay_signature: string;
-  }) => void;
-  prefill?: {
-    name?: string;
-    email?: string;
-    contact?: string;
-  };
-  theme?: {
-    color?: string;
-  };
-  modal?: {
-    ondismiss?: () => void;
-  };
+  pending_reviews_count: number;
 }

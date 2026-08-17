@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Shield } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { Logo } from '../../components/common/Logo';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,7 +8,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signInWithEmail, signInWithGoogle, setDemoUser } = useAuth();
+  const { signInWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,33 +109,6 @@ export const LoginPage: React.FC = () => {
             </svg>
             Continue with Google
           </button>
-        </div>
-
-        {/* Quick Demo Switcher Buttons */}
-        <div className="p-3 bg-[#EADCCF]/40 rounded-xl border border-[#E7DFD7] text-center space-y-2">
-          <p className="text-[11px] text-[#7B6656] font-semibold">Demo Role Quick Login:</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setDemoUser('customer');
-                navigate('/account');
-              }}
-              className="flex-1 py-1.5 bg-white border border-[#E7DFD7] text-[11px] font-semibold text-[#5A4335] rounded-lg hover:bg-[#F8F5F0]"
-            >
-              Demo Customer
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDemoUser('admin');
-                navigate('/admin');
-              }}
-              className="flex-1 py-1.5 bg-[#5A4335] text-white text-[11px] font-bold rounded-lg hover:bg-[#3D2E24] flex items-center justify-center gap-1"
-            >
-              <Shield className="w-3 h-3" /> Demo Admin
-            </button>
-          </div>
         </div>
 
         <p className="text-center text-xs text-[#7B6656]">

@@ -28,13 +28,24 @@ class InMemoryStore:
         self.categories: Dict[str, dict] = {}
         self.products: Dict[str, dict] = {}
         self.product_images: Dict[str, list] = {}
-        self.orders: Dict[str, dict] = {}
-        self.order_items: Dict[str, list] = {}
-        self.payments: Dict[str, dict] = {}
         self.cart_items: Dict[str, list] = {}
         self.wishlist_items: Dict[str, list] = {}
         self.custom_orders: Dict[str, dict] = {}
         self.reviews: Dict[str, dict] = {}
+        self.profiles: Dict[str, dict] = {
+            "admin-user-id-001": {
+                "id": "admin-user-id-001",
+                "email": "admin@aaascrochet.com",
+                "full_name": "AaaS Master Artisan",
+                "role": "admin",
+            },
+            "customer-user-id-001": {
+                "id": "customer-user-id-001",
+                "email": "customer@aaascrochet.com",
+                "full_name": "Priya Sharma",
+                "role": "customer",
+            },
+        }
         self.settings: dict = {
             "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             "store_name": "AaaS - Handmade Crochet",
@@ -109,6 +120,7 @@ class InMemoryStore:
                 "description": "An enchanting bouquet of handcrafted crochet tulips in delicate shades of soft blush, warm ivory, and gentle peach. Each bloom is individually crocheted from premium milk cotton yarn with flexible wire-reinforced stems, wrapped in eco-conscious kraft paper with an antique gold ribbon tie. A timeless gift that never withers.",
                 "price": 999.0,
                 "sale_price": 899.0,
+                "amazon_asin": "B0C9TULIP1",
                 "stock_quantity": 12,
                 "low_stock_threshold": 3,
                 "material": "100% Premium Milk Cotton Yarn, Floral Craft Wire, Kraft Wrap, Satin Ribbon",
@@ -133,6 +145,7 @@ class InMemoryStore:
                 "description": "Crafted for modern elegance, this chunky-knit artisan handbag features a warm ivory and taupe weave, sturdy structured bamboo top handles, and a soft cotton interior. Perfectly sized to hold your essentials—phone, keys, compact wallet, and lip balm—while adding a warm, handcrafted statement to any outfit.",
                 "price": 1499.0,
                 "sale_price": 1299.0,
+                "amazon_asin": "B0C8BAG002",
                 "stock_quantity": 8,
                 "low_stock_threshold": 2,
                 "material": "Organic Chunky Cotton Yarn, Natural Bamboo Ring Handles, Magnetic Snap Clasp",
@@ -157,6 +170,7 @@ class InMemoryStore:
                 "description": "A cheerful yet elegant arrangement of bright white crochet daisies with golden textured sunburst centers and delicate sage green foliage. Lovingly tied with an organic linen ribbon, this bouquet brings warm, sunny craftsmanship into any room.",
                 "price": 999.0,
                 "sale_price": None,
+                "amazon_asin": "B0C7DAISY3",
                 "stock_quantity": 15,
                 "low_stock_threshold": 3,
                 "material": "100% Soft Cotton Blend, Bendable Stem Wire, Natural Linen Tie",
@@ -181,6 +195,7 @@ class InMemoryStore:
                 "description": "Set of 4 artisan botanical coasters handcrafted in harmonious tones of sage green, ivory cream, and warm taupe. Thick, heat-resistant, and absorbent, these coasters protect your tabletops while bringing warmth and organic beauty to your coffee and tea rituals.",
                 "price": 250.0,
                 "sale_price": 299.0,
+                "amazon_asin": "B0C6COAST4",
                 "stock_quantity": 25,
                 "low_stock_threshold": 5,
                 "material": "100% Natural Absorbent Milk Cotton Yarn",
@@ -204,6 +219,7 @@ class InMemoryStore:
                 "description": "An adorable trio of mini handcrafted accessories: a sweet crochet strawberry charm, a soft peach keyring, and a delicate floral scrunchie. Finished with durable antique gold metal lobster clasps to clip effortlessly onto bags, keys, or pouches.",
                 "price": 199.0,
                 "sale_price": 249.0,
+                "amazon_asin": "B0C5KEYCH5",
                 "stock_quantity": 30,
                 "low_stock_threshold": 5,
                 "material": "Mercerized Cotton Thread, Hypoallergenic Polyester Fill, Antique Gold Alloy Hardware",
@@ -227,6 +243,7 @@ class InMemoryStore:
                 "description": "Have a dream crochet design in mind? Collaborate directly with our master artisan to create custom bridal bouquets, heirloom baby blankets, bespoke color-matched handbags, or unique decor pieces. Price starts as a base deposit and adjusts according to your requirements.",
                 "price": 1499.0,
                 "sale_price": None,
+                "amazon_asin": None,
                 "stock_quantity": 99,
                 "low_stock_threshold": 5,
                 "material": "Custom Selected Premium Organic Yarns (Cotton, Bamboo, or Merino Wool)",
@@ -288,43 +305,6 @@ class InMemoryStore:
         for r in revs:
             self.reviews[r["id"]] = r
 
-        # 4. Seed a sample order
-        sample_order_id = "ord-sample-001"
-        self.orders[sample_order_id] = {
-            "id": sample_order_id,
-            "user_id": "demo-customer-uuid-001",
-            "order_number": "AAAS-2026-8492",
-            "subtotal": 899.0,
-            "shipping_fee": 99.0,
-            "total": 998.0,
-            "currency": "INR",
-            "payment_status": "paid",
-            "order_status": "confirmed",
-            "shipping_name": "Ananya Sharma",
-            "shipping_email": "customer@aaascrochet.com",
-            "shipping_phone": "+91 98765 12345",
-            "shipping_address": "Flat 402, Lotus Palm Apartments, Indiranagar",
-            "shipping_city": "Bengaluru",
-            "shipping_state": "Karnataka",
-            "shipping_pincode": "560038",
-            "shipping_country": "India",
-            "tracking_number": "TRK-IN-987214",
-            "notes": "Please gift wrap with gold ribbon",
-            "items": [
-                {
-                    "id": "item-1",
-                    "order_id": sample_order_id,
-                    "product_id": "p1111111-1111-1111-1111-111111111111",
-                    "product_name": "Crochet Tulip Bouquet",
-                    "product_image": "/images/tulip_bouquet.jpg",
-                    "quantity": 1,
-                    "unit_price": 899.0,
-                    "subtotal": 899.0
-                }
-            ],
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        }
 
 
 # Global store singleton

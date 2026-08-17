@@ -216,6 +216,7 @@ async def create_product(
         "description": product_in.description,
         "price": product_in.price,
         "sale_price": product_in.sale_price,
+        "amazon_asin": product_in.amazon_asin,
         "stock_quantity": product_in.stock_quantity,
         "low_stock_threshold": product_in.low_stock_threshold,
         "material": product_in.material,

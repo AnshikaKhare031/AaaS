@@ -10,46 +10,38 @@ router = APIRouter(prefix="/admin", tags=["Admin System"])
 @router.get("/dashboard", response_model=AdminDashboardMetrics)
 async def get_admin_dashboard_metrics(admin_user: dict = Depends(require_admin)):
     """
-    Computes real-time sales and order metrics for the luxury admin dashboard.
+    Computes real-time catalog, custom orders, and review moderation metrics for the admin dashboard.
     """
-    orders = list(store.orders.values())
     products = list(store.products.values())
     custom_orders = list(store.custom_orders.values())
+    reviews = list(store.reviews.values())
 
-    total_revenue = sum(o.get("total", 0) for o in orders if o.get("payment_status") == "paid")
-    total_orders = len(orders)
-    pending_orders = sum(1 for o in orders if o.get("order_status") in ["pending", "confirmed", "processing"])
-    completed_orders = sum(1 for o in orders if o.get("order_status") in ["shipped", "delivered"])
+    if supabase_client:
+        try:
+            p_res = supabase_client.table("products").select("id, stock_quantity, low_stock_threshold").execute()
+            if p_res.data:
+                products = p_res.data
+            c_res = supabase_client.table("custom_orders").select("id, email").execute()
+            if c_res.data:
+                custom_orders = c_res.data
+            r_res = supabase_client.table("reviews").select("id, is_approved").execute()
+            if r_res.data:
+                reviews = r_res.data
+        except Exception:
+            pass
+
     total_products = len(products)
     low_stock_count = sum(1 for p in products if p.get("stock_quantity", 0) <= p.get("low_stock_threshold", 3))
-    
-    unique_customers = len(set(o.get("shipping_email") for o in orders if o.get("shipping_email")))
     custom_order_count = len(custom_orders)
-
-    recent = sorted(orders, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
-
-    # Realistic 7-day revenue trend
-    revenue_trend = [
-        {"date": "Aug 05", "amount": 4800.0},
-        {"date": "Aug 06", "amount": 6200.0},
-        {"date": "Aug 07", "amount": 8900.0},
-        {"date": "Aug 08", "amount": 7400.0},
-        {"date": "Aug 09", "amount": 11200.0},
-        {"date": "Aug 10", "amount": 9800.0},
-        {"date": "Today", "amount": float(total_revenue if total_revenue > 0 else 14550.0)},
-    ]
+    unique_customers = len(set(o.get("email") for o in custom_orders if o.get("email")))
+    pending_reviews_count = sum(1 for r in reviews if not r.get("is_approved", False))
 
     return {
-        "total_revenue": total_revenue if total_revenue > 0 else 48950.0,
-        "total_orders": total_orders if total_orders > 0 else 38,
-        "pending_orders": pending_orders if total_orders > 0 else 5,
-        "completed_orders": completed_orders if total_orders > 0 else 31,
         "total_products": total_products,
         "low_stock_count": low_stock_count,
-        "total_customers": unique_customers if unique_customers > 0 else 29,
-        "custom_order_count": custom_order_count if custom_order_count > 0 else 7,
-        "recent_orders": recent,
-        "revenue_trend": revenue_trend,
+        "total_customers": unique_customers,
+        "custom_order_count": custom_order_count,
+        "pending_reviews_count": pending_reviews_count,
     }
 
 @router.get("/settings", response_model=AdminSettings)

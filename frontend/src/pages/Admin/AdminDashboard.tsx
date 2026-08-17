@@ -1,80 +1,70 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  DollarSign,
-  ShoppingBag,
-  Clock,
-  CheckCircle2,
   Boxes,
   AlertTriangle,
-  Users,
   Sparkles,
+  MessageSquare,
+  ShoppingBag,
   ArrowRight,
-  TrendingUp,
-  Package,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
-import { AdminDashboardMetrics, Order } from '../../types';
-import { getDashboardMetrics, getAdminOrders } from '../../services/api';
-import { formatPrice, formatDate, getOrderStatusBadge } from '../../utils/helpers';
+import { AdminDashboardMetrics } from '../../types';
+import { getDashboardMetrics } from '../../services/api';
 
 export const AdminDashboardPage: React.FC = () => {
   const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const loadDashboard = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const dashMetrics = await getDashboardMetrics();
+      setMetrics(dashMetrics);
+    } catch (err: any) {
+      console.error('Failed to load admin metrics:', err);
+      const detail = err.response?.data?.detail || "Couldn't load dashboard metrics — please check your connection and try refreshing.";
+      setErrorMessage(detail);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const [dashMetrics, orders] = await Promise.all([
-          getDashboardMetrics().catch(() => null),
-          getAdminOrders().catch(() => []),
-        ]);
-
-        if (dashMetrics) {
-          setMetrics(dashMetrics);
-        } else {
-          // Fallback realistic metrics for demonstration
-          setMetrics({
-            total_revenue: 48950,
-            total_orders: 38,
-            pending_orders: 5,
-            completed_orders: 31,
-            total_products: 6,
-            low_stock_count: 2,
-            total_customers: 29,
-            custom_order_count: 7,
-            recent_orders: orders.slice(0, 5),
-            revenue_trend: [
-              { date: 'Aug 04', amount: 4800 },
-              { date: 'Aug 05', amount: 6200 },
-              { date: 'Aug 06', amount: 8900 },
-              { date: 'Aug 07', amount: 7400 },
-              { date: 'Aug 08', amount: 11200 },
-              { date: 'Aug 09', amount: 9800 },
-              { date: 'Aug 10', amount: 14550 },
-            ],
-          });
-        }
-        setRecentOrders(orders.slice(0, 5));
-      } catch (err) {
-        console.error('Failed to load admin metrics:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadDashboard();
   }, []);
 
-  if (isLoading || !metrics) {
+  if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-28 bg-white rounded-2xl border border-[#E7DFD7]" />
           ))}
         </div>
-        <div className="h-72 bg-white rounded-2xl border border-[#E7DFD7]" />
+      </div>
+    );
+  }
+
+  if (errorMessage || !metrics) {
+    return (
+      <div className="bg-white rounded-3xl border border-[#E7DFD7] p-8 sm:p-12 text-center max-w-lg mx-auto shadow-sm space-y-4 my-8">
+        <div className="w-12 h-12 rounded-full bg-[#C96A6A]/10 text-[#C96A6A] flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h3 className="font-serif text-2xl font-bold text-[#3D2E24]">Dashboard Load Error</h3>
+        <p className="text-xs text-[#7B6656] leading-relaxed">
+          {errorMessage || "Couldn't load real-time metrics from the server."}
+        </p>
+        <button
+          onClick={loadDashboard}
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] transition-colors"
+        >
+          <RefreshCw className="w-3.5 h-3.5" /> Try Again
+        </button>
       </div>
     );
   }
@@ -88,16 +78,16 @@ export const AdminDashboardPage: React.FC = () => {
             Store Overview & Metrics
           </h1>
           <p className="text-xs text-[#7B6656] mt-1">
-            Real-time sales, order fulfillment, and handcrafted stock statistics.
+            Real-time catalog, custom commission requests, and review moderation.
           </p>
         </div>
 
         <div className="flex gap-2">
           <Link
-            to="/admin/inventory"
+            to="/admin/products"
             className="px-4 py-2 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] flex items-center gap-1.5 transition-colors shadow-xs"
           >
-            <Boxes className="w-3.5 h-3.5" /> Manage Inventory
+            <ShoppingBag className="w-3.5 h-3.5" /> Manage Products
           </Link>
           <Link
             to="/admin/custom-orders"
@@ -108,52 +98,48 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2">
-          <div className="flex items-center justify-between text-[#7B6656]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Revenue</span>
-            <div className="w-8 h-8 rounded-lg bg-[#8FA57D]/15 text-[#8FA57D] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
-            {formatPrice(metrics.total_revenue)}
-          </p>
-          <p className="text-[11px] text-[#8FA57D] font-medium">+18.4% from last week</p>
-        </div>
-
-        <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2">
-          <div className="flex items-center justify-between text-[#7B6656]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Orders</span>
-            <div className="w-8 h-8 rounded-lg bg-[#EADCCF] text-[#5A4335] flex items-center justify-center">
-              <ShoppingBag className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
-            {metrics.total_orders}
-          </p>
-          <p className="text-[11px] text-[#7B6656]">
-            {metrics.pending_orders} pending fulfillment
-          </p>
-        </div>
-
-        <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2">
+      {/* Stat Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <Link
+          to="/admin/products"
+          className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2 hover:border-[#C6A15B] transition-all group"
+        >
           <div className="flex items-center justify-between text-[#7B6656]">
             <span className="text-xs font-semibold uppercase tracking-wider">Active Products</span>
             <div className="w-8 h-8 rounded-lg bg-[#C6A15B]/15 text-[#C6A15B] flex items-center justify-center">
-              <Boxes className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4" />
             </div>
           </div>
           <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
             {metrics.total_products}
           </p>
-          <p className="text-[11px] text-[#C96A6A] font-semibold flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> {metrics.low_stock_count} low stock alerts
+          <p className="text-[11px] text-[#7B6656] flex items-center gap-1 group-hover:text-[#C6A15B] transition-colors">
+            View catalog <ArrowRight className="w-3 h-3" />
           </p>
-        </div>
+        </Link>
 
-        <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2">
+        <Link
+          to="/admin/inventory"
+          className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2 hover:border-[#C6A15B] transition-all group"
+        >
+          <div className="flex items-center justify-between text-[#7B6656]">
+            <span className="text-xs font-semibold uppercase tracking-wider">Stock Alerts</span>
+            <div className="w-8 h-8 rounded-lg bg-[#C96A6A]/15 text-[#C96A6A] flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
+            {metrics.low_stock_count}
+          </p>
+          <p className="text-[11px] text-[#C96A6A] font-semibold flex items-center gap-1">
+            <Boxes className="w-3 h-3" /> Low stock items
+          </p>
+        </Link>
+
+        <Link
+          to="/admin/custom-orders"
+          className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2 hover:border-[#C6A15B] transition-all group"
+        >
           <div className="flex items-center justify-between text-[#7B6656]">
             <span className="text-xs font-semibold uppercase tracking-wider">Custom Requests</span>
             <div className="w-8 h-8 rounded-lg bg-[#C6A15B]/20 text-[#3D2E24] flex items-center justify-center">
@@ -163,119 +149,76 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
             {metrics.custom_order_count}
           </p>
-          <p className="text-[11px] text-[#C6A15B] font-semibold">Bespoke commissions</p>
-        </div>
+          <p className="text-[11px] text-[#C6A15B] font-semibold flex items-center gap-1">
+            Bespoke commissions <ArrowRight className="w-3 h-3" />
+          </p>
+        </Link>
+
+        <Link
+          to="/admin/reviews"
+          className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-xs space-y-2 hover:border-[#C6A15B] transition-all group"
+        >
+          <div className="flex items-center justify-between text-[#7B6656]">
+            <span className="text-xs font-semibold uppercase tracking-wider">Pending Reviews</span>
+            <div className="w-8 h-8 rounded-lg bg-[#8FA57D]/15 text-[#8FA57D] flex items-center justify-center">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="font-sans text-2xl sm:text-3xl font-bold text-[#3D2E24]">
+            {metrics.pending_reviews_count}
+          </p>
+          <p className="text-[11px] text-[#8FA57D] font-medium flex items-center gap-1">
+            Awaiting moderation <ArrowRight className="w-3 h-3" />
+          </p>
+        </Link>
       </div>
 
-      {/* Revenue Trend Visualizer */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E7DFD7] shadow-xs space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-serif text-xl font-bold text-[#3D2E24]">Recent Sales Performance</h3>
-            <p className="text-xs text-[#7B6656]">Daily revenue velocity across the boutique</p>
+      {/* Quick Navigation Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+        <Link
+          to="/admin/inventory"
+          className="p-6 bg-white rounded-3xl border border-[#E7DFD7] shadow-xs hover:border-[#C6A15B] transition-all space-y-2 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EADCCF] flex items-center justify-center text-[#5A4335] group-hover:bg-[#5A4335] group-hover:text-white transition-colors">
+              <Boxes className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-lg font-bold text-[#3D2E24]">Inventory Management</h3>
           </div>
-          <span className="text-xs font-bold text-[#8FA57D] bg-[#8FA57D]/10 px-3 py-1 rounded-full border border-[#8FA57D]/20">
-            INR / ₹
-          </span>
-        </div>
+          <p className="text-xs text-[#7B6656]">
+            Quickly adjust handmade stock counts and restock batches.
+          </p>
+        </Link>
 
-        {/* Minimalist Bar Chart Representation */}
-        <div className="h-44 flex items-end justify-between gap-3 pt-6 pb-2 border-b border-[#E7DFD7]">
-          {metrics.revenue_trend?.map((item, idx) => {
-            const maxAmount = Math.max(...metrics.revenue_trend.map((t) => t.amount), 15000);
-            const heightPercent = Math.round((item.amount / maxAmount) * 100);
-
-            return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                <div className="text-[10px] font-bold text-[#5A4335] opacity-0 group-hover:opacity-100 transition-opacity">
-                  {formatPrice(item.amount)}
-                </div>
-                <div
-                  className="w-full max-w-[40px] bg-[#EADCCF] group-hover:bg-[#C6A15B] rounded-t-lg transition-all"
-                  style={{ height: `${heightPercent}%` }}
-                />
-                <span className="text-[10px] text-[#7B6656] font-medium">{item.date}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recent Orders Table */}
-      <div className="bg-white rounded-3xl border border-[#E7DFD7] shadow-xs overflow-hidden">
-        <div className="p-6 border-b border-[#E7DFD7] flex items-center justify-between">
-          <div>
-            <h3 className="font-serif text-xl font-bold text-[#3D2E24]">Recent Orders</h3>
-            <p className="text-xs text-[#7B6656]">Latest customer purchases</p>
+        <Link
+          to="/admin/custom-orders"
+          className="p-6 bg-white rounded-3xl border border-[#E7DFD7] shadow-xs hover:border-[#C6A15B] transition-all space-y-2 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EADCCF] flex items-center justify-center text-[#5A4335] group-hover:bg-[#5A4335] group-hover:text-white transition-colors">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-lg font-bold text-[#3D2E24]">Bespoke Requests</h3>
           </div>
-          <Link
-            to="/admin/orders"
-            className="text-xs font-bold uppercase tracking-wider text-[#C6A15B] hover:underline flex items-center gap-1"
-          >
-            View All Orders <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+          <p className="text-xs text-[#7B6656]">
+            Review custom customer commissions, budgets, and production notes.
+          </p>
+        </Link>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-[#5A4335]">
-            <thead className="bg-[#F8F5F0] border-b border-[#E7DFD7] text-[#7B6656] uppercase font-bold text-[10px] tracking-wider">
-              <tr>
-                <th className="px-6 py-3.5">Order ID</th>
-                <th className="px-6 py-3.5">Customer</th>
-                <th className="px-6 py-3.5">Date</th>
-                <th className="px-6 py-3.5">Amount</th>
-                <th className="px-6 py-3.5">Payment</th>
-                <th className="px-6 py-3.5">Status</th>
-                <th className="px-6 py-3.5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E7DFD7]">
-              {recentOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-xs text-[#7B6656]">
-                    No orders placed yet.
-                  </td>
-                </tr>
-              ) : (
-                recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-[#F8F5F0]/60 transition-colors">
-                    <td className="px-6 py-4 font-mono font-bold text-[#3D2E24]">
-                      #{order.order_number}
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-[#3D2E24]">{order.shipping_name}</p>
-                      <p className="text-[10px] text-[#7B6656]">{order.shipping_email}</p>
-                    </td>
-                    <td className="px-6 py-4 text-[#7B6656]">{formatDate(order.created_at)}</td>
-                    <td className="px-6 py-4 font-bold text-[#3D2E24]">{formatPrice(order.total)}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-bold text-[#8FA57D] uppercase">
-                        {order.payment_status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${getOrderStatusBadge(
-                          order.order_status
-                        )}`}
-                      >
-                        {order.order_status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        to={`/admin/orders`}
-                        className="text-[#C6A15B] font-bold hover:underline"
-                      >
-                        Manage
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Link
+          to="/admin/reviews"
+          className="p-6 bg-white rounded-3xl border border-[#E7DFD7] shadow-xs hover:border-[#C6A15B] transition-all space-y-2 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EADCCF] flex items-center justify-center text-[#5A4335] group-hover:bg-[#5A4335] group-hover:text-white transition-colors">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-lg font-bold text-[#3D2E24]">Customer Feedback</h3>
+          </div>
+          <p className="text-xs text-[#7B6656]">
+            Moderate and approve authentic patron ratings and testimonials.
+          </p>
+        </Link>
       </div>
     </div>
   );

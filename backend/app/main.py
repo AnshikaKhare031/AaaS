@@ -16,8 +16,6 @@ from app.routers import (
     inventory,
     cart,
     wishlist,
-    orders,
-    payments,
     custom_orders,
     reviews,
     admin,
@@ -28,7 +26,6 @@ async def lifespan(app: FastAPI):
     print("=" * 60)
     print(f"✨ Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     print(f"📦 Environment: {settings.ENVIRONMENT}")
-    print(f"⚡ Razorpay Key ID: {settings.RAZORPAY_KEY_ID[:8]}***")
     if supabase_client:
         print("🔗 Supabase PostgreSQL: Connected")
     else:
@@ -63,8 +60,6 @@ app.include_router(categories.router, prefix="/api")
 app.include_router(inventory.router, prefix="/api")
 app.include_router(cart.router, prefix="/api")
 app.include_router(wishlist.router, prefix="/api")
-app.include_router(orders.router, prefix="/api")
-app.include_router(payments.router, prefix="/api")
 app.include_router(custom_orders.router, prefix="/api")
 app.include_router(reviews.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")

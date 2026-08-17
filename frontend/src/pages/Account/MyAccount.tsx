@@ -52,21 +52,8 @@ export const MyAccountPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Navigation Quick Cards */}
-        <Link
-          to="/account/orders"
-          className="p-6 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs hover:border-[#C6A15B] transition-all flex items-center gap-4 group"
-        >
-          <div className="w-12 h-12 rounded-xl bg-[#EADCCF]/50 flex items-center justify-center text-[#5A4335] group-hover:bg-[#5A4335] group-hover:text-white transition-colors">
-            <Package className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="font-serif text-lg font-semibold text-[#3D2E24]">My Orders</h3>
-            <p className="text-xs text-[#7B6656]">Track orders & view receipts</p>
-          </div>
-        </Link>
-
         <Link
           to="/wishlist"
           className="p-6 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs hover:border-[#C6A15B] transition-all flex items-center gap-4 group"

@@ -4,7 +4,6 @@ import {
   Category,
   CartItem,
   WishlistItem,
-  Order,
   CustomOrder,
   Review,
   AdminSettings,
@@ -169,58 +168,6 @@ export const removeFromWishlist = async (productId: string): Promise<{ success: 
   return response.data;
 };
 
-// Orders API
-export const createOrder = async (orderData: {
-  items: { product_id: string; quantity: number }[];
-  shipping_name: string;
-  shipping_email: string;
-  shipping_phone: string;
-  shipping_address: string;
-  shipping_city: string;
-  shipping_state: string;
-  shipping_pincode: string;
-  notes?: string;
-}): Promise<Order> => {
-  const response = await apiClient.post('/orders', orderData);
-  return response.data;
-};
-
-export const getOrders = async (): Promise<Order[]> => {
-  const response = await apiClient.get('/orders');
-  return response.data;
-};
-
-export const getOrderById = async (id: string): Promise<Order> => {
-  const response = await apiClient.get(`/orders/${id}`);
-  return response.data;
-};
-
-// Razorpay Payments API
-export const createRazorpayOrder = async (
-  orderId: string,
-  amount: number
-): Promise<{
-  razorpay_order_id: string;
-  amount: number;
-  currency: string;
-  key_id: string;
-}> => {
-  const response = await apiClient.post('/payments/create-order', {
-    order_id: orderId,
-    amount,
-  });
-  return response.data;
-};
-
-export const verifyRazorpayPayment = async (payload: {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-  order_id: string;
-}): Promise<{ success: boolean; message: string; order: Order }> => {
-  const response = await apiClient.post('/payments/verify', payload);
-  return response.data;
-};
 
 // Custom Orders API
 export const createCustomOrder = async (data: {
@@ -268,23 +215,6 @@ export const updateCustomOrderStatus = async (
   return response.data;
 };
 
-// Admin Orders
-export const getAdminOrders = async (): Promise<Order[]> => {
-  const response = await apiClient.get('/admin/orders');
-  return response.data;
-};
-
-export const updateOrderStatus = async (
-  id: string,
-  status: string,
-  trackingNumber?: string
-): Promise<Order> => {
-  const response = await apiClient.put(`/admin/orders/${id}/status`, {
-    status,
-    tracking_number: trackingNumber,
-  });
-  return response.data;
-};
 
 // Reviews API
 export const getProductReviews = async (productId: string): Promise<Review[]> => {

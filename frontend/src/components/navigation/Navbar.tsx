@@ -27,10 +27,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const location = useLocation();
-  const navigate = useNavigate();
   const { itemCount, openCartDrawer } = useCart();
   const { items: wishlistItems } = useWishlist();
-  const { user, isAdmin, isAuthenticated, signOut, setDemoUser } = useAuth();
+  const { user, isAdmin, isAuthenticated, signOut } = useAuth();
 
   // Scroll detection for transparent to solid ivory transition
   useEffect(() => {
@@ -55,9 +54,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
     { name: 'Collections', path: '/categories' },
-    { name: 'About', path: '/about' },
+    { name: 'About & Contact', path: '/about' },
     { name: 'Custom Orders', path: '/custom-orders' },
-    { name: 'Contact', path: '/contact' },
   ];
 
   return (
@@ -117,24 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
 
             {/* Right: Actions (Search, Wishlist, Account, Cart) */}
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Role Switcher Demo Tooltip/Pill */}
-              <div className="hidden xl:flex items-center text-xs bg-[#EADCCF]/60 border border-[#E7DFD7] px-2.5 py-1 rounded-full text-[#5A4335]">
-                <span className="font-semibold mr-1.5">Mode:</span>
-                {isAdmin ? (
-                  <span className="text-[#8FA57D] font-bold flex items-center gap-1">
-                    <Shield className="w-3 h-3" /> Admin
-                  </span>
-                ) : (
-                  <span className="text-[#7B6656]">Customer</span>
-                )}
-                <button
-                  onClick={() => setDemoUser(isAdmin ? 'customer' : 'admin')}
-                  className="ml-2 underline text-[#C6A15B] hover:text-[#3D2E24] font-medium"
-                >
-                  Switch
-                </button>
-              </div>
-
               {/* Search Button */}
               <button
                 type="button"
@@ -208,11 +188,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
                             My Account
                           </Link>
                           <Link
-                            to="/account/orders"
+                            to="/custom-orders"
                             className="block px-4 py-2 text-sm text-[#5A4335] hover:bg-[#F8F5F0] hover:text-[#3D2E24] transition-colors"
                             onClick={() => setIsAccountDropdownOpen(false)}
                           >
-                            My Orders
+                            Custom Requests
                           </Link>
                           <button
                             onClick={() => {
@@ -331,15 +311,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
               </div>
 
               <div className="pt-6 border-t border-[#E7DFD7] flex flex-col gap-3">
-                <div className="flex items-center justify-between py-2 text-sm text-[#7B6656]">
-                  <span>Demo Switcher:</span>
-                  <button
-                    onClick={() => setDemoUser(isAdmin ? 'customer' : 'admin')}
-                    className="px-3 py-1 bg-[#EADCCF] text-[#3D2E24] font-semibold text-xs rounded-full"
-                  >
-                    Switch to {isAdmin ? 'Customer' : 'Admin'}
-                  </button>
-                </div>
 
                 {isAuthenticated ? (
                   <button
