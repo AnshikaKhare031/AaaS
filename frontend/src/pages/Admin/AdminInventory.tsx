@@ -582,6 +582,9 @@ export const AdminInventoryPage: React.FC = () => {
                     placeholder="e.g. B0CXXXXXXX"
                     className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
                   />
+                  <p className="text-[11px] text-[#7B6656] mt-1 leading-normal">
+                    Leave blank while the Amazon listing is pending — the storefront will route buyers to WhatsApp instead until this is filled in.
+                  </p>
                 </div>
 
                 <div>

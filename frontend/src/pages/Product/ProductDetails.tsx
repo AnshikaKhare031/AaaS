@@ -22,6 +22,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 import { ProductCard } from '../../components/products/ProductCard';
 import { buildAmazonSingleItemUrl } from '../../utils/amazon';
+import { buildWhatsAppSingleItemUrl } from '../../utils/whatsapp';
 
 export const ProductDetailsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -119,16 +120,15 @@ export const ProductDetailsPage: React.FC = () => {
   const isFavorited = isInWishlist(product.id);
 
   const handleBuyNow = () => {
-    if (!product.amazon_asin || product.amazon_asin.trim().length === 0) {
-      error('Amazon link for this creation is coming soon!');
-      return;
+    if (product.amazon_asin && product.amazon_asin.trim().length > 0) {
+      const amazonUrl = buildAmazonSingleItemUrl(product.amazon_asin, quantity);
+      if (amazonUrl) {
+        window.open(amazonUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
     }
-    const amazonUrl = buildAmazonSingleItemUrl(product.amazon_asin, quantity);
-    if (amazonUrl) {
-      window.open(amazonUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      error('Amazon link for this creation is coming soon!');
-    }
+    const whatsappUrl = buildWhatsAppSingleItemUrl(product.name, currentPrice, quantity);
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -311,16 +311,16 @@ export const ProductDetailsPage: React.FC = () => {
 
               <button
                 type="button"
-                disabled={!stockInfo.isAvailable || !product.amazon_asin}
+                disabled={!stockInfo.isAvailable}
                 onClick={handleBuyNow}
-                title={!product.amazon_asin ? 'Amazon link coming soon' : 'Buy directly on Amazon'}
+                title={product.amazon_asin ? 'Buy directly on Amazon' : 'Order via WhatsApp'}
                 className={`flex-1 py-3.5 px-6 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 ${
-                  product.amazon_asin && stockInfo.isAvailable
+                  stockInfo.isAvailable
                     ? 'bg-[#C6A15B] hover:bg-[#b08d47] text-[#3D2E24]'
                     : 'bg-[#DDD6CF] text-[#7B6656] cursor-not-allowed'
                 }`}
               >
-                {product.amazon_asin ? 'Buy on Amazon' : 'Amazon Link Coming Soon'}
+                {product.amazon_asin ? 'Buy on Amazon' : 'Order via WhatsApp'}
               </button>
 
               <button

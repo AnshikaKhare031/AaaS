@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, ExternalLink, ShoppingBag, Sparkles, AlertCircle, ShieldCheck } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ExternalLink, ShoppingBag, Sparkles, AlertCircle, ShieldCheck, MessageCircle } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { formatPrice } from '../../utils/helpers';
 import { buildAmazonCartUrl } from '../../utils/amazon';
+import { buildWhatsAppOrderUrl } from '../../utils/whatsapp';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -26,31 +27,48 @@ export const CartDrawer: React.FC = () => {
   const navigate = useNavigate();
   const { error: showToastError } = useToast();
 
-  const itemsWithAsin = items.filter(
+  const amazonItems = items.filter(
     (i) => i.product.amazon_asin && i.product.amazon_asin.trim().length > 0
   );
-  const skippedCount = items.length - itemsWithAsin.length;
+  const whatsappItems = items.filter(
+    (i) => !i.product.amazon_asin || i.product.amazon_asin.trim().length === 0
+  );
 
   const handleProceedToAmazon = () => {
-    if (itemsWithAsin.length === 0) {
-      showToastError("These items don't have Amazon links yet — please check back soon.");
+    if (amazonItems.length === 0) {
+      showToastError("These items don't have Amazon links yet — please order via WhatsApp.");
       return;
     }
 
     const amazonUrl = buildAmazonCartUrl(
-      itemsWithAsin.map((item) => ({
+      amazonItems.map((item) => ({
         asin: item.product.amazon_asin!,
         quantity: item.quantity,
       }))
     );
 
     if (!amazonUrl) {
-      showToastError("These items don't have Amazon links yet — please check back soon.");
+      showToastError("These items don't have Amazon links yet — please order via WhatsApp.");
       return;
     }
 
     closeCartDrawer();
     window.open(amazonUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleProceedToWhatsApp = () => {
+    if (whatsappItems.length === 0) return;
+
+    const whatsappUrl = buildWhatsAppOrderUrl(
+      whatsappItems.map((item) => ({
+        name: item.product.name,
+        price: item.product.sale_price ?? item.product.price,
+        quantity: item.quantity,
+      }))
+    );
+
+    closeCartDrawer();
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const freeShippingProgress = Math.min(
@@ -259,24 +277,43 @@ export const CartDrawer: React.FC = () => {
                   </div>
                 </div>
 
-                {skippedCount > 0 && itemsWithAsin.length > 0 && (
+                {amazonItems.length > 0 && whatsappItems.length > 0 && (
                   <div className="p-2.5 bg-[#EADCCF]/60 rounded-xl border border-[#E7DFD7] flex items-start gap-2 text-[11px] text-[#7B6656]">
                     <AlertCircle className="w-3.5 h-3.5 text-[#C6A15B] flex-shrink-0 mt-0.5" />
                     <p>
-                      Note: <strong className="text-[#3D2E24]">{skippedCount} item(s)</strong> without Amazon links won't be included.
+                      Note: <strong className="text-[#3D2E24]">{whatsappItems.length} item{whatsappItems.length === 1 ? '' : 's'}</strong> will be ordered via WhatsApp instead of Amazon.
                     </p>
                   </div>
                 )}
 
                 <div className="flex flex-col gap-2 pt-1">
-                  <button
-                    onClick={handleProceedToAmazon}
-                    className="w-full py-3 bg-[#5A4335] hover:bg-[#3D2E24] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
-                  >
-                    Continue to Amazon <ExternalLink className="w-4 h-4" />
-                  </button>
+                  {amazonItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleProceedToAmazon}
+                      className="w-full py-3 bg-[#5A4335] hover:bg-[#3D2E24] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98"
+                    >
+                      Continue to Amazon <ExternalLink className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {whatsappItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleProceedToWhatsApp}
+                      className={`w-full py-3 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 ${
+                        amazonItems.length > 0
+                          ? 'bg-[#C6A15B] hover:bg-[#b08d47] text-[#3D2E24]'
+                          : 'bg-[#5A4335] hover:bg-[#3D2E24] text-white'
+                      }`}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {amazonItems.length > 0 ? 'Order the rest via WhatsApp' : 'Order via WhatsApp'}
+                    </button>
+                  )}
 
                   <button
+                    type="button"
                     onClick={() => {
                       closeCartDrawer();
                       navigate('/cart');
@@ -288,7 +325,13 @@ export const CartDrawer: React.FC = () => {
 
                   <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] text-[#7B6656]">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#8FA57D]" />
-                    <span>Secure Amazon Checkout</span>
+                    <span>
+                      {amazonItems.length > 0 && whatsappItems.length === 0
+                        ? 'Secure Amazon Checkout'
+                        : amazonItems.length === 0
+                        ? 'Direct WhatsApp Checkout'
+                        : 'Secure Amazon & WhatsApp Checkout'}
+                    </span>
                   </div>
                 </div>
               </div>
