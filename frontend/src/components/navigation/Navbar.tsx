@@ -53,9 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
-    { name: 'Collections', path: '/categories' },
-    { name: 'About & Contact', path: '/about' },
-    { name: 'Custom Orders', path: '/custom-orders' },
   ];
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -9,27 +9,37 @@ import {
   Gift,
   Clock,
   Star,
-  ChevronRight,
 } from 'lucide-react';
 import { InstagramIcon } from '../../components/common/InstagramIcon';
 import { ProductCard } from '../../components/products/ProductCard';
-import { Product, Category } from '../../types';
-import { getProducts, getCategories } from '../../services/api';
+import { Product } from '../../types';
+import { getProducts } from '../../services/api';
 
 export const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+
+  // Scroll to hash anchor on load or hash change
+  useEffect(() => {
+    if (location.hash) {
+      const timer = setTimeout(() => {
+        const el = document.querySelector(location.hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prodRes, catRes] = await Promise.all([
-          getProducts({ limit: 8 }),
-          getCategories(),
-        ]);
+        const prodRes = await getProducts({ limit: 8 });
         setProducts(prodRes.products || []);
-        setCategories(catRes || []);
       } catch (err) {
         console.error('Home data load error:', err);
       } finally {
@@ -149,62 +159,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* SECTION 3 — FEATURED COLLECTIONS */}
-      <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#C6A15B] mb-2 block">
-              Curated Categories
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-semibold text-[#3D2E24]">
-              Featured Collections
-            </h2>
-          </div>
-          <Link
-            to="/categories"
-            className="text-xs font-bold uppercase tracking-wider text-[#5A4335] hover:text-[#C6A15B] flex items-center gap-1 transition-colors"
-          >
-            Browse All Collections <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <motion.div
-              key={cat.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-            >
-              <Link
-                to={cat.slug === 'custom-orders' ? '/custom-orders' : `/shop?category=${cat.slug}`}
-                className="group relative block aspect-[3/4] rounded-2xl overflow-hidden border border-[#E7DFD7] shadow-sm bg-[#EADCCF]/20"
-              >
-                <img
-                  src={cat.image_url || '/images/tulip_bouquet.jpg'}
-                  alt={cat.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3D2E24]/85 via-[#3D2E24]/20 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 text-white flex items-end justify-between">
-                  <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-semibold mb-1 group-hover:translate-x-1 transition-transform">
-                      {cat.name}
-                    </h3>
-                    <p className="text-xs text-[#EADCCF] line-clamp-1">{cat.description}</p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center text-white group-hover:bg-[#C6A15B] transition-colors flex-shrink-0">
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* SECTION 4 — BESTSELLERS */}
+      {/* SECTION 3 — BESTSELLERS */}
       <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-xs font-semibold uppercase tracking-widest text-[#C6A15B] mb-2 block">
@@ -225,50 +180,103 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* SECTION 5 — BRAND STORY */}
-      <section className="bg-[#EADCCF]/40 border-y border-[#E7DFD7] py-20">
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* SECTION 4 — OUR STORY & CRAFT VALUES */}
+      <section id="our-story" className="bg-[#EADCCF]/30 border-y border-[#E7DFD7] py-20 scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          {/* Narrative & Artisan Visual Split */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 relative">
-              <div className="rounded-3xl overflow-hidden border border-[#E7DFD7] shadow-xl aspect-4/3 bg-white">
-                <img
-                  src="/images/artisan_hands.jpg"
-                  alt="AaaS Artisan Crocheting by Hand"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -right-6 hidden sm:block p-6 rounded-2xl bg-white border border-[#E7DFD7] shadow-lg max-w-xs">
-                <p className="font-script text-3xl text-[#C6A15B] leading-none mb-1">
-                  with patience & love
+            <div className="lg:col-span-6 space-y-6">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#C6A15B] block">
+                The Artisan Philosophy
+              </span>
+              <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-[#3D2E24] leading-tight">
+                In a world of mass production, <br />
+                <span className="font-script text-[#C6A15B] font-normal italic">we choose the slow road.</span>
+              </h2>
+              <p className="text-sm sm:text-base text-[#7B6656] leading-relaxed">
+                At AaaS, every stitch begins with a single strand of yarn and a wooden hook. We
+                don’t rely on automated factories or rushed assembly lines. Instead, our artisans
+                crochet each petal, bag handle, and keepsake stitch-by-stitch, infusing
+                every piece with human warmth, mindfulness, and care.
+              </p>
+              <p className="text-sm sm:text-base text-[#7B6656] leading-relaxed">
+                Our bouquets never wilt. Our handbags carry memories across seasons. This is
+                slow luxury in its truest form.
+              </p>
+
+              <div className="p-4 bg-white/80 backdrop-blur-xs rounded-2xl border-l-4 border-[#C6A15B] shadow-2xs space-y-1">
+                <p className="font-serif italic text-sm text-[#3D2E24]">
+                  "Crochet cannot be replicated by any machine in existence. Every single stitch on this site exists because human hands created it."
                 </p>
-                <p className="text-xs text-[#7B6656]">Every single petal and stitch is made by hand.</p>
+                <p className="text-[11px] font-semibold text-[#7B6656] uppercase tracking-wider">
+                  — AaaS Artisan Atelier
+                </p>
               </div>
             </div>
 
-            <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#C6A15B] block">
-                The AaaS Philosophy
-              </span>
-              <h2 className="font-serif text-4xl sm:text-5xl font-semibold text-[#3D2E24] leading-tight">
-                Made Slowly. Made Beautifully.
-              </h2>
-              <p className="text-sm sm:text-base text-[#7B6656] leading-relaxed">
-                In a world overflowing with fast, machine-made commodities, AaaS was founded on a
-                different promise: the meditative beauty of slow, intentional craftsmanship.
-              </p>
-              <p className="text-sm sm:text-base text-[#7B6656] leading-relaxed">
-                Each bouquet, clutch, and accessory is crocheted one loop at a time using the
-                finest natural milk cottons and organic fibers. No rushed assembly lines. No synthetic shortcuts.
-                Just timeless warmth you can feel.
-              </p>
-              <div className="pt-2">
-                <Link
-                  to="/about"
-                  className="inline-flex items-center gap-2 px-7 py-3 bg-[#5A4335] hover:bg-[#3D2E24] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md"
-                >
-                  Discover Our Story <ArrowRight className="w-4 h-4" />
-                </Link>
+            <div className="lg:col-span-6 relative">
+              <div className="rounded-3xl overflow-hidden border border-[#E7DFD7] shadow-xl aspect-[4/3] bg-white group">
+                <img
+                  src="/images/artisan_hands.jpg"
+                  alt="Artisan Hands Crocheting"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
               </div>
+              <div className="absolute -bottom-5 -right-5 hidden sm:block p-5 rounded-2xl bg-white border border-[#E7DFD7] shadow-lg max-w-xs">
+                <p className="font-script text-2xl text-[#C6A15B] leading-none mb-1">
+                  with patience & love
+                </p>
+                <p className="text-[11px] text-[#7B6656]">Every single petal and stitch is made by hand.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Craft Values / Pillars */}
+          <div className="pt-4 border-t border-[#E7DFD7]/80">
+            <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#C6A15B] block">
+                Ethos & Principles
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl font-semibold text-[#3D2E24]">Our Craft Values</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  icon: Heart,
+                  title: 'Handmade Soul',
+                  desc: 'Every piece carries the unique, subtle signature of human hands.',
+                },
+                {
+                  icon: Sparkles,
+                  title: 'Clean Natural Fibers',
+                  desc: 'Hypoallergenic milk cotton and soft organic yarns gentle to the touch.',
+                },
+                {
+                  icon: Clock,
+                  title: 'Zero Waste Craft',
+                  desc: 'Precision yarn measures minimize scrap and honor mindful sustainability.',
+                },
+                {
+                  icon: ShieldCheck,
+                  title: 'Heirloom Durability',
+                  desc: 'Reinforced stitches designed to be loved, washed, and treasured for years.',
+                },
+              ].map((pillar, i) => {
+                const Icon = pillar.icon;
+                return (
+                  <div
+                    key={i}
+                    className="p-6 bg-white/90 backdrop-blur-xs rounded-2xl border border-[#E7DFD7] text-center space-y-3 shadow-2xs hover:border-[#C6A15B] transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[#EADCCF]/50 flex items-center justify-center mx-auto text-[#C6A15B]">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h4 className="font-serif text-lg font-semibold text-[#3D2E24]">{pillar.title}</h4>
+                    <p className="text-xs text-[#7B6656] leading-relaxed">{pillar.desc}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

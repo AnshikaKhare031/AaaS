@@ -12,10 +12,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { HomePage } from './pages/Home/Home';
 import { ShopPage } from './pages/Shop/Shop';
 import { ProductDetailsPage } from './pages/Product/ProductDetails';
-import { CategoriesPage } from './pages/Categories/Categories';
-import { AboutPage } from './pages/About/About';
 import { CustomOrdersPage } from './pages/CustomOrders/CustomOrders';
-import { ContactPage } from './pages/Contact/Contact';
 import { WishlistPage } from './pages/Wishlist/Wishlist';
 import { CartPage } from './pages/Cart/Cart';
 import { MyAccountPage } from './pages/Account/MyAccount';
@@ -49,10 +46,7 @@ export function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/product/:slug" element={<ProductDetailsPage />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/custom-orders" element={<CustomOrdersPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route

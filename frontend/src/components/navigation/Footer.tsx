@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, Heart, ArrowRight, Check } from 'lucide-react';
+import { Mail, Phone, Heart, ArrowRight, Check, MapPin } from 'lucide-react';
 import { InstagramIcon } from '../common/InstagramIcon';
 import { Logo } from '../common/Logo';
 import { useToast } from '../../context/ToastContext';
@@ -27,37 +27,12 @@ export const Footer: React.FC = () => {
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-14 border-b border-[#E7DFD7]">
           {/* Column 1: Brand & Philosophy */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <Logo size="lg" />
             <p className="text-sm text-[#7B6656] leading-relaxed max-w-sm font-sans mt-2">
               Thoughtfully crafted crochet pieces created slowly by hand. Designed to bring
               lasting warmth, tactile beauty, and heirloom elegance into your daily life.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a
-                href="https://instagram.com/aaas_crochet"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white border border-[#E7DFD7] flex items-center justify-center text-[#5A4335] hover:text-[#C6A15B] hover:border-[#C6A15B] transition-all shadow-xs"
-                aria-label="Follow us on Instagram"
-              >
-                <InstagramIcon className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:hello@aaascrochet.com"
-                className="w-10 h-10 rounded-full bg-white border border-[#E7DFD7] flex items-center justify-center text-[#5A4335] hover:text-[#C6A15B] hover:border-[#C6A15B] transition-all shadow-xs"
-                aria-label="Send us an email"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
-              <a
-                href="tel:+919876543210"
-                className="w-10 h-10 rounded-full bg-white border border-[#E7DFD7] flex items-center justify-center text-[#5A4335] hover:text-[#C6A15B] hover:border-[#C6A15B] transition-all shadow-xs"
-                aria-label="Call customer care"
-              >
-                <Phone className="w-4 h-4" />
-              </a>
-            </div>
           </div>
 
           {/* Column 2: Navigation */}
@@ -72,23 +47,13 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/categories" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
-                  Collections
+                <Link to="/#our-story" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
+                  Our Story & Craft
                 </Link>
               </li>
               <li>
                 <Link to="/custom-orders" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
                   Custom Orders
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
-                  Our Story & Craft
-                </Link>
-              </li>
-              <li>
-                <Link to="/about#contact" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
-                  Contact & Atelier FAQs
                 </Link>
               </li>
             </ul>
@@ -111,11 +76,6 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/about#care" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
-                  Yarn Care Guide
-                </Link>
-              </li>
-              <li>
                 <Link to="/privacy-policy" className="text-[#7B6656] hover:text-[#3D2E24] transition-colors">
                   Privacy Policy
                 </Link>
@@ -128,7 +88,59 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 4: Newsletter */}
+          {/* Column 4: Atelier Contacts */}
+          <div>
+            <h4 className="font-serif text-lg font-semibold text-[#3D2E24] mb-4 tracking-wide">
+              Atelier Contacts
+            </h4>
+            <div className="flex flex-col gap-3.5 text-xs">
+              <a
+                href="mailto:hello@aaascrochet.com"
+                className="group flex items-start gap-2.5 text-[#7B6656] hover:text-[#3D2E24] transition-colors"
+              >
+                <Mail className="w-4 h-4 text-[#C6A15B] shrink-0 mt-0.5" />
+                <div>
+                  <span className="block font-semibold text-[#3D2E24]">Email Us</span>
+                  <span className="text-[#7B6656] group-hover:text-[#3D2E24] transition-colors">hello@aaascrochet.com</span>
+                </div>
+              </a>
+
+              <a
+                href="tel:+919876543210"
+                className="group flex items-start gap-2.5 text-[#7B6656] hover:text-[#3D2E24] transition-colors"
+              >
+                <Phone className="w-4 h-4 text-[#C6A15B] shrink-0 mt-0.5" />
+                <div>
+                  <span className="block font-semibold text-[#3D2E24]">Customer Support</span>
+                  <span className="text-[#7B6656] group-hover:text-[#3D2E24] transition-colors">+91 98765 43210</span>
+                  <span className="block text-[11px] text-[#7B6656]/80">Mon–Sat, 10am–6pm IST</span>
+                </div>
+              </a>
+
+              <a
+                href="https://instagram.com/aaas_crochet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-2.5 text-[#7B6656] hover:text-[#3D2E24] transition-colors"
+              >
+                <InstagramIcon className="w-4 h-4 text-[#C6A15B] shrink-0 mt-0.5" />
+                <div>
+                  <span className="block font-semibold text-[#3D2E24]">Instagram DM</span>
+                  <span className="text-[#7B6656] group-hover:text-[#3D2E24] transition-colors">@aaas_crochet</span>
+                </div>
+              </a>
+
+              <div className="flex items-start gap-2.5 text-[#7B6656]">
+                <MapPin className="w-4 h-4 text-[#C6A15B] shrink-0 mt-0.5" />
+                <div>
+                  <span className="block font-semibold text-[#3D2E24]">Artisan Studio</span>
+                  <span className="text-[#7B6656]">Handcrafted with love in India</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 5: Newsletter */}
           <div>
             <h4 className="font-serif text-lg font-semibold text-[#3D2E24] mb-2 tracking-wide">
               Join the AaaS World

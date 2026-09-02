@@ -1,43 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import {
-  SlidersHorizontal,
   Search,
   RotateCcw,
-  Check,
   ChevronDown,
   Sparkles,
 } from 'lucide-react';
 import { ProductCard } from '../../components/products/ProductCard';
-import { Product, Category } from '../../types';
-import { getProducts, getCategories } from '../../services/api';
+import { Product } from '../../types';
+import { getProducts } from '../../services/api';
 
 export const ShopPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [sortBy, setSortBy] = useState('featured');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [prodRes, catRes] = await Promise.all([
-          getProducts(),
-          getCategories(),
-        ]);
+        const prodRes = await getProducts();
         setProducts(prodRes.products || []);
-        setCategories(catRes || []);
       } catch (err) {
         console.error('Error fetching shop data:', err);
       } finally {
@@ -49,31 +39,14 @@ export const ShopPage: React.FC = () => {
 
   // Sync URL query params with state
   useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat) setSelectedCategory(cat);
     const search = searchParams.get('search');
-    if (search) setSearchQuery(search);
+    if (search !== null) setSearchQuery(search);
   }, [searchParams]);
-
-  // Handle category change
-  const handleCategoryChange = (slug: string) => {
-    setSelectedCategory(slug);
-    if (slug === 'all') {
-      searchParams.delete('category');
-    } else {
-      searchParams.set('category', slug);
-    }
-    setSearchParams(searchParams);
-  };
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
-        // Category filter
-        if (selectedCategory !== 'all') {
-          if (p.category?.slug !== selectedCategory) return false;
-        }
         // Search filter
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
@@ -108,10 +81,9 @@ export const ShopPage: React.FC = () => {
             return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
         }
       });
-  }, [products, selectedCategory, searchQuery, inStockOnly, priceRange, sortBy]);
+  }, [products, searchQuery, inStockOnly, priceRange, sortBy]);
 
   const resetFilters = () => {
-    setSelectedCategory('all');
     setSearchQuery('');
     setSortBy('featured');
     setInStockOnly(false);
@@ -132,33 +104,6 @@ export const ShopPage: React.FC = () => {
         <p className="text-sm sm:text-base text-[#7B6656] leading-relaxed">
           Thoughtfully crafted crochet pieces for everyday moments and special occasions.
         </p>
-      </div>
-
-      {/* Category Pills Bar */}
-      <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-        <button
-          onClick={() => handleCategoryChange('all')}
-          className={`px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-all ${
-            selectedCategory === 'all'
-              ? 'bg-[#5A4335] text-white shadow-xs'
-              : 'bg-white border border-[#E7DFD7] text-[#5A4335] hover:bg-[#EADCCF]/40'
-          }`}
-        >
-          All Pieces ({products.length})
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.slug)}
-            className={`px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-all ${
-              selectedCategory === cat.slug
-                ? 'bg-[#5A4335] text-white shadow-xs'
-                : 'bg-white border border-[#E7DFD7] text-[#5A4335] hover:bg-[#EADCCF]/40'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
       </div>
 
       {/* Search and Filters Toolbar */}
@@ -204,7 +149,7 @@ export const ShopPage: React.FC = () => {
             <ChevronDown className="w-3.5 h-3.5 text-[#7B6656] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          {(searchQuery || selectedCategory !== 'all' || inStockOnly) && (
+          {(searchQuery || inStockOnly) && (
             <button
               onClick={resetFilters}
               className="px-3 py-2 text-xs text-[#C96A6A] hover:bg-[#C96A6A]/10 rounded-xl transition-colors flex items-center gap-1 font-medium"
@@ -247,7 +192,7 @@ export const ShopPage: React.FC = () => {
             No handmade pieces found
           </h3>
           <p className="text-xs text-[#7B6656] mb-6 leading-relaxed">
-            We couldn't find any products matching your current filters. Try resetting your search or exploring other categories.
+            We couldn't find any products matching your current filters. Try resetting your search or adjusting your filters.
           </p>
           <button
             onClick={resetFilters}
