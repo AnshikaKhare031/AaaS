@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { Logo } from '../../components/common/Logo';
 import { useAuth } from '../../context/AuthContext';
@@ -8,16 +8,32 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { isAuthenticated, signInWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || '/account';
+
+  // Automatically redirect if user is already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
-    const { error } = await signInWithEmail(email, password);
-    setIsSubmitting(false);
-    if (!error) {
-      navigate('/account');
+    try {
+      const { error } = await signInWithEmail(email, password);
+      if (!error) {
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      console.error('Login submit error:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

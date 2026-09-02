@@ -12,12 +12,21 @@ export const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { signUpWithEmail, signInWithGoogle } = useAuth();
+  const { isAuthenticated, signUpWithEmail, signInWithGoogle } = useAuth();
   const { error } = useToast();
   const navigate = useNavigate();
 
+  // Automatically redirect if user is already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/account', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     if (password !== confirmPassword) {
       error('Passwords do not match.');
       return;
@@ -28,10 +37,13 @@ export const RegisterPage: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    const { error: err } = await signUpWithEmail(email, password, fullName);
-    setIsSubmitting(false);
-    if (!err) {
-      navigate('/account');
+    try {
+      const { error: err } = await signUpWithEmail(email, password, fullName);
+      if (!err) {
+        navigate('/account');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

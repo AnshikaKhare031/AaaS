@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { supabase } from '../services/supabase';
 import { UserProfile, UserRole } from '../types';
 import { useToast } from './ToastContext';
 
@@ -28,17 +28,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { success, error: toastError } = useToast();
 
-  // Load real profile from Supabase profiles table
+  // Load real profile from Supabase profiles table with non-blocking timeout
   const fetchProfile = useCallback(async (userId: string, email: string) => {
     try {
-      const { data, error } = await supabase
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 4000)
+      );
+
+      const queryPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
+      const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as any;
+
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile from Supabase:', error);
+        console.warn('Profile fetch notice:', error.message || error);
       }
 
       if (data) {
@@ -51,25 +57,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: (data.role === 'admin' ? 'admin' : 'customer') as UserRole,
           created_at: data.created_at,
         });
-      } else {
-        // Fallback default profile with customer role
-        setUser({
-          id: userId,
-          email,
-          full_name: email.split('@')[0],
-          role: 'customer',
-        });
       }
     } catch (err) {
-      console.error('Profile fetch failed:', err);
-      setUser({
-        id: userId,
-        email,
-        full_name: email.split('@')[0],
-        role: 'customer',
-      });
+      console.warn('Profile fetch completed with existing profile:', err);
     }
   }, []);
+
+  // Helper to construct immediate profile from Supabase User
+  const buildBaseProfile = (authUser: User, emailFallback?: string): UserProfile => ({
+    id: authUser.id,
+    email: authUser.email || emailFallback || '',
+    full_name:
+      authUser.user_metadata?.full_name ||
+      authUser.user_metadata?.name ||
+      (authUser.email || emailFallback || '').split('@')[0],
+    phone: authUser.phone || authUser.user_metadata?.phone,
+    avatar_url: authUser.user_metadata?.avatar_url,
+    role: (authUser.user_metadata?.role === 'admin' ? 'admin' : 'customer') as UserRole,
+  });
 
   // Initialize auth session on mount & subscribe to real auth changes
   useEffect(() => {
@@ -85,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(currentSession);
           setSupabaseUser(currentSession.user);
           localStorage.setItem('aaas_auth_token', currentSession.access_token);
+          setUser(buildBaseProfile(currentSession.user));
           await fetchProfile(currentSession.user.id, currentSession.user.email || '');
         } else {
           setSession(null);
@@ -104,12 +110,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         if (newSession?.user) {
           setSession(newSession);
           setSupabaseUser(newSession.user);
           localStorage.setItem('aaas_auth_token', newSession.access_token);
-          await fetchProfile(newSession.user.id, newSession.user.email || '');
+          setUser((prev) => prev || buildBaseProfile(newSession.user));
+          fetchProfile(newSession.user.id, newSession.user.email || '').catch(() => {});
         } else if (event === 'SIGNED_OUT' || !newSession) {
           setSession(null);
           setSupabaseUser(null);
@@ -134,21 +141,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        toastError(error.message);
+        toastError(error.message || 'Invalid login credentials');
         return { error };
       }
 
-      if (data.session) {
+      if (data?.session && data?.user) {
         setSession(data.session);
         setSupabaseUser(data.user);
         localStorage.setItem('aaas_auth_token', data.session.access_token);
-        await fetchProfile(data.user.id, data.user.email || '');
+        
+        // Immediately activate the user profile to prevent any redirect race condition
+        const immediateProfile = buildBaseProfile(data.user, email.trim());
+        setUser(immediateProfile);
+
+        // Fetch additional custom fields from database in background
+        fetchProfile(data.user.id, data.user.email || email.trim()).catch(() => {});
         success('Signed in successfully');
       }
       return { error: null };
     } catch (err: any) {
-      toastError(err.message || 'Failed to sign in');
-      return { error: err };
+      const errMsg = err?.message || 'Failed to sign in';
+      toastError(errMsg);
+      return { error: err instanceof Error ? err : new Error(errMsg) };
     }
   };
 
@@ -165,23 +179,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        toastError(error.message);
+        toastError(error.message || 'Registration failed');
         return { error };
       }
 
-      if (data.user) {
-        success('Account created successfully!');
-        if (data.session) {
+      if (data?.user) {
+        if (data?.session) {
           setSession(data.session);
           setSupabaseUser(data.user);
           localStorage.setItem('aaas_auth_token', data.session.access_token);
-          await fetchProfile(data.user.id, data.user.email || '');
+
+          const immediateProfile: UserProfile = {
+            id: data.user.id,
+            email: data.user.email || email.trim(),
+            full_name: fullName.trim() || (data.user.email || email.trim()).split('@')[0],
+            phone: data.user.phone,
+            avatar_url: data.user.user_metadata?.avatar_url,
+            role: 'customer',
+          };
+          setUser(immediateProfile);
+
+          fetchProfile(data.user.id, data.user.email || email.trim()).catch(() => {});
+          success('Account created successfully!');
+        } else {
+          success('Account created! Please check your email to confirm your account.');
         }
       }
       return { error: null };
     } catch (err: any) {
-      toastError(err.message || 'Registration failed');
-      return { error: err };
+      const errMsg = err?.message || 'Registration failed';
+      toastError(errMsg);
+      return { error: err instanceof Error ? err : new Error(errMsg) };
     }
   };
 
