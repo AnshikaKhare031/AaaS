@@ -29,7 +29,7 @@ A full-stack, production-ready luxury e-commerce platform crafted for **AaaS**, 
 AaaS/
 ├── frontend/             # React 19 + TypeScript + Vite + Tailwind CSS + Framer Motion
 │   ├── src/
-│   │   ├── components/   # Logo, Navbar, Footer, ProductCard, CartDrawer, etc.
+│   │   ├── components/   # Logo, Navbar, Footer, ProductCard, SearchModal, etc.
 │   │   ├── pages/        # Storefront, Checkout, Custom Orders, Admin Portal (8 pages)
 │   │   ├── context/      # AuthContext, CartContext, WishlistContext, ToastContext
 │   │   ├── services/     # Axios REST client + Supabase JS Client

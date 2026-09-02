@@ -3,6 +3,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { UserProfile, UserRole } from '../types';
 import { useToast } from './ToastContext';
+import { adminLogin, adminLogout, getAdminMe } from '../services/api';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -15,6 +16,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUpWithEmail: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<void>;
+  loginAsAdmin: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
@@ -93,10 +95,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(buildBaseProfile(currentSession.user));
           await fetchProfile(currentSession.user.id, currentSession.user.email || '');
         } else {
-          setSession(null);
-          setSupabaseUser(null);
-          setUser(null);
-          localStorage.removeItem('aaas_auth_token');
+          // Check for admin session
+          const adminToken = localStorage.getItem('admin_token');
+          if (adminToken) {
+            try {
+              const adminData = await getAdminMe();
+              if (adminData?.user) {
+                setUser({
+                  id: adminData.user.id,
+                  email: adminData.user.email,
+                  full_name: adminData.user.full_name || 'AaaS Master Artisan',
+                  role: 'admin',
+                });
+              }
+            } catch {
+              localStorage.removeItem('admin_token');
+              setSession(null);
+              setSupabaseUser(null);
+              setUser(null);
+            }
+          } else {
+            setSession(null);
+            setSupabaseUser(null);
+            setUser(null);
+            localStorage.removeItem('aaas_auth_token');
+          }
         }
       } catch (err) {
         console.error('Auth initialization error:', err);
@@ -227,8 +250,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginAsAdmin = async (email: string, pass: string) => {
+    try {
+      const res = await adminLogin(email, pass);
+      if (res.success && res.user) {
+        setUser({
+          id: res.user.id,
+          email: res.user.email,
+          full_name: res.user.full_name || 'AaaS Master Artisan',
+          role: 'admin',
+        });
+        success('Welcome to AaaS Management Console');
+        return { success: true };
+      }
+      return { success: false, error: 'Authentication failed' };
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.message || 'Invalid admin credentials';
+      toastError(msg);
+      return { success: false, error: msg };
+    }
+  };
+
   const signOut = async () => {
     localStorage.removeItem('aaas_auth_token');
+    localStorage.removeItem('admin_token');
+    try {
+      await adminLogout();
+    } catch (e) {
+      console.warn('Admin logout notice:', e);
+    }
     try {
       await supabase.auth.signOut();
     } catch (err) {
@@ -258,7 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const role = user?.role || 'customer';
   const isAdmin = role === 'admin';
-  const isAuthenticated = Boolean(user && session);
+  const isAuthenticated = Boolean(user);
 
   return (
     <AuthContext.Provider
@@ -273,6 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
+        loginAsAdmin,
         signOut,
         updateProfile,
       }}

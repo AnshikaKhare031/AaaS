@@ -12,9 +12,6 @@ interface CartContextType {
   isFreeShipping: boolean;
   amountNeededForFreeShipping: number;
   total: number;
-  isCartDrawerOpen: boolean;
-  openCartDrawer: () => void;
-  closeCartDrawer: () => void;
   addToCart: (product: Product, quantity?: number) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
@@ -50,7 +47,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     is_store_open: true,
   });
 
-  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const { success, error } = useToast();
 
   // Load latest settings for shipping calculations
@@ -72,9 +68,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to save cart:', err);
     }
   }, [items]);
-
-  const openCartDrawer = () => setIsCartDrawerOpen(true);
-  const closeCartDrawer = () => setIsCartDrawerOpen(false);
 
   const addToCart = useCallback(
     (product: Product, quantity: number = 1) => {
@@ -101,7 +94,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ...updated[existingIndex],
             quantity: newQty,
           };
-          success(`Updated quantity for "${product.name}" in your cart.`);
+          success(`Updated quantity for "${product.name}" in your cart.`, {
+            label: 'View Cart',
+            url: '/cart',
+          });
           return updated;
         } else {
           if (quantity > product.stock_quantity) {
@@ -109,7 +105,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return prevItems;
           }
 
-          success(`"${product.name}" added to your cart ♡`);
+          success(`"${product.name}" added to your cart ♡`, {
+            label: 'View Cart',
+            url: '/cart',
+          });
           return [
             ...prevItems,
             {
@@ -192,9 +191,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isFreeShipping,
         amountNeededForFreeShipping,
         total,
-        isCartDrawerOpen,
-        openCartDrawer,
-        closeCartDrawer,
         addToCart,
         updateQuantity,
         removeFromCart,

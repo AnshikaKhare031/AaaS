@@ -8,20 +8,29 @@ import {
   Review,
   AdminSettings,
   AdminDashboardMetrics,
+  Order,
+  CreateOrderPayload,
+  OrderStatusUpdatePayload,
+  AdminAnalyticsResponse,
+  AnalyticsTimeRange,
+  AdminLoginResponse,
+  AdminDashboardOverviewResponse,
+  PaymentRecoverySweepResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Interceptor to attach Supabase auth JWT token if available
+// Interceptor to attach auth or admin JWT token if available
 apiClient.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem('aaas_auth_token');
+  const token = localStorage.getItem('admin_token') || localStorage.getItem('aaas_auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -264,3 +273,134 @@ export const getDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
   const response = await apiClient.get('/admin/dashboard');
   return response.data;
 };
+
+// ==========================================
+// Order API (Phase 3)
+// ==========================================
+export const createOrder = async (orderData: CreateOrderPayload): Promise<Order> => {
+  const response = await apiClient.post('/orders', orderData);
+  return response.data;
+};
+
+export const getUserOrders = async (): Promise<Order[]> => {
+  const response = await apiClient.get('/orders');
+  return response.data;
+};
+
+export const getOrderById = async (orderId: string): Promise<Order> => {
+  const response = await apiClient.get(`/orders/${orderId}`);
+  return response.data;
+};
+
+// ==========================================
+// Admin Operations & Fulfillment API
+// ==========================================
+export const adminLogin = async (email: string, password: string): Promise<AdminLoginResponse> => {
+  const response = await apiClient.post('/admin/login', { email, password });
+  if (response.data?.token) {
+    localStorage.setItem('admin_token', response.data.token);
+    localStorage.setItem('aaas_auth_token', response.data.token);
+  }
+  return response.data;
+};
+
+export const adminLogout = async (): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await apiClient.post('/admin/logout');
+    return response.data;
+  } finally {
+    localStorage.removeItem('admin_token');
+  }
+};
+
+export const getAdminMe = async () => {
+  const response = await apiClient.get('/admin/me');
+  return response.data;
+};
+
+export const getAdminAnalytics = async (
+  timeRange: AnalyticsTimeRange | string = '30d'
+): Promise<AdminAnalyticsResponse> => {
+  const response = await apiClient.get('/admin/analytics', {
+    params: { time_range: timeRange },
+  });
+  return response.data;
+};
+
+export const getAdminProducts = async (params?: {
+  search?: string;
+  category?: string;
+  status?: string;
+}): Promise<Product[]> => {
+  const response = await apiClient.get('/admin/products', { params });
+  return response.data;
+};
+
+export const updateProductQuickStatus = async (
+  productId: string,
+  status: { is_active?: boolean; is_featured?: boolean }
+): Promise<Product> => {
+  const response = await apiClient.patch(`/admin/products/${productId}/status`, status);
+  return response.data;
+};
+
+export const uploadAdminImage = async (
+  file: File
+): Promise<{ success: boolean; filename: string; url: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('bucket', 'product-images');
+  const response = await apiClient.post('/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const getAdminOrders = async (params?: {
+  status?: string;
+  search?: string;
+}): Promise<Order[]> => {
+  const response = await apiClient.get('/admin/orders', { params });
+  return response.data;
+};
+
+export const updateOrderStatus = async (
+  orderId: string,
+  payload: OrderStatusUpdatePayload
+): Promise<Order> => {
+  const response = await apiClient.patch(`/admin/orders/${orderId}/status`, payload);
+  return response.data;
+};
+
+export const getAdminDashboardOverview = async (): Promise<AdminDashboardOverviewResponse> => {
+  const response = await apiClient.get('/admin/dashboard');
+  return response.data;
+};
+
+export const runPaymentRecoverySweep = async (
+  thresholdMinutes: number = 30
+): Promise<PaymentRecoverySweepResponse> => {
+  const response = await apiClient.post('/admin/payments/recovery-sweep', null, {
+    params: { threshold_minutes: thresholdMinutes },
+  });
+  return response.data;
+};
+
+export const createPaymentOrder = async (orderId: string) => {
+  const response = await apiClient.post('/payment/create-order', { order_id: orderId });
+  return response.data;
+};
+
+export const verifyPayment = async (payload: {
+  order_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}) => {
+  const response = await apiClient.post('/payment/verify', payload);
+  return response.data;
+};
+
+

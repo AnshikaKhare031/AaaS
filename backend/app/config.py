@@ -20,8 +20,18 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
 
-    # Security
+    # Security & Admin Session Strategy
     ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY", "aaas_crochet_admin_secret_2026")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "admin@aaascrochet.com")
+    ADMIN_SECRET: str = os.getenv("ADMIN_SECRET", "admin123")
+    ADMIN_PASSWORD_HASH: str = os.getenv("ADMIN_PASSWORD_HASH", "")
+    ADMIN_JWT_SECRET: str = os.getenv("ADMIN_JWT_SECRET", "super-secret-admin-session-hmac-sha256-key-32chars")
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+
+    # Payment Gateway (Razorpay)
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_placeholder_key")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "secret_placeholder_key_32chars_aaas")
+    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "webhook_secret_key_32chars_aaas")
     
     # CORS
     CORS_ORIGINS: List[str] = [

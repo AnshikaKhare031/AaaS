@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const location = useLocation();
-  const { itemCount, openCartDrawer } = useCart();
+  const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, isAdmin, isAuthenticated, signOut } = useAuth();
 
@@ -228,12 +228,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
                 </AnimatePresence>
               </div>
 
-              {/* Cart Drawer Trigger */}
-              <button
-                type="button"
-                onClick={openCartDrawer}
+              {/* Cart Navigation Link */}
+              <Link
+                to="/cart"
                 className="p-2 text-[#3D2E24] hover:text-[#C6A15B] transition-colors rounded-full hover:bg-[#EADCCF]/40 relative flex items-center"
-                aria-label="Open cart drawer"
+                aria-label={`Shopping Cart with ${itemCount} items`}
               >
                 <ShoppingBag className="w-5 h-5" />
                 {itemCount > 0 && (
@@ -246,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
                     {itemCount}
                   </motion.span>
                 )}
-              </button>
+              </Link>
             </div>
           </div>
         </div>

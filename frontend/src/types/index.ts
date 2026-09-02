@@ -39,18 +39,26 @@ export interface Product {
   description: string;
   price: number;
   sale_price?: number | null;
-  amazon_asin?: string | null;
+  compare_at_price?: number | null;
   stock_quantity: number;
+  inventory_count?: number;
   low_stock_threshold: number;
+  sku?: string;
   material: string;
   care_instructions: string;
   shipping_information: string;
   tags: string[];
   images: ProductImage[];
+  image?: string;
+  image_url?: string;
+  product_image?: string;
+  image_urls?: string[];
   is_active: boolean;
   is_featured: boolean;
+  is_customizable?: boolean;
   is_bestseller: boolean;
   is_new: boolean;
+  specifications?: { label: string; value: string }[];
   rating?: number;
   review_count?: number;
   created_at?: string;
@@ -147,3 +155,7 @@ export interface AdminDashboardMetrics {
   custom_order_count: number;
   pending_reviews_count: number;
 }
+
+export * from './order';
+export * from './admin';
+

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '../components/navigation/Navbar';
 import { Footer } from '../components/navigation/Footer';
-import { CartDrawer } from '../components/cart/CartDrawer';
 import { SearchModal } from '../components/search/SearchModal';
 
 export const StoreLayout: React.FC = () => {
@@ -18,8 +17,7 @@ export const StoreLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* Global Shopping Drawer & Search Modal */}
-      <CartDrawer />
+      {/* Global Search Modal */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       {/* Footer */}

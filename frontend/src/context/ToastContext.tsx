@@ -1,20 +1,28 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info';
 
+export interface ToastAction {
+  label: string;
+  url?: string;
+  onClick?: () => void;
+}
+
 export interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: ToastType) => void;
-  success: (message: string) => void;
-  error: (message: string) => void;
-  info: (message: string) => void;
+  showToast: (message: string, type?: ToastType, action?: ToastAction) => void;
+  success: (message: string, action?: ToastAction) => void;
+  error: (message: string, action?: ToastAction) => void;
+  info: (message: string, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -27,9 +35,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const showToast = useCallback(
-    (message: string, type: ToastType = 'success') => {
+    (message: string, type: ToastType = 'success', action?: ToastAction) => {
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prev) => [...prev, { id, message, type }]);
+      setToasts((prev) => [...prev, { id, message, type, action }]);
       setTimeout(() => {
         removeToast(id);
       }, 4000);
@@ -37,9 +45,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [removeToast]
   );
 
-  const success = useCallback((msg: string) => showToast(msg, 'success'), [showToast]);
-  const error = useCallback((msg: string) => showToast(msg, 'error'), [showToast]);
-  const info = useCallback((msg: string) => showToast(msg, 'info'), [showToast]);
+  const success = useCallback(
+    (msg: string, action?: ToastAction) => showToast(msg, 'success', action),
+    [showToast]
+  );
+  const error = useCallback(
+    (msg: string, action?: ToastAction) => showToast(msg, 'error', action),
+    [showToast]
+  );
+  const info = useCallback(
+    (msg: string, action?: ToastAction) => showToast(msg, 'info', action),
+    [showToast]
+  );
 
   return (
     <ToastContext.Provider value={{ showToast, success, error, info }}>
@@ -65,10 +82,34 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               {toast.type === 'info' && (
                 <Info className="w-5 h-5 text-[#C6A15B] flex-shrink-0" />
               )}
-              <p className="text-sm font-medium font-sans flex-1 leading-snug">{toast.message}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium font-sans leading-snug">{toast.message}</p>
+              </div>
+              {toast.action && (
+                toast.action.url ? (
+                  <Link
+                    to={toast.action.url}
+                    onClick={() => removeToast(toast.id)}
+                    className="text-xs font-bold uppercase tracking-wider text-[#5A4335] bg-[#EADCCF]/70 hover:bg-[#5A4335] hover:text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 shadow-2xs whitespace-nowrap"
+                  >
+                    {toast.action.label}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast.action?.onClick?.();
+                      removeToast(toast.id);
+                    }}
+                    className="text-xs font-bold uppercase tracking-wider text-[#5A4335] bg-[#EADCCF]/70 hover:bg-[#5A4335] hover:text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 shadow-2xs whitespace-nowrap"
+                  >
+                    {toast.action.label}
+                  </button>
+                )
+              )}
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-[#7B6656] hover:text-[#3D2E24] p-1 rounded-md transition-colors"
+                className="text-[#7B6656] hover:text-[#3D2E24] p-1 rounded-md transition-colors flex-shrink-0"
                 aria-label="Close notification"
               >
                 <X className="w-4 h-4" />

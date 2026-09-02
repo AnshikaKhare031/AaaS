@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { Product } from '../../types';
-import { formatPrice, getStockBadge } from '../../utils/helpers';
+import { formatPrice, getStockBadge, getProductImageUrl, getSecondaryProductImageUrl, DEFAULT_PRODUCT_IMAGE } from '../../utils/helpers';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 
@@ -14,15 +14,21 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const isFavorited = isInWishlist(product.id);
   const stockInfo = getStockBadge(product.stock_quantity, product.low_stock_threshold);
 
-  const mainImage = product.images?.[0]?.image_url || '/images/tulip_bouquet.jpg';
-  const secondaryImage =
-    product.images?.[1]?.image_url || product.images?.[0]?.image_url || mainImage;
+  const primaryImage = getProductImageUrl(product);
+  const secondaryImage = getSecondaryProductImageUrl(product);
+
+  const displayImage = imageError
+    ? DEFAULT_PRODUCT_IMAGE
+    : isHovered && secondaryImage
+    ? secondaryImage
+    : primaryImage;
 
   const currentPrice = product.sale_price ?? product.price;
   const hasDiscount = product.sale_price !== null && product.sale_price !== undefined && product.sale_price < product.price;
@@ -41,8 +47,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       <div className="relative aspect-square w-full overflow-hidden bg-[#F8F5F0]">
         <Link to={`/product/${product.slug}`} className="block w-full h-full">
           <img
-            src={isHovered && secondaryImage ? secondaryImage : mainImage}
+            src={displayImage}
             alt={product.name}
+            onError={() => {
+              if (!imageError) {
+                setImageError(true);
+              }
+            }}
             className="w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
             loading="lazy"
           />

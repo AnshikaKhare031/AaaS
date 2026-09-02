@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Heart,
@@ -21,12 +21,9 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 import { ProductCard } from '../../components/products/ProductCard';
-import { buildAmazonSingleItemUrl } from '../../utils/amazon';
-import { buildWhatsAppSingleItemUrl } from '../../utils/whatsapp';
 
 export const ProductDetailsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -49,44 +46,40 @@ export const ProductDetailsPage: React.FC = () => {
   const { success, error } = useToast();
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const fetchProductData = async () => {
       if (!slug) return;
       setIsLoading(true);
       try {
         const prod = await getProductBySlug(slug);
         setProduct(prod);
-        setSelectedImageIndex(0);
-        setQuantity(1);
 
         if (prod) {
-          // Fetch reviews and related products
-          const [revRes, relRes] = await Promise.all([
-            getProductReviews(prod.id).catch(() => []),
-            getProducts({ category: prod.category?.slug, limit: 4 }).catch(() => ({ products: [] })),
+          const [relRes, revRes] = await Promise.all([
+            getProducts({ limit: 4 }),
+            getProductReviews(prod.id),
           ]);
-          setReviews(revRes);
-          setRelatedProducts(relRes.products.filter((p) => p.id !== prod.id).slice(0, 4));
+          setRelatedProducts((relRes.products || []).filter((p) => p.id !== prod.id).slice(0, 4));
+          setReviews(revRes || []);
         }
       } catch (err) {
-        console.error('Failed to load product:', err);
+        console.error('Failed to load product details:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    loadProduct();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchProductData();
   }, [slug]);
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse space-y-8">
-        <div className="h-6 w-48 bg-[#EADCCF]/40 rounded-md" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="aspect-square bg-[#EADCCF]/40 rounded-2xl" />
-          <div className="space-y-4">
-            <div className="h-8 w-3/4 bg-[#EADCCF]/40 rounded-md" />
-            <div className="h-6 w-1/4 bg-[#EADCCF]/40 rounded-md" />
-            <div className="h-24 bg-[#EADCCF]/40 rounded-md" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse space-y-8">
+        <div className="h-6 bg-[#EADCCF]/40 rounded-md w-1/4" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-7 aspect-square bg-[#EADCCF]/40 rounded-3xl" />
+          <div className="lg:col-span-5 space-y-4">
+            <div className="h-8 bg-[#EADCCF]/40 rounded-md w-3/4" />
+            <div className="h-6 bg-[#EADCCF]/40 rounded-md w-1/3" />
+            <div className="h-24 bg-[#EADCCF]/40 rounded-xl" />
           </div>
         </div>
       </div>
@@ -95,14 +88,12 @@ export const ProductDetailsPage: React.FC = () => {
 
   if (!product) {
     return (
-      <div className="max-w-md mx-auto my-20 p-8 bg-white rounded-2xl border border-[#E7DFD7] text-center">
-        <h2 className="font-serif text-2xl font-bold text-[#3D2E24] mb-2">Product Not Found</h2>
-        <p className="text-xs text-[#7B6656] mb-6">
-          The handmade creation you are looking for may have retired or moved.
-        </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-4">
+        <h2 className="font-serif text-3xl font-semibold text-[#3D2E24]">Product Not Found</h2>
+        <p className="text-sm text-[#7B6656]">The handcrafted piece you are looking for does not exist or has been removed.</p>
         <Link
           to="/shop"
-          className="px-6 py-2.5 bg-[#5A4335] text-white text-xs font-semibold uppercase tracking-wider rounded-xl inline-block"
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5A4335] text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] transition-colors"
         >
           Return to Shop
         </Link>
@@ -110,26 +101,28 @@ export const ProductDetailsPage: React.FC = () => {
     );
   }
 
-  const images = product.images && product.images.length > 0
+  const rawImages = (product.images && product.images.length > 0)
     ? product.images
-    : [{ id: '1', product_id: product.id, image_url: '/images/tulip_bouquet.jpg', display_order: 1 }];
+    : (product.image_urls && product.image_urls.length > 0)
+    ? product.image_urls
+    : (product.image || product.product_image || product.image_url)
+    ? [product.image || product.product_image || product.image_url]
+    : ['/images/tulip_bouquet.jpg'];
+
+  const images: { id: string; image_url: string }[] = rawImages.map((img: any, idx: number) => {
+    if (typeof img === 'string') {
+      return { id: `img-${idx}`, image_url: img };
+    }
+    return {
+      id: img.id || `img-${idx}`,
+      image_url: img.image_url || img.url || img.src || '/images/tulip_bouquet.jpg',
+    };
+  });
 
   const currentPrice = product.sale_price ?? product.price;
   const hasDiscount = product.sale_price !== null && product.sale_price !== undefined && product.sale_price < product.price;
   const stockInfo = getStockBadge(product.stock_quantity, product.low_stock_threshold);
   const isFavorited = isInWishlist(product.id);
-
-  const handleBuyNow = () => {
-    if (product.amazon_asin && product.amazon_asin.trim().length > 0) {
-      const amazonUrl = buildAmazonSingleItemUrl(product.amazon_asin, quantity);
-      if (amazonUrl) {
-        window.open(amazonUrl, '_blank', 'noopener,noreferrer');
-        return;
-      }
-    }
-    const whatsappUrl = buildWhatsAppSingleItemUrl(product.name, currentPrice, quantity);
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-  };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,7 +185,14 @@ export const ProductDetailsPage: React.FC = () => {
                       : 'border-[#E7DFD7] hover:border-[#7B6656]'
                   }`}
                 >
-                  <img src={img.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  <img
+                    src={img.image_url}
+                    alt={product.name}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/images/tulip_bouquet.jpg';
+                    }}
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -203,6 +203,9 @@ export const ProductDetailsPage: React.FC = () => {
             <img
               src={images[selectedImageIndex]?.image_url || '/images/tulip_bouquet.jpg'}
               alt={product.name}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/images/tulip_bouquet.jpg';
+              }}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             {hasDiscount && (
@@ -259,7 +262,7 @@ export const ProductDetailsPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Actions: Quantity + Add to Cart + Buy Now + Wishlist */}
+          {/* Actions: Quantity + Add to Cart + Wishlist */}
           <div className="space-y-4 pt-4 border-t border-[#E7DFD7]">
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
@@ -306,21 +309,7 @@ export const ProductDetailsPage: React.FC = () => {
                     : 'bg-[#DDD6CF] text-[#7B6656] cursor-not-allowed'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4" /> Add to Cart
-              </button>
-
-              <button
-                type="button"
-                disabled={!stockInfo.isAvailable}
-                onClick={handleBuyNow}
-                title={product.amazon_asin ? 'Buy directly on Amazon' : 'Order via WhatsApp'}
-                className={`flex-1 py-3.5 px-6 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 ${
-                  stockInfo.isAvailable
-                    ? 'bg-[#C6A15B] hover:bg-[#b08d47] text-[#3D2E24]'
-                    : 'bg-[#DDD6CF] text-[#7B6656] cursor-not-allowed'
-                }`}
-              >
-                {product.amazon_asin ? 'Buy on Amazon' : 'Order via WhatsApp'}
+                <ShoppingBag className="w-4 h-4" /> {stockInfo.isAvailable ? 'Add to Cart' : 'Out of Stock'}
               </button>
 
               <button

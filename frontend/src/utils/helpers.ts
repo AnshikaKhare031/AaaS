@@ -82,3 +82,95 @@ export const getOrderStatusBadge = (status: string) => {
       return 'bg-[#DDD6CF]/50 text-[#5A4335] border border-[#DDD6CF]';
   }
 };
+
+export const DEFAULT_PRODUCT_IMAGE = '/images/tulip_bouquet.jpg';
+
+/**
+ * Safely extracts the primary image URL from a product object across all possible schemas:
+ * - product.images: [{ image_url: '...' }] or [{ url: '...' }]
+ * - product.images: ['/images/...']
+ * - product.image: '/images/...'
+ * - product.product_image: '/images/...'
+ * - product.image_url: '/images/...'
+ * - string URL directly
+ * Falls back to DEFAULT_PRODUCT_IMAGE if none found.
+ */
+export const getProductImageUrl = (product?: any): string => {
+  if (!product) return DEFAULT_PRODUCT_IMAGE;
+
+  if (typeof product === 'string' && product.trim().length > 0) {
+    return product;
+  }
+
+  // 1. Direct single image properties
+  if (typeof product.image === 'string' && product.image.trim().length > 0) {
+    return product.image;
+  }
+  if (typeof product.image_url === 'string' && product.image_url.trim().length > 0) {
+    return product.image_url;
+  }
+  if (typeof product.product_image === 'string' && product.product_image.trim().length > 0) {
+    return product.product_image;
+  }
+
+  // 2. Images array
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    const first = product.images[0];
+    if (typeof first === 'string' && first.trim().length > 0) {
+      return first;
+    }
+    if (first && typeof first === 'object') {
+      if (typeof first.image_url === 'string' && first.image_url.trim().length > 0) {
+        return first.image_url;
+      }
+      if (typeof first.url === 'string' && first.url.trim().length > 0) {
+        return first.url;
+      }
+      if (typeof first.src === 'string' && first.src.trim().length > 0) {
+        return first.src;
+      }
+    }
+  }
+
+  // 3. image_urls array
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
+    const first = product.image_urls[0];
+    if (typeof first === 'string' && first.trim().length > 0) {
+      return first;
+    }
+  }
+
+  return DEFAULT_PRODUCT_IMAGE;
+};
+
+/**
+ * Safely extracts a secondary/hover image URL if available, or returns primary image.
+ */
+export const getSecondaryProductImageUrl = (product?: any): string => {
+  const main = getProductImageUrl(product);
+  if (!product) return main;
+
+  if (Array.isArray(product.images) && product.images.length > 1) {
+    const second = product.images[1];
+    if (typeof second === 'string' && second.trim().length > 0) {
+      return second;
+    }
+    if (second && typeof second === 'object') {
+      if (typeof second.image_url === 'string' && second.image_url.trim().length > 0) {
+        return second.image_url;
+      }
+      if (typeof second.url === 'string' && second.url.trim().length > 0) {
+        return second.url;
+      }
+    }
+  }
+
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 1) {
+    const second = product.image_urls[1];
+    if (typeof second === 'string' && second.trim().length > 0) {
+      return second;
+    }
+  }
+
+  return main;
+};

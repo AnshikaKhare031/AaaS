@@ -1,7 +1,7 @@
 import os
 import uuid
 from typing import Dict, List, Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.config import settings
 
 # Attempt to initialize Supabase client if credentials exist
@@ -32,6 +32,10 @@ class InMemoryStore:
         self.wishlist_items: Dict[str, list] = {}
         self.custom_orders: Dict[str, dict] = {}
         self.reviews: Dict[str, dict] = {}
+        self.orders: Dict[str, dict] = {}
+        self.order_items: Dict[str, list] = {}
+        self.payment_records: Dict[str, dict] = {}
+        self.webhook_events: Dict[str, dict] = {}
         self.profiles: Dict[str, dict] = {
             "admin-user-id-001": {
                 "id": "admin-user-id-001",
@@ -106,6 +110,46 @@ class InMemoryStore:
                 "display_order": 4,
                 "created_at": datetime.now(timezone.utc).isoformat(),
             },
+            {
+                "id": "55555555-5555-5555-5555-555555555555",
+                "name": "MDF Board Art",
+                "slug": "mdf-board-art",
+                "description": "Handcrafted MDF welcome boards, festive nameplates, and decorative wall art.",
+                "image_url": "/images/tulip_bouquet.jpg",
+                "is_active": True,
+                "display_order": 5,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+            {
+                "id": "66666666-6666-6666-6666-666666666666",
+                "name": "Pouches",
+                "slug": "pouches",
+                "description": "Handcrafted textured pouches, makeup bags, and artisan coin organizers.",
+                "image_url": "/images/mini_handbag.jpg",
+                "is_active": True,
+                "display_order": 6,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+            {
+                "id": "77777777-7777-7777-7777-777777777777",
+                "name": "Magnets",
+                "slug": "magnets",
+                "description": "Artisan handmade fridge magnets and miniature handcrafted keepsakes.",
+                "image_url": "/images/flower_coaster.jpg",
+                "is_active": True,
+                "display_order": 7,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+            {
+                "id": "88888888-8888-8888-8888-888888888888",
+                "name": "Rakhis",
+                "slug": "rakhis",
+                "description": "Traditional and modern slow-crafted artisan rakhis and ceremonial threads.",
+                "image_url": "/images/tulip_bouquet.jpg",
+                "is_active": True,
+                "display_order": 8,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
         ]
         for c in cats:
             self.categories[c["id"]] = c
@@ -120,7 +164,6 @@ class InMemoryStore:
                 "description": "An enchanting bouquet of handcrafted crochet tulips in delicate shades of soft blush, warm ivory, and gentle peach. Each bloom is individually crocheted from premium milk cotton yarn with flexible wire-reinforced stems, wrapped in eco-conscious kraft paper with an antique gold ribbon tie. A timeless gift that never withers.",
                 "price": 999.0,
                 "sale_price": 899.0,
-                "amazon_asin": "B0C9TULIP1",
                 "stock_quantity": 12,
                 "low_stock_threshold": 3,
                 "material": "100% Premium Milk Cotton Yarn, Floral Craft Wire, Kraft Wrap, Satin Ribbon",
@@ -145,7 +188,6 @@ class InMemoryStore:
                 "description": "Crafted for modern elegance, this chunky-knit artisan handbag features a warm ivory and taupe weave, sturdy structured bamboo top handles, and a soft cotton interior. Perfectly sized to hold your essentials—phone, keys, compact wallet, and lip balm—while adding a warm, handcrafted statement to any outfit.",
                 "price": 1499.0,
                 "sale_price": 1299.0,
-                "amazon_asin": "B0C8BAG002",
                 "stock_quantity": 8,
                 "low_stock_threshold": 2,
                 "material": "Organic Chunky Cotton Yarn, Natural Bamboo Ring Handles, Magnetic Snap Clasp",
@@ -170,7 +212,6 @@ class InMemoryStore:
                 "description": "A cheerful yet elegant arrangement of bright white crochet daisies with golden textured sunburst centers and delicate sage green foliage. Lovingly tied with an organic linen ribbon, this bouquet brings warm, sunny craftsmanship into any room.",
                 "price": 999.0,
                 "sale_price": None,
-                "amazon_asin": "B0C7DAISY3",
                 "stock_quantity": 15,
                 "low_stock_threshold": 3,
                 "material": "100% Soft Cotton Blend, Bendable Stem Wire, Natural Linen Tie",
@@ -195,7 +236,6 @@ class InMemoryStore:
                 "description": "Set of 4 artisan botanical coasters handcrafted in harmonious tones of sage green, ivory cream, and warm taupe. Thick, heat-resistant, and absorbent, these coasters protect your tabletops while bringing warmth and organic beauty to your coffee and tea rituals.",
                 "price": 250.0,
                 "sale_price": 299.0,
-                "amazon_asin": "B0C6COAST4",
                 "stock_quantity": 25,
                 "low_stock_threshold": 5,
                 "material": "100% Natural Absorbent Milk Cotton Yarn",
@@ -219,7 +259,6 @@ class InMemoryStore:
                 "description": "An adorable trio of mini handcrafted accessories: a sweet crochet strawberry charm, a soft peach keyring, and a delicate floral scrunchie. Finished with durable antique gold metal lobster clasps to clip effortlessly onto bags, keys, or pouches.",
                 "price": 199.0,
                 "sale_price": 249.0,
-                "amazon_asin": "B0C5KEYCH5",
                 "stock_quantity": 30,
                 "low_stock_threshold": 5,
                 "material": "Mercerized Cotton Thread, Hypoallergenic Polyester Fill, Antique Gold Alloy Hardware",
@@ -243,7 +282,6 @@ class InMemoryStore:
                 "description": "Have a dream crochet design in mind? Collaborate directly with our master artisan to create custom bridal bouquets, heirloom baby blankets, bespoke color-matched handbags, or unique decor pieces. Price starts as a base deposit and adjusts according to your requirements.",
                 "price": 1499.0,
                 "sale_price": None,
-                "amazon_asin": None,
                 "stock_quantity": 99,
                 "low_stock_threshold": 5,
                 "material": "Custom Selected Premium Organic Yarns (Cotton, Bamboo, or Merino Wool)",
@@ -305,7 +343,203 @@ class InMemoryStore:
         for r in revs:
             self.reviews[r["id"]] = r
 
+        # 4. Seed Orders & Order Items
+        now = datetime.now(timezone.utc)
+        seed_orders_data = [
+            {
+                "id": "ord-seed-001",
+                "order_number": "ORD-10821",
+                "user_id": "customer-user-id-001",
+                "customer_name": "Priya Patel",
+                "customer_email": "priya.patel@example.com",
+                "customer_phone": "+91 98765 43210",
+                "shipping_address": {
+                    "fullName": "Priya Patel",
+                    "email": "priya.patel@example.com",
+                    "phone": "+91 98765 43210",
+                    "address": "402 Lavender Enclave, Linking Road",
+                    "city": "Mumbai",
+                    "state": "Maharashtra",
+                    "pincode": "400050"
+                },
+                "subtotal": 1798.0,
+                "discount_amount": 100.0,
+                "shipping_fee": 0.0,
+                "total_amount": 1698.0,
+                "status": "delivered",
+                "payment_status": "paid",
+                "payment_method": "razorpay",
+                "payment_id": "pay_Rz918237190",
+                "provider_order_id": "order_Rz918237190_seed1",
+                "provider_payment_id": "pay_Rz918237190",
+                "payment_confirmation_sent_at": (now - timedelta(days=14)).isoformat(),
+                "carrier_name": "BlueDart",
+                "tracking_number": "BD901823184IN",
+                "notes": "Delivered in handcrafted gift wrap with satin ribbon.",
+                "created_at": (now - timedelta(days=14)).isoformat(),
+                "updated_at": (now - timedelta(days=11)).isoformat(),
+                "items": [
+                    {
+                        "id": "item-seed-001",
+                        "order_id": "ord-seed-001",
+                        "product_id": "p1111111-1111-1111-1111-111111111111",
+                        "product_name": "Crochet Tulip Bouquet",
+                        "product_image": "/images/tulip_bouquet.jpg",
+                        "unit_price": 899.0,
+                        "price": 899.0,
+                        "quantity": 2,
+                        "subtotal": 1798.0,
+                        "total": 1798.0
+                    }
+                ]
+            },
+            {
+                "id": "ord-seed-002",
+                "order_number": "ORD-10822",
+                "user_id": "customer-user-id-002",
+                "customer_name": "Ananya Sharma",
+                "customer_email": "ananya.s@example.com",
+                "customer_phone": "+91 91234 56789",
+                "shipping_address": {
+                    "fullName": "Ananya Sharma",
+                    "email": "ananya.s@example.com",
+                    "phone": "+91 91234 56789",
+                    "address": "12 Lotus Lane, Indiranagar",
+                    "city": "Bengaluru",
+                    "state": "Karnataka",
+                    "pincode": "560038"
+                },
+                "subtotal": 1499.0,
+                "discount_amount": 0.0,
+                "shipping_fee": 0.0,
+                "total_amount": 1499.0,
+                "status": "shipped",
+                "payment_status": "paid",
+                "payment_method": "upi",
+                "payment_id": "upi_9812470129",
+                "provider_order_id": "order_Rz871290412_seed2",
+                "provider_payment_id": "pay_Rz871290412",
+                "payment_confirmation_sent_at": (now - timedelta(days=4)).isoformat(),
+                "carrier_name": "Delhivery",
+                "tracking_number": "DEL872190412",
+                "notes": "In transit to Bengaluru fulfillment hub.",
+                "created_at": (now - timedelta(days=4)).isoformat(),
+                "updated_at": (now - timedelta(days=2)).isoformat(),
+                "items": [
+                    {
+                        "id": "item-seed-002",
+                        "order_id": "ord-seed-002",
+                        "product_id": "p2222222-2222-2222-2222-222222222222",
+                        "product_name": "Crochet Mini Handbag",
+                        "product_image": "/images/mini_handbag.jpg",
+                        "unit_price": 1499.0,
+                        "price": 1499.0,
+                        "quantity": 1,
+                        "subtotal": 1499.0,
+                        "total": 1499.0
+                    }
+                ]
+            },
+            {
+                "id": "ord-seed-003",
+                "order_number": "ORD-10823",
+                "user_id": "customer-user-id-001",
+                "customer_name": "Pooja Verma",
+                "customer_email": "pooja.v@example.com",
+                "customer_phone": "+91 99887 76655",
+                "shipping_address": {
+                    "fullName": "Pooja Verma",
+                    "email": "pooja.v@example.com",
+                    "phone": "+91 99887 76655",
+                    "address": "78 Civil Lines, Near Rose Garden",
+                    "city": "Jaipur",
+                    "state": "Rajasthan",
+                    "pincode": "302006"
+                },
+                "subtotal": 498.0,
+                "discount_amount": 0.0,
+                "shipping_fee": 99.0,
+                "total_amount": 597.0,
+                "status": "processing",
+                "payment_status": "paid",
+                "payment_method": "cod",
+                "payment_id": None,
+                "provider_order_id": None,
+                "provider_payment_id": None,
+                "payment_confirmation_sent_at": (now - timedelta(days=1)).isoformat(),
+                "carrier_name": None,
+                "tracking_number": None,
+                "notes": "Handmade coasters being finished and inspected.",
+                "created_at": (now - timedelta(days=1)).isoformat(),
+                "updated_at": now.isoformat(),
+                "items": [
+                    {
+                        "id": "item-seed-003",
+                        "order_id": "ord-seed-003",
+                        "product_id": "p4444444-4444-4444-4444-444444444444",
+                        "product_name": "Crochet Flower Coaster Set",
+                        "product_image": "/images/flower_coaster.jpg",
+                        "unit_price": 249.0,
+                        "price": 249.0,
+                        "quantity": 2,
+                        "subtotal": 498.0,
+                        "total": 498.0
+                    }
+                ]
+            },
+            {
+                "id": "ord-seed-004",
+                "order_number": "ORD-10824",
+                "user_id": "customer-user-id-003",
+                "customer_name": "Meera Joshi",
+                "customer_email": "meera.j@example.com",
+                "customer_phone": "+91 98112 23344",
+                "shipping_address": {
+                    "fullName": "Meera Joshi",
+                    "email": "meera.j@example.com",
+                    "phone": "+91 98112 23344",
+                    "address": "15 Green Park Extn",
+                    "city": "New Delhi",
+                    "state": "Delhi",
+                    "pincode": "110016"
+                },
+                "subtotal": 1299.0,
+                "discount_amount": 0.0,
+                "shipping_fee": 0.0,
+                "total_amount": 1299.0,
+                "status": "pending",
+                "payment_status": "pending",
+                "payment_method": "razorpay",
+                "payment_id": None,
+                "provider_order_id": "order_Rz_pending_seed4",
+                "provider_payment_id": None,
+                "payment_confirmation_sent_at": None,
+                "carrier_name": None,
+                "tracking_number": None,
+                "notes": "Customer initiated checkout via Razorpay.",
+                "created_at": (now - timedelta(hours=2)).isoformat(),
+                "updated_at": (now - timedelta(hours=2)).isoformat(),
+                "items": [
+                    {
+                        "id": "item-seed-004",
+                        "order_id": "ord-seed-004",
+                        "product_id": "p3333333-3333-3333-3333-333333333333",
+                        "product_name": "Crochet Sunflower Pot",
+                        "product_image": "/images/sunflower_pot.jpg",
+                        "unit_price": 1299.0,
+                        "price": 1299.0,
+                        "quantity": 1,
+                        "subtotal": 1299.0,
+                        "total": 1299.0
+                    }
+                ]
+            }
+        ]
 
+        for ord_data in seed_orders_data:
+            items = ord_data.pop("items")
+            self.orders[ord_data["id"]] = ord_data
+            self.order_items[ord_data["id"]] = items
 
 # Global store singleton
 store = InMemoryStore()

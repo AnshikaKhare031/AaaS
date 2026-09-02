@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -15,6 +15,7 @@ import { ProductDetailsPage } from './pages/Product/ProductDetails';
 import { CustomOrdersPage } from './pages/CustomOrders/CustomOrders';
 import { WishlistPage } from './pages/Wishlist/Wishlist';
 import { CartPage } from './pages/Cart/Cart';
+import { CheckoutPage } from './pages/Checkout/Checkout';
 import { MyAccountPage } from './pages/Account/MyAccount';
 import { LoginPage } from './pages/Auth/Login';
 import { RegisterPage } from './pages/Auth/Register';
@@ -22,24 +23,24 @@ import { ForgotPasswordPage } from './pages/Auth/ForgotPassword';
 import { LegalPage } from './pages/Legal/LegalPage';
 import { NotFoundPage } from './pages/NotFound/NotFound';
 
-// Admin Pages
+// Active Admin Pages
 import { AdminDashboardPage } from './pages/Admin/AdminDashboard';
+import { AdminProductsListPage } from './pages/Admin/AdminProductsList';
+import { AdminProductFormPage } from './pages/Admin/AdminProductForm';
 import { AdminInventoryPage } from './pages/Admin/AdminInventory';
-import { AdminProductsPage } from './pages/Admin/AdminProducts';
-import { AdminCategoriesPage } from './pages/Admin/AdminCategories';
-import { AdminCustomOrdersPage } from './pages/Admin/AdminCustomOrders';
-import { AdminReviewsPage } from './pages/Admin/AdminReviews';
-import { AdminSettingsPage } from './pages/Admin/AdminSettings';
+import { AdminOrdersPage } from './pages/Admin/AdminOrders';
+import { AdminAnalyticsPage } from './pages/Admin/AdminAnalytics';
+import { AdminLoginPage } from './pages/Admin/AdminLogin';
 
 import { AdminRoute, CustomerRoute } from './components/auth/ProtectedRoute';
 
 export function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <Router>
+    <Router>
+      <ToastProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
               <Routes>
                 {/* Storefront Layout Routes */}
                 <Route element={<StoreLayout />}>
@@ -49,6 +50,7 @@ export function App() {
                   <Route path="/custom-orders" element={<CustomOrdersPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
                   <Route
                     path="/account"
                     element={
@@ -65,6 +67,9 @@ export function App() {
                   <Route path="/shipping-returns" element={<LegalPage />} />
                 </Route>
 
+                {/* Admin Authentication Route */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+
                 {/* Protected Admin Portal Routes */}
                 <Route
                   path="/admin"
@@ -75,22 +80,28 @@ export function App() {
                   }
                 >
                   <Route index element={<AdminDashboardPage />} />
+                  <Route path="products" element={<AdminProductsListPage />} />
+                  <Route path="products/new" element={<AdminProductFormPage />} />
+                  <Route path="products/:id/edit" element={<AdminProductFormPage />} />
+                  <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="analytics" element={<AdminAnalyticsPage />} />
                   <Route path="inventory" element={<AdminInventoryPage />} />
-                  <Route path="products" element={<AdminProductsPage />} />
-                  <Route path="categories" element={<AdminCategoriesPage />} />
-                  <Route path="custom-orders" element={<AdminCustomOrdersPage />} />
-                  <Route path="reviews" element={<AdminReviewsPage />} />
-                  <Route path="settings" element={<AdminSettingsPage />} />
+
+                  {/* Clean redirects */}
+                  <Route path="categories" element={<Navigate to="/admin/products" replace />} />
+                  <Route path="custom-orders" element={<Navigate to="/admin/orders" replace />} />
+                  <Route path="reviews" element={<Navigate to="/admin" replace />} />
+                  <Route path="settings" element={<Navigate to="/admin" replace />} />
                 </Route>
 
                 {/* 404 Fallback */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-            </Router>
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </ToastProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </Router>
   );
 }
 

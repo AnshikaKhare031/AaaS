@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
-import { formatPrice, getStockBadge } from '../../utils/helpers';
+import { formatPrice, getStockBadge, getProductImageUrl, DEFAULT_PRODUCT_IMAGE } from '../../utils/helpers';
 
 export const WishlistPage: React.FC = () => {
   const { items, removeFromWishlist, clearWishlist } = useWishlist();
@@ -64,8 +64,11 @@ export const WishlistPage: React.FC = () => {
                 <div className="relative aspect-square bg-[#F8F5F0]">
                   <Link to={`/product/${product.slug}`}>
                     <img
-                      src={product.images?.[0]?.image_url || '/images/tulip_bouquet.jpg'}
+                      src={getProductImageUrl(product)}
                       alt={product.name}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
