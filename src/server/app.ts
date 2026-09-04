@@ -17,22 +17,44 @@ import { uploadRouter } from './routers/upload.router';
 
 export const app = new Hono();
 
-// Global CORS Middleware
+// Global CORS Middleware - Strict Origin Allowlist
 app.use(
   '*',
   cors({
     origin: (origin) => {
-      // In same-origin or non-browser server requests, origin is undefined
+      // 1. Same-origin requests or server-to-server calls where no browser Origin header is present
       if (!origin) return '';
+
+      // 2. Explicitly configured production frontend URL
+      if (settings.FRONTEND_URL) {
+        const normalizedFrontend = settings.FRONTEND_URL.replace(/\/$/, '');
+        if (origin === normalizedFrontend) {
+          return origin;
+        }
+      }
+
+      // 3. Localhost development origins
       if (
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app') ||
-        settings.CORS_ORIGINS.includes(origin)
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        origin === 'http://localhost' ||
+        origin === 'http://127.0.0.1'
       ) {
         return origin;
       }
-      return origin;
+
+      // 4. Configured CORS_ORIGINS
+      if (settings.CORS_ORIGINS.includes(origin)) {
+        return origin;
+      }
+
+      // 5. Vercel deployment/preview subdomains (*.vercel.app)
+      if (origin.endsWith('.vercel.app')) {
+        return origin;
+      }
+
+      // 6. Strict rejection: do NOT allow arbitrary origins
+      return null;
     },
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

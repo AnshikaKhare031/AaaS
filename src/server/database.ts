@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { settings } from './config';
+import { settings, isProduction } from './config';
 import {
   Category,
   Product,
@@ -12,11 +12,7 @@ import {
   PaymentRecord,
   AdminSettings,
 } from './types';
-
-export const isProduction =
-  process.env.NODE_ENV === 'production' ||
-  settings.ENVIRONMENT === 'production' ||
-  Boolean(process.env.VERCEL_ENV === 'production');
+export { isProduction };
 
 // Supabase client instance
 export let supabaseClient: SupabaseClient | null = null;

@@ -6,7 +6,7 @@ import { Logo } from '../../components/common/Logo';
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('admin@aaascrochet.com');
-  const [password, setPassword] = useState('admin123');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -116,13 +116,14 @@ export const AdminLoginPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-[#EADCCF]/30 rounded-xl border border-[#E7DFD7] text-[11px] text-[#7B6656] space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-[#5A4335]">
-                <Sparkles className="w-3.5 h-3.5 text-[#C6A15B]" /> Demo / Production Credentials
+            {import.meta.env.DEV && (
+              <div className="p-3 bg-[#EADCCF]/30 rounded-xl border border-[#E7DFD7] text-[11px] text-[#7B6656] space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold text-[#5A4335]">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C6A15B]" /> Admin Access
+                </div>
+                <p>Sign in using your configured administrator credentials.</p>
               </div>
-              <p>Email: <span className="font-mono text-[#3D2E24]">admin@aaascrochet.com</span></p>
-              <p>Secret: <span className="font-mono text-[#3D2E24]">admin123</span></p>
-            </div>
+            )}
 
             <div>
               <button

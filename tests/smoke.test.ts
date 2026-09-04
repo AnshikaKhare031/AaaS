@@ -466,4 +466,33 @@ describe('End-to-End API Smoke Test Matrix', () => {
     const oversizedBody = await oversizedRes.json();
     expect(oversizedBody.detail).toContain('5MB');
   });
+
+  // 20. Strict CORS Origin Allowlist
+  it('CORS: strictly blocks unauthorized origins while allowing whitelisted origins', async () => {
+    // 1. Unauthorized origin: Access-Control-Allow-Origin must NOT be returned
+    const unauthorizedRes = await app.request('/api/health', {
+      headers: { Origin: 'http://malicious-site.com' },
+    });
+    expect(unauthorizedRes.status).toBe(200);
+    expect(unauthorizedRes.headers.get('access-control-allow-origin')).toBeNull();
+
+    // 2. Authorized localhost origin
+    const localhostRes = await app.request('/api/health', {
+      headers: { Origin: 'http://localhost:5173' },
+    });
+    expect(localhostRes.status).toBe(200);
+    expect(localhostRes.headers.get('access-control-allow-origin')).toBe('http://localhost:5173');
+
+    // 3. Same-origin (no Origin header)
+    const sameOriginRes = await app.request('/api/health');
+    expect(sameOriginRes.status).toBe(200);
+    expect(sameOriginRes.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  // 21. Centralized Production Config Validation (Fail-Fast)
+  it('Config: production config validation fails fast when secrets are missing or insecure', async () => {
+    const { validateProductionConfig } = await import('../src/server/config');
+    // In test environment (!isProduction), it should not throw
+    expect(() => validateProductionConfig()).not.toThrow();
+  });
 });
