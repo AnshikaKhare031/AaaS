@@ -1,334 +1,232 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  UploadCloud,
-  X,
-  Plus,
-  Trash2,
-  Check,
-  Sparkles,
-  Save,
-  Image as ImageIcon,
-  Loader2,
-  CheckSquare,
-  Square,
-} from 'lucide-react';
-import { Category, Product } from '../../types';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { ArrowLeft, Upload, Loader2, Plus, Trash2 } from "lucide-react";
+import { Category, Product } from "../../types";
 import {
   getCategories,
-  getProducts,
   createProduct,
   updateProduct,
+  getProducts,
   uploadAdminImage,
-} from '../../services/api';
-import { useToast } from '../../context/ToastContext';
+} from "../../services/api";
+import { useToast } from "../../components/admin/Toast";
 
 interface SpecificationItem {
-  id: string;
   label: string;
   value: string;
 }
 
-export const AdminProductFormPage: React.FC = () => {
+export function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
-  const isEditMode = Boolean(id);
+  const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
+  const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Fields
-  const [name, setName] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [price, setPrice] = useState<number | ''>('');
-  const [description, setDescription] = useState('');
-
-  // Toggles
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [stockQuantity, setStockQuantity] = useState("10");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isCustomizable, setIsCustomizable] = useState(false);
 
   // Image Upload State
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Dynamic Specifications
+  // Specifications
   const [specifications, setSpecifications] = useState<SpecificationItem[]>([]);
 
-  // Load Categories & Product Details if Edit Mode
   useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
+    async function init() {
       try {
         const cats = await getCategories();
-        setCategories(cats);
+        setCategories(cats || []);
 
-        if (isEditMode && id) {
-          const prods = await getProducts();
-          const target = prods.products.find((p: Product) => p.id === id);
-          if (target) {
-            setName(target.name);
-            setCategoryId(target.category_id || (target.category ? target.category.id : ''));
-            setPrice(target.price);
-            setDescription(target.description || '');
-            setIsFeatured(target.is_featured ?? false);
-            setIsCustomizable(target.is_customizable ?? false);
+        if (cats && cats.length > 0 && !categoryId) {
+          setCategoryId(cats[0].id);
+        }
 
-            if (target.images && target.images.length > 0) {
-              setImageUrl(target.images[0].image_url);
-            }
-
-            if (target.specifications && target.specifications.length > 0) {
-              setSpecifications(
-                target.specifications.map((s, idx) => ({
-                  id: `spec-${idx}-${Date.now()}`,
-                  label: s.label || '',
-                  value: s.value || '',
-                }))
-              );
-            } else if (target.material || target.care_instructions) {
-              const defaultSpecs: SpecificationItem[] = [];
-              if (target.material) {
-                defaultSpecs.push({ id: `spec-mat`, label: 'Material', value: target.material });
-              }
-              if (target.care_instructions) {
-                defaultSpecs.push({ id: `spec-care`, label: 'Care Instructions', value: target.care_instructions });
-              }
-              setSpecifications(defaultSpecs);
+        if (isEdit && id) {
+          const prodsRes = await getProducts({ limit: 100 });
+          const found = prodsRes.products?.find((p) => p.id === id);
+          if (found) {
+            setName(found.name || "");
+            setDescription(found.description || "");
+            setPrice(found.price?.toString() || "");
+            setCategoryId(found.category_id || (found.category ? (found.category as any).id : "") || "");
+            setStockQuantity(found.stock_quantity?.toString() || "10");
+            setIsFeatured(Boolean(found.is_featured));
+            setIsCustomizable(Boolean(found.is_customizable));
+            const img = found.image_url || found.images?.[0]?.image_url;
+            if (img) setImagePreview(img);
+            if (found.specifications && Array.isArray(found.specifications)) {
+              setSpecifications(found.specifications);
             }
           }
         }
       } catch (err) {
-        toastError('Failed to load form resources');
+        console.error("Failed to load product form data:", err);
+        showToast("Failed to load product data.", "error");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
+    }
+
     init();
-  }, [id, isEditMode]);
+  }, [id, isEdit]);
 
-  // Image upload handling
-  const handleProcessFile = async (file: File) => {
-    if (!file) return;
+  const addSpecification = () => {
+    setSpecifications([...specifications, { label: "", value: "" }]);
+  };
 
-    if (file.size > 5 * 1024 * 1024) {
-      toastError(`File "${file.name}" exceeds 5MB limit. Please upload a smaller image.`);
-      return;
-    }
+  const removeSpecification = (index: number) => {
+    setSpecifications(specifications.filter((_, i) => i !== index));
+  };
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toastError('Only PNG, JPG, and JPEG images up to 5MB are supported.');
-      return;
-    }
+  const handleSpecChange = (index: number, field: "label" | "value", newValue: string) => {
+    const updated = [...specifications];
+    updated[index] = { ...updated[index], [field]: newValue };
+    setSpecifications(updated);
+  };
 
-    setIsUploading(true);
-    try {
-      const res = await uploadAdminImage(file);
-      if (res.url) {
-        setImageUrl(res.url);
-        success('Product image uploaded successfully');
-      } else {
-        toastError('Upload failed: No image URL returned');
-      }
-    } catch (err: any) {
-      toastError(err.response?.data?.detail || 'Failed to upload image. Please try again.');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleProcessFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleProcessFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleRemoveImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setImageUrl('');
-  };
-
-  // Specifications Handlers
-  const handleAddSpecification = () => {
-    setSpecifications([
-      ...specifications,
-      { id: `spec-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`, label: '', value: '' },
-    ]);
-  };
-
-  const handleUpdateSpecification = (id: string, field: 'label' | 'value', text: string) => {
-    setSpecifications(
-      specifications.map((s) => (s.id === id ? { ...s, [field]: text } : s))
-    );
-  };
-
-  const handleDeleteSpecification = (id: string) => {
-    setSpecifications(specifications.filter((s) => s.id !== id));
-  };
-
-  // Form Submit & Validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1. Strict Validation
-    if (!name.trim()) {
-      toastError('Product Name is required');
+    if (!name.trim() || !description.trim() || !price) {
+      showToast("Please fill in all required fields.", "error");
       return;
     }
 
-    if (!categoryId) {
-      toastError('Please select a Category');
+    if (!imagePreview && !imageFile) {
+      showToast("Please select a product image to upload.", "error");
       return;
     }
 
-    if (price === '' || isNaN(Number(price)) || Number(price) <= 0) {
-      toastError('Please enter a valid Price (INR) greater than 0');
-      return;
-    }
-
-    if (!imageUrl) {
-      toastError('Product Image is required. Please upload an image.');
-      return;
-    }
-
-    if (!description.trim()) {
-      toastError('Description is required');
-      return;
-    }
-
-    // Filter out empty specification rows
-    const cleanedSpecifications = specifications
-      .map((s) => ({ label: s.label.trim(), value: s.value.trim() }))
-      .filter((s) => s.label.length > 0 || s.value.length > 0);
-
-    const payload: any = {
-      name: name.trim(),
-      category_id: categoryId,
-      price: Number(price),
-      description: description.trim(),
-      image_urls: [imageUrl],
-      images: [imageUrl],
-      image: imageUrl,
-      image_url: imageUrl,
-      product_image: imageUrl,
-      is_featured: isFeatured,
-      is_customizable: isCustomizable,
-      specifications: cleanedSpecifications,
-    };
-
-    setIsSaving(true);
+    setIsSubmitting(true);
     try {
-      if (isEditMode && id) {
-        await updateProduct(id, payload);
-        success('Product updated successfully');
-      } else {
-        await createProduct(payload);
-        success('Product created successfully');
+      let finalImageUrl = imagePreview || "";
+
+      // 1. Upload image if new file is selected
+      if (imageFile) {
+        showToast("Uploading product image...", "info");
+        const uploadRes = await uploadAdminImage(imageFile);
+        if (uploadRes?.url) {
+          finalImageUrl = uploadRes.url;
+        }
       }
-      navigate('/admin/products');
-    } catch (err: any) {
-      console.error('Failed to save product:', err);
-      toastError(
-        err.response?.data?.detail || 'Failed to save product. Please check required fields.'
-      );
+
+      const productPayload: Partial<Product> = {
+        name: name.trim(),
+        description: description.trim(),
+        price: parseFloat(price) || 0,
+        category_id: categoryId || (categories[0]?.id ?? undefined),
+        stock_quantity: parseInt(stockQuantity, 10) || 10,
+        is_featured: isFeatured,
+        is_customizable: isCustomizable,
+        image_url: finalImageUrl,
+        specifications: specifications.filter((s) => s.label.trim() && s.value.trim()),
+      };
+
+      if (isEdit && id) {
+        await updateProduct(id, productPayload);
+        showToast("Product updated successfully!", "success");
+      } else {
+        await createProduct(productPayload);
+        showToast("Product created successfully!", "success");
+      }
+
+      navigate("/admin/products");
+    } catch (error: any) {
+      console.error("Save product error:", error);
+      showToast(error?.response?.data?.detail || error.message || "Failed to save product.", "error");
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="max-w-4xl mx-auto py-12 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 text-[#C6A15B] animate-spin" />
-        <p className="text-xs text-[#7B6656]">Loading product editor...</p>
+      <div className="max-w-3xl mx-auto p-16 flex flex-col justify-center items-center gap-3 text-slate-400">
+        <Loader2 className="animate-spin" size={24} />
+        <span className="text-sm">Loading creation details...</span>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
-      {/* Top Breadcrumb & Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <Link
-            to="/admin/products"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7B6656] hover:text-[#3D2E24] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Products
-          </Link>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#3D2E24]">
-            {isEditMode ? 'Edit Product' : 'Add Product'}
-          </h1>
-          <p className="text-xs text-[#7B6656]">
-            {isEditMode
-              ? 'Update details, pricing, image, and specifications for this creation.'
-              : 'Add a new handcrafted piece to your boutique catalog.'}
-          </p>
-        </div>
+    <div className="max-w-3xl mx-auto space-y-8 font-sans">
+      {/* Header Back Button */}
+      <div>
+        <Link
+          to="/admin/products"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-slate-500 hover:text-accent transition-colors"
+        >
+          <ArrowLeft size={16} />
+          <span>Back to products</span>
+        </Link>
+        <h1 className="font-serif text-3xl font-semibold tracking-wide text-slate-900 mt-4">
+          {isEdit ? "Edit Product" : "Add Product"}
+        </h1>
+        <p className="text-sm font-sans text-slate-500 font-light mt-1">
+          {isEdit
+            ? "Modify the properties and details of your handmade creation."
+            : "Create a new handmade creation in the store inventory."}
+        </p>
       </div>
 
-      {/* Main Form Card */}
+      {/* Form Container */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl border border-[#E7DFD7] p-6 sm:p-8 shadow-xs space-y-6"
+        className="bg-white border border-slate-200/80 rounded-2xl p-6 lg:p-8 shadow-xs space-y-8"
       >
-        {/* ======================================================== */}
-        {/* TOP GRID: Two Columns on desktop, single column on mobile */}
-        {/* ======================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Left Column: Name, Category, Price */}
-          <div className="space-y-5">
-            {/* 1. Product Name */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#5A4335] mb-1.5">
-                Product Name <span className="text-[#C96A6A]">*</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column: Details */}
+          <div className="space-y-6">
+            {/* Title */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                Product Name *
               </label>
               <input
+                id="name"
                 type="text"
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ganesh MDF Welcome Board"
-                className="w-full px-4 py-2.5 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-sm text-[#3D2E24] placeholder-[#A39282] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all"
+                placeholder="e.g. Hand-crocheted Floral Top"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
               />
             </div>
 
-            {/* 2. Category */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#5A4335] mb-1.5">
-                Category <span className="text-[#C96A6A]">*</span>
+            {/* Category */}
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                Category *
               </label>
               <select
+                id="category"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-sm text-[#3D2E24] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors bg-white cursor-pointer"
               >
-                <option value="">Select a category</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -337,234 +235,193 @@ export const AdminProductFormPage: React.FC = () => {
               </select>
             </div>
 
-            {/* 3. Price (INR) */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#5A4335] mb-1.5">
-                Price (INR) <span className="text-[#C96A6A]">*</span>
+            {/* Price */}
+            <div className="space-y-2">
+              <label htmlFor="price" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                Price (INR) *
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#7B6656]">
-                  ₹
-                </span>
+                <span className="absolute left-4 top-3 text-slate-400 font-medium text-sm">₹</span>
                 <input
+                  id="price"
                   type="number"
+                  required
                   min="0"
-                  step="1"
+                  step="0.01"
                   value={price}
-                  onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                  onChange={(e) => setPrice(e.target.value)}
                   placeholder="e.g. 850"
-                  className="w-full pl-8 pr-4 py-2.5 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-sm font-semibold text-[#3D2E24] placeholder-[#A39282] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all"
+                  className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
                 />
               </div>
             </div>
+
+            {/* Stock Quantity */}
+            <div className="space-y-2">
+              <label htmlFor="stock" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                Stock Quantity
+              </label>
+              <input
+                id="stock"
+                type="number"
+                min="0"
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(e.target.value)}
+                placeholder="10"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
+              />
+            </div>
           </div>
 
-          {/* Right Column: Product Image Upload Box */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#5A4335] mb-1.5">
-              Product Image <span className="text-[#C96A6A]">*</span>
-            </label>
-
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png, image/jpeg, image/jpg, image/webp"
-              onChange={handleFileInputChange}
-              className="hidden"
-            />
-
-            {!imageUrl ? (
-              /* Dropzone */
-              <div
-                onClick={() => !isUploading && fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed ${
-                  isDragging ? 'border-[#C6A15B] bg-[#EADCCF]/30' : 'border-[#D1C5B8] bg-[#FAF7F2]/60'
-                } hover:border-[#C6A15B] hover:bg-[#FAF7F2] rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[200px] gap-2`}
-              >
-                {isUploading ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="w-8 h-8 text-[#C6A15B] animate-spin" />
-                    <p className="text-xs font-bold text-[#5A4335]">Uploading image...</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="w-12 h-12 rounded-full bg-[#EADCCF]/60 text-[#5A4335] flex items-center justify-center mb-1">
-                      <UploadCloud className="w-6 h-6 text-[#C6A15B]" />
-                    </div>
-                    <p className="text-xs font-bold text-[#3D2E24]">
-                      Click to Upload <span className="font-normal text-[#7B6656]">or drag and drop</span>
-                    </p>
-                    <p className="text-[11px] text-[#7B6656]">PNG, JPG, JPEG up to 5MB</p>
-                  </>
-                )}
-              </div>
-            ) : (
-              /* Image Preview Box */
-              <div className="border border-[#E7DFD7] rounded-2xl p-3 bg-[#FAF7F2] space-y-3">
-                <div className="relative rounded-xl overflow-hidden bg-white border border-[#E7DFD7] aspect-4/3 flex items-center justify-center">
+          {/* Right Column: Image Upload & Preview */}
+          <div className="space-y-6 flex flex-col">
+            <span className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+              Product Image *
+            </span>
+            <div className="flex-grow flex flex-col justify-center items-center">
+              {imagePreview ? (
+                <div className="relative w-full aspect-square max-w-[240px] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group">
                   <img
-                    src={imageUrl}
-                    alt="Product preview"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = '/images/tulip_bouquet.jpg';
-                    }}
+                    src={imagePreview}
+                    alt="Upload preview"
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded-full transition-colors cursor-pointer"
-                    title="Remove image"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-[11px] text-[#5C734B] font-semibold flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" /> Image ready
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="text-xs font-bold text-[#5A4335] hover:text-[#C6A15B] underline cursor-pointer disabled:opacity-50"
+                  <label
+                    htmlFor="image-upload"
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold uppercase tracking-wider cursor-pointer"
                   >
                     Replace Image
-                  </button>
+                  </label>
                 </div>
-              </div>
-            )}
+              ) : (
+                <label
+                  htmlFor="image-upload"
+                  className="w-full h-full aspect-square max-w-[240px] border-2 border-dashed border-slate-200 hover:border-accent/40 rounded-2xl flex flex-col justify-center items-center p-6 text-center cursor-pointer transition-colors"
+                >
+                  <Upload size={32} className="text-slate-400 mb-3" />
+                  <span className="text-xs font-semibold text-slate-600 block">Click to Upload</span>
+                  <span className="text-[10px] text-slate-400 font-light block mt-1">
+                    PNG, JPG, WEBP up to 5MB
+                  </span>
+                </label>
+              )}
+              <input
+                ref={fileInputRef}
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
           </div>
         </div>
 
-        {/* ======================================================== */}
-        {/* FULL-WIDTH SECTION: Description */}
-        {/* ======================================================== */}
-        <div className="pt-2">
-          <label className="block text-xs font-bold uppercase tracking-wider text-[#5A4335] mb-1.5">
-            Description <span className="text-[#C96A6A]">*</span>
+        {/* Description */}
+        <div className="space-y-2">
+          <label htmlFor="description" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+            Description *
           </label>
           <textarea
+            id="description"
+            required
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Introduce the piece, mention what makes it special, and include size/care instructions."
-            className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-sm text-[#3D2E24] placeholder-[#A39282] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all leading-relaxed"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors resize-none"
           />
         </div>
 
-        {/* ======================================================== */}
-        {/* FULL-WIDTH SECTION: Toggles / Checkbox Cards */}
-        {/* ======================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          {/* 1. Featured Creation Card */}
-          <div
-            onClick={() => setIsFeatured(!isFeatured)}
-            className={`p-4 rounded-2xl border transition-all cursor-pointer select-none flex items-start gap-3.5 ${
-              isFeatured
-                ? 'bg-[#FAF7F2] border-[#C6A15B] shadow-2xs'
-                : 'bg-white border-[#E7DFD7] hover:border-[#D1C5B8]'
-            }`}
-          >
-            <div className="pt-0.5">
-              {isFeatured ? (
-                <CheckSquare className="w-5 h-5 text-[#C6A15B]" />
-              ) : (
-                <Square className="w-5 h-5 text-[#7B6656]" />
-              )}
+        {/* Checkbox settings */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+          {/* Featured */}
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer group">
+            <div className="flex items-center h-5">
+              <input
+                type="checkbox"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                className="w-4.5 h-4.5 border border-slate-300 rounded-sm text-accent focus:ring-accent accent-accent"
+              />
             </div>
-            <div>
-              <p className="text-sm font-bold text-[#3D2E24]">Featured Creation</p>
-              <p className="text-xs text-[#7B6656] mt-0.5">Display on home page collections.</p>
+            <div className="space-y-0.5">
+              <span className="text-sm font-semibold text-slate-800 block">Featured Creation</span>
+              <span className="text-xs text-slate-400 font-light block">Display on home page collections.</span>
             </div>
-          </div>
+          </label>
 
-          {/* 2. Customizable Card */}
-          <div
-            onClick={() => setIsCustomizable(!isCustomizable)}
-            className={`p-4 rounded-2xl border transition-all cursor-pointer select-none flex items-start gap-3.5 ${
-              isCustomizable
-                ? 'bg-[#FAF7F2] border-[#C6A15B] shadow-2xs'
-                : 'bg-white border-[#E7DFD7] hover:border-[#D1C5B8]'
-            }`}
-          >
-            <div className="pt-0.5">
-              {isCustomizable ? (
-                <CheckSquare className="w-5 h-5 text-[#C6A15B]" />
-              ) : (
-                <Square className="w-5 h-5 text-[#7B6656]" />
-              )}
+          {/* Customizable */}
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer group">
+            <div className="flex items-center h-5">
+              <input
+                type="checkbox"
+                checked={isCustomizable}
+                onChange={(e) => setIsCustomizable(e.target.checked)}
+                className="w-4.5 h-4.5 border border-slate-300 rounded-sm text-accent focus:ring-accent accent-accent"
+              />
             </div>
-            <div>
-              <p className="text-sm font-bold text-[#3D2E24]">Customizable</p>
-              <p className="text-xs text-[#7B6656] mt-0.5">
+            <div className="space-y-0.5">
+              <span className="text-sm font-semibold text-slate-800 block">Customizable</span>
+              <span className="text-xs text-slate-400 font-light block">
                 Let customers request custom colors/names on WhatsApp.
-              </p>
+              </span>
             </div>
-          </div>
+          </label>
         </div>
 
-        {/* ======================================================== */}
-        {/* FULL-WIDTH SECTION: Product Specifications */}
-        {/* ======================================================== */}
-        <div className="pt-3 space-y-3">
-          <div className="flex items-center justify-between border-b border-[#E7DFD7] pb-2.5">
+        {/* Dynamic Specifications Editor */}
+        <div className="space-y-4 pt-6 border-t border-slate-100">
+          <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-[#5A4335]">
+              <h3 className="text-xs uppercase tracking-wider font-semibold text-slate-500">
                 Product Specifications
-              </h2>
-              <p className="text-xs text-[#7B6656]">
+              </h3>
+              <p className="text-[11px] text-slate-400 font-light mt-0.5">
                 Add details like Material, Size, Care Instructions, etc.
               </p>
             </div>
-
             <button
               type="button"
-              onClick={handleAddSpecification}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#FAF7F2] hover:bg-[#EADCCF]/60 text-[#5A4335] text-xs font-bold rounded-xl border border-[#E7DFD7] transition-colors cursor-pointer"
+              onClick={addSpecification}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-accent/20 hover:border-accent text-accent hover:bg-accent/5 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Specification
+              <Plus size={14} />
+              <span>Add Specification</span>
             </button>
           </div>
 
-          {/* Empty State */}
           {specifications.length === 0 ? (
-            <div className="p-4 bg-[#FAF7F2]/50 rounded-xl border border-dashed border-[#E7DFD7] text-center">
-              <p className="text-xs text-[#7B6656] italic">
-                No specifications added yet. Add some to display on the product page.
-              </p>
-            </div>
+            <p className="text-xs text-slate-400 font-light italic py-2">
+              No specifications added yet. Add some to display on the product page.
+            </p>
           ) : (
-            /* Dynamic Rows */
-            <div className="space-y-2.5 pt-1">
-              {specifications.map((spec) => (
-                <div key={spec.id} className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={spec.label}
-                    onChange={(e) => handleUpdateSpecification(spec.id, 'label', e.target.value)}
-                    placeholder="Label (e.g. Material)"
-                    className="w-1/3 px-3.5 py-2 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-xs text-[#3D2E24] placeholder-[#A39282] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all"
-                  />
-                  <input
-                    type="text"
-                    value={spec.value}
-                    onChange={(e) => handleUpdateSpecification(spec.id, 'value', e.target.value)}
-                    placeholder="Value (e.g. Pine MDF Wood)"
-                    className="flex-1 px-3.5 py-2 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-xs text-[#3D2E24] placeholder-[#A39282] focus:outline-none focus:ring-2 focus:ring-[#C6A15B] focus:bg-white transition-all"
-                  />
+            <div className="space-y-3">
+              {specifications.map((spec, index) => (
+                <div key={index} className="flex gap-3 items-center">
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={spec.label}
+                      onChange={(e) => handleSpecChange(index, "label", e.target.value)}
+                      placeholder="Label (e.g. Material)"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-xs text-slate-800 transition-colors"
+                    />
+                    <input
+                      type="text"
+                      value={spec.value}
+                      onChange={(e) => handleSpecChange(index, "value", e.target.value)}
+                      placeholder="Value (e.g. 100% Organic Cotton)"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-xs text-slate-800 transition-colors"
+                    />
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleDeleteSpecification(spec.id)}
-                    className="p-2 text-[#7B6656] hover:text-[#C96A6A] hover:bg-[#C96A6A]/10 rounded-xl transition-colors cursor-pointer"
+                    onClick={() => removeSpecification(index)}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2.5 rounded-xl transition-colors cursor-pointer"
                     title="Remove specification"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               ))}
@@ -572,26 +429,22 @@ export const AdminProductFormPage: React.FC = () => {
           )}
         </div>
 
-        {/* ======================================================== */}
-        {/* FORM FOOTER ACTIONS */}
-        {/* ======================================================== */}
-        <div className="border-t border-[#E7DFD7] pt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/products')}
-            className="px-5 py-2.5 bg-white hover:bg-[#FAF7F2] text-[#7B6656] hover:text-[#3D2E24] text-xs font-bold uppercase tracking-wider rounded-xl border border-[#E7DFD7] transition-colors cursor-pointer"
+        {/* Action Buttons */}
+        <div className="flex justify-end items-center gap-3 pt-6 border-t border-slate-100">
+          <Link
+            to="/admin/products"
+            className="px-6 py-3.5 border border-slate-200 hover:bg-slate-50 text-xs font-semibold tracking-wider text-slate-500 uppercase rounded-xl transition-colors cursor-pointer"
           >
             Cancel
-          </button>
-
+          </Link>
           <button
             type="submit"
-            disabled={isSaving || isUploading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5A4335] hover:bg-[#3D2E24] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+            className="px-6 py-3.5 bg-accent hover:bg-accent/90 text-white text-xs font-semibold tracking-wider uppercase rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2 disabled:opacity-75 cursor-pointer"
           >
-            {isSaving ? (
+            {isSubmitting ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 <span>Saving Product...</span>
               </>
             ) : (
@@ -602,4 +455,6 @@ export const AdminProductFormPage: React.FC = () => {
       </form>
     </div>
   );
-};
+}
+
+export default AdminProductFormPage;

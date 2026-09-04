@@ -1,501 +1,639 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Package,
   Search,
-  Filter,
-  CheckCircle2,
-  Clock,
-  Truck,
-  XCircle,
-  AlertCircle,
-  Eye,
-  Printer,
-  X,
-  Send,
-  ExternalLink,
-  MapPin,
+  ChevronDown,
+  ChevronUp,
   Mail,
   Phone,
+  MapPin,
   Calendar,
-  FileText,
-} from 'lucide-react';
-import { Order, OrderStatus } from '../../types';
-import { getAdminOrders, updateOrderStatus } from '../../services/api';
-import { formatPrice, formatDate } from '../../utils/helpers';
-import { useToast } from '../../context/ToastContext';
-import { OrderDetailDrawer } from '../../components/admin/OrderDetailDrawer';
+  CreditCard,
+  ShoppingBag,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Order, OrderStatus } from "../../types";
+import { getAdminOrders, updateOrderStatus } from "../../services/api";
+import { useToast } from "../../components/admin/Toast";
 
-const STATUS_TABS: { label: string; value: string }[] = [
-  { label: 'All Orders', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Shipped', value: 'shipped' },
-  { label: 'Delivered', value: 'delivered' },
-  { label: 'Cancelled', value: 'cancelled' },
-];
-
-const CARRIER_OPTIONS = [
-  'BlueDart',
-  'Delhivery',
-  'India Post (Speed Post)',
-  'DTDC',
-  'DHL Express',
-  'FedEx India',
-  'Shadowfax',
-];
-
-// Valid state machine transitions
-const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ['confirmed', 'processing', 'cancelled'],
-  confirmed: ['processing', 'shipped', 'cancelled'],
-  processing: ['shipped', 'cancelled'],
-  shipped: ['delivered', 'cancelled'],
-  delivered: [],
-  cancelled: [],
-  refunded: [],
-};
-
-export const AdminOrdersPage: React.FC = () => {
+export function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Filters
-  const [activeTab, setActiveTab] = useState<string>('all');
-  const [search, setSearch] = useState('');
-
-  // Selected Order for Slide-Over Drawer
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  // Drawer Form State
-  const [editStatus, setEditStatus] = useState<OrderStatus>('pending');
-  const [carrierName, setCarrierName] = useState<string>('BlueDart');
-  const [trackingNumber, setTrackingNumber] = useState<string>('');
-  const [adminNotes, setAdminNotes] = useState<string>('');
-
-  const { success, error: toastError } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { showToast } = useToast();
 
   const loadOrders = async () => {
-    setIsLoading(true);
+    setLoading(true);
+    setErrorMsg(null);
     try {
-      const data = await getAdminOrders({
-        status: activeTab !== 'all' ? activeTab : undefined,
-        search: search.trim() || undefined,
-      });
-      setOrders(data);
-    } catch (err) {
-      toastError('Failed to load orders');
+      const data = await getAdminOrders();
+      setOrders(data || []);
+    } catch (err: any) {
+      console.error("Failed to load orders:", err);
+      setErrorMsg(err?.message || "Failed to load orders from database.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadOrders();
-  }, [activeTab]);
+  }, []);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadOrders();
+  const toggleExpand = (id: string) => {
+    setExpandedOrderId((prev) => (prev === id ? null : id));
   };
 
-  // Open Drawer with selected order
-  const handleOpenDrawer = (order: Order) => {
-    setSelectedOrder(order);
-    setEditStatus(order.status);
-    setCarrierName(order.carrier_name || 'BlueDart');
-    setTrackingNumber(order.tracking_number || '');
-    setAdminNotes(order.notes || '');
-  };
-
-  // Check if transition is valid
-  const currentStatus = selectedOrder?.status || 'pending';
-  const allowedNextStatuses = [
-    currentStatus, // Allow re-saving current state
-    ...(VALID_TRANSITIONS[currentStatus] || []),
-  ];
-
-  // Save status & fulfillment
-  const handleSaveFulfillment = async () => {
-    if (!selectedOrder) return;
-
-    if (editStatus === 'shipped') {
-      if (!carrierName.trim()) {
-        toastError('Please select a shipping carrier');
-        return;
-      }
-      if (!trackingNumber.trim()) {
-        toastError('Tracking number is required when marking as shipped');
-        return;
-      }
-    }
-
-    setIsUpdating(true);
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
     try {
-      const updated = await updateOrderStatus(selectedOrder.id, {
-        status: editStatus,
-        carrier_name: editStatus === 'shipped' ? carrierName.trim() : undefined,
-        tracking_number: editStatus === 'shipped' ? trackingNumber.trim() : undefined,
-        notes: adminNotes.trim() || undefined,
-      });
-
-      setSelectedOrder(updated);
-      setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
-      success(`Order #${updated.order_number} marked as ${editStatus}`);
+      await updateOrderStatus(orderId, { status: newStatus as OrderStatus });
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId
+            ? { ...order, status: newStatus as OrderStatus, updated_at: new Date().toISOString() }
+            : order
+        )
+      );
+      showToast(`Order status updated to ${newStatus}!`, "success");
     } catch (err: any) {
-      toastError(err?.response?.data?.detail || 'Failed to update order status');
+      console.error("Update status error:", err);
+      showToast(err?.response?.data?.detail || err.message || "Failed to update status.", "error");
     } finally {
-      setIsUpdating(false);
+      setUpdatingOrderId(null);
     }
   };
 
-  // Print Packing Slip
-  const handlePrintPackingSlip = () => {
-    if (!selectedOrder) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toastError('Pop-up blocked. Please allow pop-ups to print packing slips.');
-      return;
-    }
+  const filteredOrders = orders.filter((order) => {
+    const customerName = (
+      order.customer_name ||
+      order.shipping_address?.name ||
+      order.user_id ||
+      ""
+    ).toLowerCase();
+    const orderNum = (order.order_number || "").toLowerCase();
+    const email = (
+      order.customer_email ||
+      order.shipping_address?.email ||
+      ""
+    ).toLowerCase();
+    const phone = (
+      order.customer_phone ||
+      order.shipping_address?.phone ||
+      ""
+    ).toLowerCase();
+    const query = searchText.toLowerCase();
 
-    const addr = selectedOrder.shipping_address || {};
-    const itemsHtml = selectedOrder.items
-      .map(
-        (it) => `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          <strong>${it.product_name}</strong>
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${it.quantity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${it.unit_price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${it.subtotal}</td>
-      </tr>
-    `
-      )
-      .join('');
+    const matchesSearch =
+      orderNum.includes(query) ||
+      customerName.includes(query) ||
+      email.includes(query) ||
+      phone.includes(query);
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Packing Slip - ${selectedOrder.order_number}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #3D2E24; padding: 40px; margin: 0; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #5A4335; padding-bottom: 20px; margin-bottom: 30px; }
-            .brand { font-size: 24px; font-weight: bold; color: #5A4335; }
-            .order-title { font-size: 18px; font-weight: bold; }
-            .info-grid { display: flex; justify-content: space-between; margin-bottom: 30px; }
-            .info-block { width: 48%; font-size: 13px; line-height: 1.6; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
-            th { background: #FAF7F2; padding: 10px; text-align: left; border-bottom: 2px solid #5A4335; font-size: 11px; text-transform: uppercase; }
-            .totals { margin-left: auto; width: 250px; font-size: 13px; line-height: 1.8; }
-            .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #7B6656; border-top: 1px solid #E7DFD7; padding-top: 20px; }
-            @media print {
-              button { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="brand">AaaS Boutique</div>
-              <div style="font-size: 12px; color: #7B6656;">Premium Handcrafted Crochet Creations</div>
-            </div>
-            <div style="text-align: right;">
-              <div class="order-title">PACKING SLIP</div>
-              <div style="font-size: 12px; font-family: monospace;">Order: ${selectedOrder.order_number}</div>
-              <div style="font-size: 12px; color: #7B6656;">Date: ${formatDate(selectedOrder.created_at)}</div>
-            </div>
-          </div>
+    const paymentStatus = (order.payment_status || "pending").toLowerCase();
+    const matchesPayment =
+      paymentFilter === "all" || paymentStatus === paymentFilter.toLowerCase();
 
-          <div class="info-grid">
-            <div class="info-block">
-              <strong>SHIP TO:</strong><br />
-              ${selectedOrder.customer_name || addr.fullName || 'Valued Patron'}<br />
-              ${addr.address || ''}<br />
-              ${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || ''}<br />
-              Phone: ${selectedOrder.customer_phone || addr.phone || 'N/A'}<br />
-              Email: ${selectedOrder.customer_email || addr.email || 'N/A'}
-            </div>
-            <div class="info-block" style="text-align: right;">
-              <strong>DISPATCH DETAILS:</strong><br />
-              Status: ${selectedOrder.status.toUpperCase()}<br />
-              Payment: ${(selectedOrder.payment_status || 'paid').toUpperCase()} (${(selectedOrder.payment_method || 'razorpay').toUpperCase()})<br />
-              Carrier: ${selectedOrder.carrier_name || 'Pending'}<br />
-              Tracking: ${selectedOrder.tracking_number || 'Pending'}
-            </div>
-          </div>
+    const orderStatus = (order.status || "pending").toLowerCase();
+    const matchesStatus =
+      statusFilter === "all" || orderStatus === statusFilter.toLowerCase();
 
-          <table>
-            <thead>
-              <tr>
-                <th>Item & Craft Details</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Unit Price</th>
-                <th style="text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
+    return matchesSearch && matchesPayment && matchesStatus;
+  });
 
-          <div class="totals">
-            <div style="display: flex; justify-content: space-between;">
-              <span>Subtotal:</span>
-              <span>₹${selectedOrder.subtotal || selectedOrder.total_amount}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Shipping Fee:</span>
-              <span>₹${selectedOrder.shipping_fee || 0}</span>
-            </div>
-            ${
-              selectedOrder.discount_amount
-                ? `
-            <div style="display: flex; justify-content: space-between; color: #C96A6A;">
-              <span>Discount:</span>
-              <span>-₹${selectedOrder.discount_amount}</span>
-            </div>`
-                : ''
-            }
-            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #5A4335; padding-top: 6px;">
-              <span>Grand Total:</span>
-              <span>₹${selectedOrder.total_amount}</span>
-            </div>
-          </div>
-
-          <div class="footer">
-            Thank you for supporting slow, sustainable handcrafted artisan crochet! 🌸<br />
-            Visit us: www.aaascrochet.com | Follow on Instagram: @aaas_crochet
-          </div>
-
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
-
-  const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case 'delivered':
+  const renderPaymentBadge = (status?: string) => {
+    const s = (status || "pending").toLowerCase();
+    switch (s) {
+      case "paid":
+      case "completed":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#8FA57D]/15 text-[#5C734B]">
-            <CheckCircle2 className="w-3 h-3" /> Delivered
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+            Paid
           </span>
         );
-      case 'shipped':
+      case "failed":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#6A9BC9]/15 text-[#3D719F]">
-            <Truck className="w-3 h-3" /> Shipped
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50">
+            Failed
           </span>
         );
-      case 'processing':
+      case "expired":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E5B869]/20 text-[#A67B28]">
-            <Clock className="w-3 h-3" /> Processing
-          </span>
-        );
-      case 'cancelled':
-      case 'refunded':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#C96A6A]/15 text-[#C96A6A]">
-            <XCircle className="w-3 h-3" /> {status}
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/50">
+            Expired
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FAF7F2] text-[#7B6656] border border-[#E7DFD7]">
-            <Clock className="w-3 h-3" /> Pending
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/50">
+            Pending
           </span>
         );
     }
   };
 
-  const getPaymentBadge = (status?: string) => {
-    const s = (status || 'pending').toLowerCase();
-    if (s === 'paid' || s === 'completed') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
-          Paid
-        </span>
-      );
+  const renderStatusBadge = (status?: string) => {
+    const s = (status || "pending").toLowerCase();
+    switch (s) {
+      case "processing":
+        return (
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/50">
+            Processing
+          </span>
+        );
+      case "shipped":
+        return (
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50">
+            Shipped
+          </span>
+        );
+      case "delivered":
+        return (
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+            Delivered
+          </span>
+        );
+      case "cancelled":
+        return (
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50">
+            Cancelled
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/50">
+            Pending
+          </span>
+        );
     }
-    if (s === 'failed') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-rose-100 text-rose-800">
-          Failed
-        </span>
-      );
-    }
-    if (s === 'expired') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-neutral-200 text-neutral-700">
-          Expired
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-amber-100 text-amber-800">
-        Pending
-      </span>
-    );
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#3D2E24] flex items-center gap-2.5">
-            <Package className="w-7 h-7 text-[#C6A15B]" /> Order Fulfillment Pipeline
-          </h1>
-          <p className="text-xs text-[#7B6656] mt-1">
-            Track customer orders, manage parcel dispatch, assign tracking codes, and print packing slips
-          </p>
+  if (errorMsg) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center max-w-xl mx-auto my-8 font-sans">
+        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="text-red-600" size={24} />
         </div>
+        <h3 className="font-serif text-xl text-red-800 font-semibold">Database Connection Error</h3>
+        <p className="text-slate-600 text-sm font-sans mt-2 mb-4 leading-relaxed">{errorMsg}</p>
+        <button
+          type="button"
+          onClick={loadOrders}
+          className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold uppercase tracking-wider px-5 py-3 rounded-xl shadow-xs transition-all cursor-pointer"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 font-sans">
+      {/* Page Header */}
+      <div className="border-b border-slate-100 pb-6">
+        <h1 className="font-serif text-3xl font-semibold tracking-wide text-slate-900">Orders</h1>
+        <p className="text-sm font-sans text-slate-500 font-light mt-1">
+          Monitor customer transactions, check payments, and track order shipment statuses.
+        </p>
       </div>
 
-      {/* Tabs & Search Filter */}
-      <div className="bg-white p-4 rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-4">
-        {/* Status Tabs */}
-        <div className="flex items-center gap-2 border-b border-[#E7DFD7] pb-3 overflow-x-auto">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === tab.value
-                  ? 'bg-[#5A4335] text-white shadow-xs'
-                  : 'text-[#7B6656] hover:bg-[#F8F5F0] hover:text-[#3D2E24]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#7B6656] absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Filters & Search Toolbar */}
+      {orders.length > 0 && (
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
+          {/* Search bar */}
+          <div className="relative w-full md:max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Search by Order #, Customer Name, Email, or Tracking Number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 bg-[#FAF7F2] border border-[#E7DFD7] rounded-xl text-xs text-[#3D2E24] focus:outline-hidden focus:ring-2 focus:ring-[#C6A15B]"
+              placeholder="Search by order number, name, email, phone..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent placeholder-slate-400 transition-all"
             />
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-[#5A4335] hover:bg-[#3D2E24] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-          >
-            Search
-          </button>
-        </form>
-      </div>
 
-      {/* Orders Data Grid */}
-      <div className="bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-3 border-[#C6A15B] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-[#7B6656]">Loading order records...</p>
+          {/* Filter dropdowns */}
+          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            {/* Payment Status Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                Payment:
+              </span>
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-accent bg-white cursor-pointer"
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+
+            {/* Order Status Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                Status:
+              </span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-accent bg-white cursor-pointer"
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
           </div>
-        ) : orders.length === 0 ? (
-          <div className="p-12 text-center">
-            <Package className="w-12 h-12 text-[#EADCCF] mx-auto mb-3" />
-            <p className="font-serif text-lg font-bold text-[#3D2E24]">No orders found</p>
-            <p className="text-xs text-[#7B6656] mt-1">
-              There are no orders matching your current tab filter or search criteria.
-            </p>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      {loading ? (
+        <div className="p-16 flex flex-col justify-center items-center gap-3 text-slate-400">
+          <Loader2 className="animate-spin" size={24} />
+          <span className="text-sm">Loading customer orders...</span>
+        </div>
+      ) : orders.length === 0 ? (
+        /* Empty State */
+        <div className="bg-white rounded-2xl border border-slate-200 border-dashed p-16 text-center max-w-xl mx-auto my-8">
+          <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-6">
+            <ShoppingBag className="text-slate-400" size={28} />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-[#E7DFD7] bg-[#FAF7F2] text-[11px] font-bold text-[#5A4335] uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Order #</th>
-                  <th className="py-3.5 px-4">Date</th>
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Total Amount</th>
-                  <th className="py-3.5 px-4 text-center">Payment</th>
-                  <th className="py-3.5 px-4 text-center">Fulfillment</th>
-                  <th className="py-3.5 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E7DFD7] text-xs">
-                {orders.map((o) => {
-                  const addr = o.shipping_address || {};
-                  const custName = o.customer_name || addr.fullName || 'Guest Customer';
-                  const custEmail = o.customer_email || addr.email || 'N/A';
+          <h3 className="font-serif text-2xl text-slate-800 font-medium">No customer orders yet.</h3>
+          <p className="text-slate-500 text-sm font-sans font-light mt-2 leading-relaxed">
+            As soon as customers start checking out using Razorpay, their orders will appear here.
+          </p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        /* No Search Matches */
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-xs">
+          <p className="text-slate-500 text-sm font-sans font-light">
+            No orders match the selected search filters.
+          </p>
+        </div>
+      ) : (
+        /* Orders List (Responsive card-table hybrid layout) */
+        <div className="space-y-4">
+          {filteredOrders.map((order) => {
+            const isExpanded = expandedOrderId === order.id;
+            const isUpdating = updatingOrderId === order.id;
+            const customerName =
+              order.customer_name ||
+              order.shipping_address?.name ||
+              order.user_id ||
+              "Customer";
+            const email =
+              order.customer_email || order.shipping_address?.email || "—";
+            const phone =
+              order.customer_phone || order.shipping_address?.phone || "—";
+            const street =
+              order.shipping_address?.street_address ||
+              order.shipping_address?.address ||
+              order.shipping_address?.street ||
+              "—";
+            const city = order.shipping_address?.city || "";
+            const state = order.shipping_address?.state || "";
+            const pincode =
+              order.shipping_address?.postal_code ||
+              order.shipping_address?.pin_code ||
+              "";
 
-                  return (
-                    <tr key={o.id} className="hover:bg-[#F8F5F0]/50 transition-colors">
-                      {/* Order Number */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#3D2E24]">
-                        {o.order_number}
-                      </td>
+            const formattedDate = new Date(order.created_at).toLocaleDateString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
 
-                      {/* Date */}
-                      <td className="py-3.5 px-4 text-[#7B6656]">
-                        {formatDate(o.created_at)}
-                      </td>
+            return (
+              <div
+                key={order.id}
+                className={`bg-white rounded-2xl border transition-all duration-300 shadow-xs overflow-hidden ${
+                  isExpanded
+                    ? "border-accent/40 ring-1 ring-accent/10"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                {/* Order Summary Header Grid */}
+                <div
+                  onClick={() => toggleExpand(order.id)}
+                  className="p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer select-none"
+                >
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:flex items-center flex-wrap gap-x-8 gap-y-3 w-full">
+                    {/* Order Number */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[10px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                        Order No.
+                      </span>
+                      <span className="font-serif text-base font-bold text-slate-900">
+                        {order.order_number}
+                      </span>
+                    </div>
 
-                      {/* Customer */}
-                      <td className="py-3.5 px-4">
-                        <div>
-                          <p className="font-bold text-[#3D2E24]">{custName}</p>
-                          <p className="text-[11px] text-[#7B6656]">{custEmail}</p>
+                    {/* Customer */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[10px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                        Customer
+                      </span>
+                      <span className="text-sm font-semibold text-slate-800 line-clamp-1">
+                        {customerName}
+                      </span>
+                    </div>
+
+                    {/* Date */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[10px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                        Order Date
+                      </span>
+                      <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
+                        <Calendar size={12} className="text-slate-400" />
+                        {formattedDate}
+                      </span>
+                    </div>
+
+                    {/* Total Amount */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[10px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                        Grand Total
+                      </span>
+                      <span className="text-sm font-bold text-slate-900">
+                        ₹{(order.total_amount || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {/* Status Badges */}
+                    <div className="flex items-center gap-2.5 sm:col-span-2 md:ml-auto shrink-0 pt-1 md:pt-0">
+                      <div className="flex flex-col space-y-0.5">
+                        <span className="text-[8px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                          Payment
+                        </span>
+                        {renderPaymentBadge(order.payment_status)}
+                      </div>
+                      <div className="flex flex-col space-y-0.5">
+                        <span className="text-[8px] text-slate-400 font-semibold font-sans uppercase tracking-wider">
+                          Order
+                        </span>
+                        {renderStatusBadge(order.status)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expansion Indicator Arrow */}
+                  <div className="self-end md:self-center shrink-0 p-1 rounded-lg bg-slate-50 text-slate-400">
+                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </div>
+                </div>
+
+                {/* Expandable Order Details Panel */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="border-t border-slate-100 bg-slate-50/20"
+                    >
+                      <div className="p-5 md:p-8 space-y-8">
+                        {/* Section Grid: Info blocks */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {/* Block 1: Customer & Shipping Details */}
+                          <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-2xs space-y-4">
+                            <h4 className="font-serif text-sm font-bold text-slate-900 border-b border-slate-50 pb-2.5 flex items-center gap-2">
+                              <MapPin size={15} className="text-accent" />
+                              Customer & Shipping
+                            </h4>
+                            <div className="space-y-3 text-xs text-slate-600 font-sans">
+                              <div className="space-y-1 bg-slate-50/50 p-2.5 rounded-lg">
+                                <p className="font-semibold text-slate-800">{customerName}</p>
+                                {email && email !== "—" && (
+                                  <p className="flex items-center gap-1.5 mt-1">
+                                    <Mail size={12} className="text-slate-400" />
+                                    <a
+                                      href={`mailto:${email}`}
+                                      className="hover:text-accent hover:underline"
+                                    >
+                                      {email}
+                                    </a>
+                                  </p>
+                                )}
+                                {phone && phone !== "—" && (
+                                  <p className="flex items-center gap-1.5 mt-0.5">
+                                    <Phone size={12} className="text-slate-400" />
+                                    <a
+                                      href={`tel:${phone}`}
+                                      className="hover:text-accent hover:underline"
+                                    >
+                                      {phone}
+                                    </a>
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="space-y-1 px-1">
+                                <p className="font-semibold text-slate-500 uppercase tracking-wider text-[9px] mb-1">
+                                  Shipping Address
+                                </p>
+                                <p className="text-slate-700 font-medium">{street}</p>
+                                {(city || state || pincode) && (
+                                  <p className="text-slate-700 font-medium">
+                                    {[city, state].filter(Boolean).join(", ")}
+                                    {pincode ? ` - ${pincode}` : ""}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Block 2: Payment Details & Settings */}
+                          <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-2xs space-y-4">
+                            <h4 className="font-serif text-sm font-bold text-slate-900 border-b border-slate-50 pb-2.5 flex items-center gap-2">
+                              <CreditCard size={15} className="text-accent" />
+                              Payment Transaction
+                            </h4>
+                            <div className="space-y-3.5 text-xs text-slate-600 font-sans">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="font-medium text-slate-400">
+                                  Payment Status:
+                                </span>
+                                {renderPaymentBadge(order.payment_status)}
+                              </div>
+
+                              {/* Razorpay Meta data */}
+                              <div className="space-y-2 bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                                <div className="flex flex-col space-y-0.5">
+                                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Razorpay Payment ID
+                                  </span>
+                                  <span className="font-mono text-[10px] text-slate-800 break-all select-all">
+                                    {order.provider_payment_id || order.payment_id || (
+                                      <span className="text-slate-400 italic">
+                                        Not available
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex flex-col space-y-0.5 pt-1.5 border-t border-slate-200/50">
+                                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Razorpay Order ID
+                                  </span>
+                                  <span className="font-mono text-[10px] text-slate-800 break-all select-all">
+                                    {order.provider_order_id || (
+                                      <span className="text-slate-400 italic">
+                                        Not available
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Block 3: Fulfillment & Status Change */}
+                          <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-2xs space-y-4">
+                            <h4 className="font-serif text-sm font-bold text-slate-900 border-b border-slate-50 pb-2.5 flex items-center gap-2">
+                              Fulfillment Status
+                            </h4>
+                            <div className="space-y-4 text-xs font-sans">
+                              <div className="space-y-1.5">
+                                <label className="font-medium text-slate-500 uppercase tracking-wider text-[9px]">
+                                  Update Order Status
+                                </label>
+                                <div className="relative">
+                                  <select
+                                    disabled={isUpdating}
+                                    value={order.status}
+                                    onChange={(e) =>
+                                      handleStatusChange(order.id, e.target.value)
+                                    }
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent bg-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                  </select>
+                                  {isUpdating && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                      <Loader2
+                                        className="animate-spin text-slate-400"
+                                        size={14}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 text-[10px] text-accent leading-relaxed">
+                                <strong className="font-semibold block uppercase tracking-wider text-[8px] mb-0.5">
+                                  Fulfillment Instruction
+                                </strong>
+                                Transition status through Processing → Shipped → Delivered.
+                                Updates are securely synchronized with the database record.
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </td>
 
-                      {/* Total Amount */}
-                      <td className="py-3.5 px-4 font-bold text-[#3D2E24]">
-                        {formatPrice(o.total_amount)}
-                      </td>
+                        {/* Order Items Table section */}
+                        {order.items && order.items.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="font-serif text-sm font-bold text-slate-900 flex items-center gap-2 px-1">
+                              <ShoppingBag size={15} className="text-accent" />
+                              Ordered Items
+                            </h4>
 
-                      {/* Payment Status */}
-                      <td className="py-3.5 px-4 text-center">
-                        {getPaymentBadge(o.payment_status)}
-                      </td>
+                            <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[9px] uppercase tracking-wider text-slate-400 font-semibold font-sans">
+                                    <th className="py-3 px-4">Item details</th>
+                                    <th className="py-3 px-4 text-center">Qty</th>
+                                    <th className="py-3 px-4 text-right">Price</th>
+                                    <th className="py-3 px-4 text-right">Total</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 font-sans text-slate-700">
+                                  {order.items.map((item, index) => {
+                                    const unitPrice =
+                                      item.unit_price || item.price || 0;
+                                    const qty = item.quantity || 1;
+                                    const lineTotal =
+                                      item.subtotal || item.total || unitPrice * qty;
+                                    const itemImg =
+                                      item.product_image || "/placeholder.png";
 
-                      {/* Fulfillment Status */}
-                      <td className="py-3.5 px-4 text-center">
-                        {getStatusBadge(o.status)}
-                      </td>
+                                    return (
+                                      <tr
+                                        key={`${order.id}-item-${index}`}
+                                        className="hover:bg-slate-50/30"
+                                      >
+                                        <td className="py-3 px-4 flex items-center gap-3">
+                                          <div className="relative w-10 h-10 rounded-md overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
+                                            <img
+                                              src={itemImg}
+                                              alt={item.product_name}
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                (e.target as HTMLElement).style.display =
+                                                  "none";
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="flex flex-col space-y-0.5">
+                                            <span className="font-semibold text-slate-800 line-clamp-1">
+                                              {item.product_name}
+                                            </span>
+                                          </div>
+                                        </td>
 
-                      {/* Action */}
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => handleOpenDrawer(o)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF7F2] hover:bg-[#5A4335] hover:text-white text-[#5A4335] text-xs font-bold rounded-xl border border-[#E7DFD7] transition-all cursor-pointer shadow-2xs"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> Manage
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                                        <td className="py-3 px-4 text-center font-semibold text-slate-800">
+                                          {qty}
+                                        </td>
 
-      {/* Order Detail Drawer */}
-      <OrderDetailDrawer
-        order={selectedOrder}
-        isOpen={Boolean(selectedOrder)}
-        onClose={() => setSelectedOrder(null)}
-        onOrderUpdated={(updated) => {
-          setOrders(orders.map((o) => (o.id === updated.id ? updated : o)));
-          setSelectedOrder(updated);
-        }}
-      />
+                                        <td className="py-3 px-4 text-right font-medium text-slate-800">
+                                          ₹{unitPrice.toLocaleString("en-IN")}
+                                        </td>
+
+                                        <td className="py-3 px-4 text-right font-bold text-slate-900">
+                                          ₹{lineTotal.toLocaleString("en-IN")}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-};
+}
+
+export default AdminOrdersPage;

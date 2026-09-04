@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Sparkles, Search, Eye, X, CheckCircle2, MessageSquare } from 'lucide-react';
-import { CustomOrder, CustomOrderStatus } from '../../types';
-import { getAdminCustomOrders, updateCustomOrderStatus } from '../../services/api';
-import { formatPrice, formatDate, getOrderStatusBadge } from '../../utils/helpers';
-import { useToast } from '../../context/ToastContext';
+import React, { useEffect, useState } from "react";
+import { Search, Eye, X, Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CustomOrder, CustomOrderStatus } from "../../types";
+import { getAdminCustomOrders, updateCustomOrderStatus } from "../../services/api";
+import { formatDate } from "../../utils/helpers";
+import { useToast } from "../../components/admin/Toast";
 
-export const AdminCustomOrdersPage: React.FC = () => {
+export function AdminCustomOrdersPage() {
   const [customOrders, setCustomOrders] = useState<CustomOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomOrder, setSelectedCustomOrder] = useState<CustomOrder | null>(null);
-  const [adminNote, setAdminNote] = useState('');
+  const [adminNote, setAdminNote] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const { success, error } = useToast();
+  const { showToast } = useToast();
 
   const loadRequests = async () => {
     setIsLoading(true);
@@ -21,6 +23,7 @@ export const AdminCustomOrdersPage: React.FC = () => {
       setCustomOrders(data || []);
     } catch (err) {
       console.error(err);
+      showToast("Failed to load custom orders.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -31,6 +34,7 @@ export const AdminCustomOrdersPage: React.FC = () => {
   }, []);
 
   const handleStatusChange = async (id: string, status: CustomOrderStatus) => {
+    setIsUpdating(true);
     try {
       const updated = await updateCustomOrderStatus(id, status, adminNote);
       setCustomOrders((prev) =>
@@ -39,204 +43,235 @@ export const AdminCustomOrdersPage: React.FC = () => {
       if (selectedCustomOrder?.id === id) {
         setSelectedCustomOrder((prev) => (prev ? { ...prev, status, admin_notes: adminNote } : null));
       }
-      success(`Updated custom order status to ${status}`);
-    } catch (err) {
-      error('Failed to update status.');
+      showToast(`Custom order status updated to ${status}!`, "success");
+    } catch (err: any) {
+      showToast(err?.message || "Failed to update custom order status.", "error");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const filtered = customOrders.filter((c) => {
     const q = searchQuery.toLowerCase();
     return (
-      c.request_id.toLowerCase().includes(q) ||
-      c.name.toLowerCase().includes(q) ||
-      c.product_type.toLowerCase().includes(q)
+      (c.request_id || "").toLowerCase().includes(q) ||
+      (c.name || "").toLowerCase().includes(q) ||
+      (c.product_type || "").toLowerCase().includes(q)
     );
   });
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+      case "completed":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200/50";
+      case "in_progress":
+      case "quoted":
+        return "bg-blue-50 text-blue-700 border-blue-200/50";
+      case "rejected":
+        return "bg-rose-50 text-rose-700 border-rose-200/50";
+      default:
+        return "bg-amber-50 text-amber-700 border-amber-200/50";
+    }
+  };
+
   return (
-    <div className="space-y-8 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-[#C6A15B]" />
-            <h1 className="font-serif text-3xl font-bold text-[#3D2E24]">Custom Order Inquiries</h1>
-          </div>
-          <p className="text-xs text-[#7B6656] mt-1">
-            Review bespoke crochet commissions, palettes, budgets, and customer reference photos.
-          </p>
-        </div>
+    <div className="space-y-8 font-sans">
+      {/* Page Header */}
+      <div className="border-b border-slate-100 pb-6">
+        <h1 className="font-serif text-3xl font-semibold tracking-wide text-slate-900">
+          Custom Orders
+        </h1>
+        <p className="text-sm font-sans text-slate-500 font-light mt-1">
+          Review bespoke inquiries, customize materials and designs, and send quotes to clients.
+        </p>
       </div>
 
-      <div className="bg-white p-4 rounded-2xl border border-[#E7DFD7] shadow-2xs">
-        <div className="relative max-w-md">
-          <Search className="w-4 h-4 text-[#7B6656] absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Search Toolbar */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="relative w-full md:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
+            placeholder="Search by request ID, customer name, design type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search request ID, customer or product type..."
-            className="w-full pl-9.5 pr-4 py-2 text-xs bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24] focus:outline-none focus:border-[#C6A15B]"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent placeholder-slate-400 transition-all"
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-[#E7DFD7] shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-[#5A4335]">
-            <thead className="bg-[#F8F5F0] border-b border-[#E7DFD7] text-[#7B6656] uppercase font-bold text-[10px] tracking-wider">
-              <tr>
-                <th className="px-6 py-4">Request ID</th>
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Product Type</th>
-                <th className="px-6 py-4">Budget</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Submitted</th>
-                <th className="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E7DFD7]">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-xs text-[#7B6656]">
-                    Loading custom requests...
-                  </td>
+      {/* Main Table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        {isLoading ? (
+          <div className="p-16 flex flex-col justify-center items-center gap-3 text-slate-400">
+            <Loader2 className="animate-spin" size={24} />
+            <span className="text-sm">Loading custom requests...</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-16 text-center text-slate-400 font-light text-sm">
+            No custom order inquiries registered yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-sans text-sm">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                  <th className="py-4 px-6">Request ID</th>
+                  <th className="py-4 px-6">Customer</th>
+                  <th className="py-4 px-6">Type & Colors</th>
+                  <th className="py-4 px-6">Date</th>
+                  <th className="py-4 px-6 text-center">Status</th>
+                  <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-xs text-[#7B6656]">
-                    No custom order requests found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-[#F8F5F0]/60 transition-colors">
-                    <td className="px-6 py-4 font-mono font-bold text-[#3D2E24]">{item.request_id}</td>
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-[#3D2E24]">{item.name}</p>
-                      <p className="text-[10px] text-[#7B6656]">{item.email}</p>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {filtered.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 px-6 font-mono font-bold text-xs text-slate-800">
+                      {item.request_id}
                     </td>
-                    <td className="px-6 py-4 font-serif text-sm font-semibold text-[#3D2E24]">
-                      {item.product_type}
+                    <td className="py-4 px-6">
+                      <div className="font-semibold text-slate-800">{item.name}</div>
+                      <div className="text-xs text-slate-400 font-light">{item.email}</div>
                     </td>
-                    <td className="px-6 py-4 font-bold text-[#5A4335]">
-                      {item.budget ? formatPrice(item.budget) : 'Flexible'}
+                    <td className="py-4 px-6">
+                      <div className="font-medium text-slate-800">{item.product_type}</div>
+                      <div className="text-xs text-slate-400 truncate max-w-xs">{item.color_preference || "—"}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <select
-                        value={item.status}
-                        onChange={(e) =>
-                          handleStatusChange(item.id, e.target.value as CustomOrderStatus)
-                        }
-                        className={`text-[10px] font-bold uppercase rounded-lg px-2.5 py-1 border cursor-pointer ${getOrderStatusBadge(
+                    <td className="py-4 px-6 text-xs text-slate-500">
+                      {formatDate(item.created_at)}
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span
+                        className={`inline-block text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full font-semibold border ${getStatusBadge(
                           item.status
                         )}`}
                       >
-                        <option value="new">New</option>
-                        <option value="reviewing">Reviewing</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="in_production">In Production</option>
-                        <option value="completed">Completed</option>
-                        <option value="rejected">Rejected</option>
-                      </select>
+                        {item.status.replace("_", " ")}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-[#7B6656]">{formatDate(item.created_at)}</td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="py-4 px-6 text-right">
                       <button
+                        type="button"
                         onClick={() => {
                           setSelectedCustomOrder(item);
-                          setAdminNote(item.admin_notes || '');
+                          setAdminNote(item.admin_notes || "");
                         }}
-                        className="px-3 py-1 bg-[#F8F5F0] hover:bg-[#EADCCF] text-[#5A4335] font-semibold rounded-lg transition-colors inline-flex items-center gap-1"
+                        className="p-2 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-lg transition-all cursor-pointer"
+                        title="View Details"
                       >
-                        <Eye className="w-3.5 h-3.5" /> View Proposal
+                        <Eye size={16} />
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Proposal Detail Modal */}
-      {selectedCustomOrder && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-[#E7DFD7] p-6 sm:p-8 max-w-xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#E7DFD7] pb-4">
-              <div>
-                <h3 className="font-serif text-2xl font-bold text-[#3D2E24]">
-                  Proposal #{selectedCustomOrder.request_id}
-                </h3>
-                <p className="text-xs text-[#7B6656]">{selectedCustomOrder.product_type}</p>
-              </div>
-              <button
-                onClick={() => setSelectedCustomOrder(null)}
-                className="p-1 text-[#7B6656] hover:text-[#3D2E24]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="p-4 bg-[#F8F5F0] rounded-2xl space-y-1">
-                <p className="font-semibold text-[#3D2E24]">Customer Contact:</p>
-                <p>{selectedCustomOrder.name} ({selectedCustomOrder.phone})</p>
-                <p>Email: {selectedCustomOrder.email}</p>
-              </div>
-
-              <div className="space-y-2">
-                <p><strong>Color Palette:</strong> {selectedCustomOrder.color_preference || 'Standard'}</p>
-                <p><strong>Size / Dimensions:</strong> {selectedCustomOrder.size_dimensions || 'Default'}</p>
-                <p><strong>Budget:</strong> {selectedCustomOrder.budget ? formatPrice(selectedCustomOrder.budget) : 'Open quote'}</p>
-                <p className="pt-2"><strong>Custom Description:</strong></p>
-                <p className="p-3 bg-[#F8F5F0] rounded-xl text-[#5A4335] italic">
-                  "{selectedCustomOrder.description}"
-                </p>
+      {/* Details & Status Modal */}
+      <AnimatePresence>
+        {selectedCustomOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => setSelectedCustomOrder(null)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 z-10 relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-slate-800">Custom Inquiry</h3>
+                  <p className="text-xs text-slate-400 font-mono mt-0.5">{selectedCustomOrder.request_id}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCustomOrder(null)}
+                  className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              {/* Reference Photos */}
-              {selectedCustomOrder.images && selectedCustomOrder.images.length > 0 && (
-                <div className="space-y-2">
-                  <p className="font-semibold text-[#3D2E24]">Uploaded Reference Visuals:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCustomOrder.images.map((img, i) => (
-                      <img
-                        key={i}
-                        src={img}
-                        alt="Reference"
-                        className="w-20 h-20 rounded-xl object-cover border border-[#E7DFD7]"
-                      />
-                    ))}
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[9px] uppercase font-semibold text-slate-400 tracking-wider block">Customer</span>
+                    <span className="font-semibold text-slate-800 text-sm">{selectedCustomOrder.name}</span>
+                    <p className="text-slate-500 mt-0.5">{selectedCustomOrder.email}</p>
+                    <p className="text-slate-500">{selectedCustomOrder.phone}</p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase font-semibold text-slate-400 tracking-wider block">Budget & Date</span>
+                    <span className="font-semibold text-slate-800 text-sm">
+                      {selectedCustomOrder.budget ? `₹${selectedCustomOrder.budget}` : "Flexible"}
+                    </span>
+                    <p className="text-slate-500 mt-0.5">Submitted: {formatDate(selectedCustomOrder.created_at)}</p>
                   </div>
                 </div>
-              )}
 
-              {/* Admin Note Box */}
-              <div>
-                <label className="block font-semibold text-[#5A4335] mb-1">Internal Atelier Notes</label>
-                <textarea
-                  rows={2}
-                  value={adminNote}
-                  onChange={(e) => setAdminNote(e.target.value)}
-                  placeholder="Record yarn lot codes, courier tracking or artisan assignments..."
-                  className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
-                />
+                <div>
+                  <span className="text-[9px] uppercase font-semibold text-slate-400 tracking-wider block mb-1">Description</span>
+                  <div className="p-3 bg-slate-50 rounded-xl text-slate-700 leading-relaxed font-sans">
+                    {selectedCustomOrder.description}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <label htmlFor="custom-admin-note" className="text-[9px] uppercase font-semibold text-slate-400 tracking-wider block">
+                    Admin Notes / Quote Details
+                  </label>
+                  <textarea
+                    id="custom-admin-note"
+                    rows={2}
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="Add private notes or pricing quote details..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-sans text-slate-800 focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <span className="text-[9px] uppercase font-semibold text-slate-400 tracking-wider block">
+                    Update Status
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {(["pending", "reviewing", "quoted", "approved", "in_progress", "completed", "rejected"] as CustomOrderStatus[]).map(
+                      (st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          disabled={isUpdating}
+                          onClick={() => handleStatusChange(selectedCustomOrder.id, st)}
+                          className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                            selectedCustomOrder.status === st
+                              ? "bg-accent text-white"
+                              : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {st.replace("_", " ")}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-[#E7DFD7]">
-              <button
-                onClick={() => handleStatusChange(selectedCustomOrder.id, selectedCustomOrder.status)}
-                className="px-6 py-2.5 bg-[#5A4335] text-white text-xs font-bold uppercase rounded-xl hover:bg-[#3D2E24]"
-              >
-                Save Notes
-              </button>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
-};
+}
+
+export default AdminCustomOrdersPage;

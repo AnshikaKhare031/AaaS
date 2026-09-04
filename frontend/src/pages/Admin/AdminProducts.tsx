@@ -1,6 +1,1 @@
-import React from 'react';
-import { AdminInventoryPage } from './AdminInventory';
-
-export const AdminProductsPage: React.FC = () => {
-  return <AdminInventoryPage />;
-};
+export { AdminProductsListPage, AdminProductsListPage as AdminProductsPage, default } from './AdminProductsList';

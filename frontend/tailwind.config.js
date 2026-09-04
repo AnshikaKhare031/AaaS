@@ -7,6 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        accent: {
+          DEFAULT: '#A56A43',
+          hover: '#8e5733',
+        },
+        'accent-secondary': '#79825A',
+        background: '#FAF7F2',
+        foreground: '#2D2A26',
+        card: '#FFFFFF',
         ivory: '#F8F5F0',
         cream: '#FBF8F4',
         beige: '#EADCCF',

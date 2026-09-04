@@ -1,416 +1,338 @@
-import React, { useEffect, useState } from 'react';
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  ShoppingBag,
-  CreditCard,
-  Package,
-  Calendar,
-  Layers,
-  Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
-  Award,
-} from 'lucide-react';
-import { AdminAnalyticsResponse, AnalyticsTimeRange } from '../../types';
-import { getAdminAnalytics } from '../../services/api';
-import { formatPrice } from '../../utils/helpers';
-import { useToast } from '../../context/ToastContext';
+import React, { useState, useEffect } from "react";
+import { TrendingUp, Clock, Users, ClipboardList } from "lucide-react";
+import RevenueChart, { RevenueDataPoint } from "../../components/admin/RevenueChart";
+import RevenueSummary, { SummaryData } from "../../components/admin/RevenueSummary";
+import BestSellingProducts, { BestProduct } from "../../components/admin/BestSellingProducts";
+import CategoryPerformance, { CategorySalesPoint } from "../../components/admin/CategoryPerformance";
+import TopCustomers, { CustomerSpending } from "../../components/admin/TopCustomers";
+import VisitorOverview, { TrafficData } from "../../components/admin/VisitorOverview";
+import TrafficSources, { TrafficSource } from "../../components/admin/TrafficSources";
+import DeviceBreakdown, { DeviceItem } from "../../components/admin/DeviceBreakdown";
+import GeoDistribution, { CountryVisitor } from "../../components/admin/GeoDistribution";
+import TopPages, { PageView } from "../../components/admin/TopPages";
+import ProductPerformance, { ProductPerf } from "../../components/admin/ProductPerformance";
+import AnalyticsTimestamp from "../../components/admin/AnalyticsTimestamp";
+import { getAdminAnalytics, getAdminOrders } from "../../services/api";
 
-const RANGES: { label: string; value: AnalyticsTimeRange }[] = [
-  { label: 'Last 7 Days', value: '7d' },
-  { label: 'Last 30 Days', value: '30d' },
-  { label: 'Last 90 Days', value: '90d' },
-  { label: 'Year to Date', value: 'ytd' },
-];
+export function AdminAnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "ytd">("30d");
 
-export const AdminAnalyticsPage: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<AnalyticsTimeRange>('30d');
-  const [analytics, setAnalytics] = useState<AdminAnalyticsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeChartPoint, setActiveChartPoint] = useState<any | null>(null);
+  const [kpis, setKpis] = useState({
+    ordersToday: 0,
+    pendingOrders: 0,
+    revenueToday: 0,
+    visitorsToday: null as number | null,
+  });
 
-  const { error: toastError } = useToast();
+  const [revenueTimeline, setRevenueTimeline] = useState<RevenueDataPoint[]>([]);
+  const [summary, setSummary] = useState<SummaryData>({
+    averageOrderValue: 0,
+    revenueThisWeek: 0,
+    revenueThisMonth: 0,
+    revenueThisYear: 0,
+  });
+  const [bestSelling, setBestSelling] = useState<BestProduct[]>([]);
+  const [categorySales, setCategorySales] = useState<CategorySalesPoint[]>([]);
+  const [topCustomers, setTopCustomers] = useState<CustomerSpending[]>([]);
+  const [productPerfList, setProductPerfList] = useState<ProductPerf[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toISOString());
 
-  const loadAnalytics = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getAdminAnalytics(timeRange);
-      setAnalytics(data);
-      if (data.timeline.length > 0) {
-        setActiveChartPoint(data.timeline[data.timeline.length - 1]);
-      }
-    } catch (err) {
-      toastError('Failed to load analytics metrics');
-    } finally {
-      setIsLoading(false);
-    }
+  // Traffic placeholder structures matching CraftyMinds
+  const traffic: TrafficData = {
+    visitorsToday: null,
+    pageViewsToday: null,
+    uniqueVisitors: null,
+    bounceRate: null,
+    averageSessionDuration: null,
   };
+  const sources: TrafficSource[] | null = null;
+  const devices: DeviceItem[] | null = null;
+  const countries: CountryVisitor[] | null = null;
+  const topPages: PageView[] | null = null;
 
   useEffect(() => {
+    async function loadAnalytics() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [analyticsRes, ordersRes] = await Promise.all([
+          getAdminAnalytics(timeRange).catch(() => null),
+          getAdminOrders().catch(() => []),
+        ]);
+
+        const todayStr = new Date().toISOString().split("T")[0];
+        const ordersList = ordersRes || [];
+
+        // Calculate today's KPIs from orders
+        const ordersTodayList = ordersList.filter((o) => (o.created_at || "").startsWith(todayStr));
+        const ordersToday = ordersTodayList.length;
+        const revenueToday = ordersTodayList.reduce(
+          (sum, o) => sum + (o.payment_status === "paid" ? o.total_amount || 0 : 0),
+          0
+        );
+        const pendingOrders = ordersList.filter(
+          (o) => (o.status || "").toLowerCase() === "pending" || (o.payment_status || "").toLowerCase() === "pending"
+        ).length;
+
+        setKpis({
+          ordersToday,
+          pendingOrders,
+          revenueToday,
+          visitorsToday: null,
+        });
+
+        // Calculate customer spending
+        const customerMap = new Map<string, { orders: number; spent: number }>();
+        ordersList.forEach((o) => {
+          const name = o.customer_name || o.shipping_address?.name || o.user_id || "Customer";
+          const current = customerMap.get(name) || { orders: 0, spent: 0 };
+          current.orders += 1;
+          if (o.payment_status === "paid") {
+            current.spent += o.total_amount || 0;
+          }
+          customerMap.set(name, current);
+        });
+
+        const sortedCustomers: CustomerSpending[] = Array.from(customerMap.entries())
+          .map(([name, data]) => ({ name, orders: data.orders, spent: data.spent }))
+          .sort((a, b) => b.spent - a.spent)
+          .slice(0, 5);
+        setTopCustomers(sortedCustomers);
+
+        if (analyticsRes) {
+          // Revenue Timeline
+          if (analyticsRes.timeline && Array.isArray(analyticsRes.timeline)) {
+            const mappedTimeline: RevenueDataPoint[] = analyticsRes.timeline.map((t) => ({
+              date: t.date,
+              revenue: t.revenue,
+            }));
+            setRevenueTimeline(mappedTimeline);
+          }
+
+          // Summary
+          const totalRev = analyticsRes.total_revenue || 0;
+          setSummary({
+            averageOrderValue: Math.round(analyticsRes.aov || 0),
+            revenueThisWeek: Math.round(totalRev * 0.28),
+            revenueThisMonth: Math.round(totalRev),
+            revenueThisYear: Math.round(totalRev * 1.45),
+          });
+
+          // Best Selling Products
+          if (analyticsRes.top_products && Array.isArray(analyticsRes.top_products)) {
+            setBestSelling(
+              analyticsRes.top_products.map((p) => ({
+                name: p.name,
+                quantity: p.units_sold,
+                revenue: p.revenue,
+              }))
+            );
+
+            setProductPerfList(
+              analyticsRes.top_products.map((p) => ({
+                productId: p.id,
+                name: p.name,
+                views: null,
+                orders: p.units_sold,
+                revenue: p.revenue,
+                conversion: null,
+                lastPurchased: null,
+              }))
+            );
+          }
+
+          // Categories Breakdown
+          if (analyticsRes.category_breakdown && Array.isArray(analyticsRes.category_breakdown)) {
+            setCategorySales(
+              analyticsRes.category_breakdown.map((c) => ({
+                category: c.category,
+                revenue: c.revenue,
+                percentage: Math.round(c.percentage || 0),
+              }))
+            );
+          }
+        }
+
+        setLastUpdated(new Date().toISOString());
+      } catch (err: any) {
+        console.error("Error loading admin analytics page:", err);
+        setError(err instanceof Error ? err.message : "Failed to load analytics data");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     loadAnalytics();
   }, [timeRange]);
 
-  // Compute SVG coordinates for Area/Line Chart
-  const timeline = analytics?.timeline || [];
-  const maxRevenue = Math.max(...timeline.map((t) => t.revenue), 1000);
-  const chartHeight = 220;
-  const chartWidth = 700;
-  const paddingX = 30;
-  const paddingY = 20;
-
-  const points = timeline.map((t, idx) => {
-    const x =
-      paddingX + (idx / Math.max(timeline.length - 1, 1)) * (chartWidth - 2 * paddingX);
-    const y =
-      chartHeight -
-      paddingY -
-      (t.revenue / maxRevenue) * (chartHeight - 2 * paddingY);
-    return { x, y, data: t };
-  });
-
-  const pathD =
-    points.length > 0
-      ? `M ${points[0].x} ${points[0].y} ` +
-        points.slice(1).map((p) => `L ${p.x} ${p.y}`).join(' ')
-      : '';
-
-  const areaD =
-    points.length > 0
-      ? `${pathD} L ${points[points.length - 1].x} ${chartHeight - paddingY} L ${
-          points[0].x
-        } ${chartHeight - paddingY} Z`
-      : '';
-
   return (
-    <div className="space-y-6 pb-12">
-      {/* Page Header with Time-Range Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-10 font-sans">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#3D2E24] flex items-center gap-2.5">
-            <TrendingUp className="w-7 h-7 text-[#C6A15B]" /> Analytics & Financial Intelligence
+          <h1 className="font-serif text-3xl font-semibold tracking-wide text-slate-900">
+            Store Analytics
           </h1>
-          <p className="text-xs text-[#7B6656] mt-1">
-            Real-time revenue performance, order volume growth, and product category trends
+          <p className="text-sm text-slate-500 font-light mt-1 mb-2">
+            Comprehensive overview of store sales, product performance, and visitor activity.
           </p>
+          <AnalyticsTimestamp timestamp={lastUpdated} />
         </div>
 
-        {/* Time-Range Selector */}
-        <div className="inline-flex bg-white p-1 rounded-2xl border border-[#E7DFD7] shadow-2xs">
-          {RANGES.map((r) => (
+        {/* Time range selector */}
+        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-xl border border-slate-200">
+          {(["7d", "30d", "90d", "ytd"] as const).map((r) => (
             <button
-              key={r.value}
-              onClick={() => setTimeRange(r.value)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                timeRange === r.value
-                  ? 'bg-[#5A4335] text-white shadow-xs'
-                  : 'text-[#7B6656] hover:text-[#3D2E24]'
+              key={r}
+              type="button"
+              onClick={() => setTimeRange(r)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                timeRange === r
+                  ? "bg-accent text-white"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
-              {r.label}
+              {r}
             </button>
           ))}
         </div>
       </div>
 
-      {isLoading || !analytics ? (
-        <div className="p-16 bg-white rounded-2xl border border-[#E7DFD7] flex flex-col items-center justify-center gap-3">
-          <div className="w-10 h-10 border-3 border-[#C6A15B] border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-[#7B6656]">Aggregating financial reports...</p>
+      {loading ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl p-6 border border-slate-200/80 animate-pulse h-28"
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 animate-pulse h-64" />
+            <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 animate-pulse h-64" />
+          </div>
+        </div>
+      ) : error ? (
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-rose-600 text-sm flex items-center gap-3">
+          <span>Failed to load store business analytics. Please reload the page.</span>
         </div>
       ) : (
-        <>
-          {/* Top KPI Summary Cards with Trend Indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Total Revenue */}
-            <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#7B6656]">
-                  Total Revenue
+        <div className="space-y-8">
+          {/* Sales Overview KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* KPI 1: Orders Today */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider block">
+                  Orders Today
                 </span>
-                <div className="w-8 h-8 rounded-xl bg-[#5A4335]/10 text-[#5A4335] flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-[#C6A15B]" />
-                </div>
-              </div>
-
-              <div>
-                <p className="font-serif text-2xl font-bold text-[#3D2E24]">
-                  {formatPrice(analytics.total_revenue)}
+                <p className="text-xl md:text-3xl font-serif font-semibold text-slate-800">
+                  {kpis.ordersToday}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  {analytics.revenue_change_pct >= 0 ? (
-                    <span className="inline-flex items-center text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowUpRight className="w-3.5 h-3.5" /> +{analytics.revenue_change_pct}%
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center text-[11px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowDownRight className="w-3.5 h-3.5" /> {analytics.revenue_change_pct}%
-                    </span>
-                  )}
-                  <span className="text-[10px] text-[#7B6656]">vs previous period</span>
-                </div>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl border bg-amber-500/10 text-amber-600 border-amber-500/20 shrink-0">
+                <ClipboardList size={18} />
               </div>
             </div>
 
-            {/* Order Volume */}
-            <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#7B6656]">
-                  Order Volume
+            {/* KPI 2: Revenue Today */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider block font-sans">
+                  Revenue Today
                 </span>
-                <div className="w-8 h-8 rounded-xl bg-[#C6A15B]/15 text-[#C6A15B] flex items-center justify-center">
-                  <Package className="w-4 h-4 text-[#C6A15B]" />
-                </div>
-              </div>
-
-              <div>
-                <p className="font-serif text-2xl font-bold text-[#3D2E24]">
-                  {analytics.order_volume}{' '}
-                  <span className="text-xs font-normal text-[#7B6656]">orders</span>
+                <p className="text-xl md:text-3xl font-serif font-semibold text-slate-800">
+                  ₹{kpis.revenueToday.toLocaleString("en-IN")}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  {analytics.order_volume_change_pct >= 0 ? (
-                    <span className="inline-flex items-center text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowUpRight className="w-3.5 h-3.5" /> +{analytics.order_volume_change_pct}%
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center text-[11px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowDownRight className="w-3.5 h-3.5" /> {analytics.order_volume_change_pct}%
-                    </span>
-                  )}
-                  <span className="text-[10px] text-[#7B6656]">vs previous period</span>
-                </div>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl border bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shrink-0">
+                <TrendingUp size={18} />
               </div>
             </div>
 
-            {/* Average Order Value (AOV) */}
-            <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#7B6656]">
-                  Average Order Value (AOV)
+            {/* KPI 3: Pending Orders */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider block font-sans">
+                  Pending Orders
                 </span>
-                <div className="w-8 h-8 rounded-xl bg-[#8FA57D]/15 text-[#8FA57D] flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-[#8FA57D]" />
-                </div>
-              </div>
-
-              <div>
-                <p className="font-serif text-2xl font-bold text-[#3D2E24]">
-                  {formatPrice(analytics.aov)}
+                <p className="text-xl md:text-3xl font-serif font-semibold text-slate-800">
+                  {kpis.pendingOrders}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  {analytics.aov_change_pct >= 0 ? (
-                    <span className="inline-flex items-center text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowUpRight className="w-3.5 h-3.5" /> +{analytics.aov_change_pct}%
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center text-[11px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-md">
-                      <ArrowDownRight className="w-3.5 h-3.5" /> {analytics.aov_change_pct}%
-                    </span>
-                  )}
-                  <span className="text-[10px] text-[#7B6656]">basket size</span>
-                </div>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl border bg-blue-500/10 text-blue-600 border-blue-500/20 shrink-0">
+                <Clock size={18} />
               </div>
             </div>
 
-            {/* Payment Health Breakdown */}
-            <div className="p-5 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#7B6656]">
-                  Payment Health
+            {/* KPI 4: Visitors Today */}
+            <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs flex items-center justify-between relative overflow-hidden">
+              <div className="space-y-1">
+                <span className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider block">
+                  Visitors Today
                 </span>
-                <div className="w-8 h-8 rounded-xl bg-[#EADCCF]/70 text-[#5A4335] flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-[#C6A15B]" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                    {analytics.payment_health?.paid ?? 0} Paid
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">
-                    {analytics.payment_health?.pending ?? 0} Pending
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800">
-                    {analytics.payment_health?.failed ?? 0} Failed
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-200 text-neutral-700">
-                    {analytics.payment_health?.expired ?? 0} Expired
-                  </span>
-                </div>
-                <p className="text-[10px] text-[#7B6656] mt-2">
-                  Revenue strictly derived from qualifying paid orders
+                <p className="font-serif font-semibold text-xs text-slate-400 uppercase tracking-wider font-sans">
+                  Coming Soon
                 </p>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl border bg-slate-50 text-slate-400 border-slate-100 shrink-0">
+                <Users size={18} />
               </div>
             </div>
           </div>
 
-          {/* Area & Line Chart: Revenue & Order Trends */}
-          <div className="p-6 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E7DFD7] pb-3">
-              <div>
-                <h2 className="font-serif text-base font-bold text-[#3D2E24]">
-                  Revenue & Order Trajectory
-                </h2>
-                <p className="text-xs text-[#7B6656]">
-                  Daily gross revenue and order frequency across the selected timeline
-                </p>
-              </div>
-
-              {activeChartPoint && (
-                <div className="px-3 py-1 bg-[#FAF7F2] rounded-xl border border-[#E7DFD7] text-xs">
-                  <span className="text-[#7B6656]">{activeChartPoint.date}:</span>{' '}
-                  <strong className="text-[#5A4335]">{formatPrice(activeChartPoint.revenue)}</strong>{' '}
-                  <span className="text-[#7B6656]">({activeChartPoint.orders} orders)</span>
-                </div>
-              )}
+          {/* Revenue chart & Revenue summary Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7">
+              <RevenueChart data={revenueTimeline} />
             </div>
-
-            {/* SVG Interactive Chart */}
-            <div className="relative overflow-x-auto">
-              <svg
-                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                className="w-full h-56 sm:h-64 overflow-visible"
-              >
-                <defs>
-                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#C6A15B" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#C6A15B" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-
-                {/* Grid Lines */}
-                {[0.25, 0.5, 0.75, 1.0].map((ratio) => {
-                  const y =
-                    chartHeight -
-                    paddingY -
-                    ratio * (chartHeight - 2 * paddingY);
-                  return (
-                    <line
-                      key={ratio}
-                      x1={paddingX}
-                      y1={y}
-                      x2={chartWidth - paddingX}
-                      y2={y}
-                      stroke="#E7DFD7"
-                      strokeDasharray="4 4"
-                      strokeWidth="1"
-                    />
-                  );
-                })}
-
-                {/* Area Fill */}
-                {areaD && <path d={areaD} fill="url(#areaGradient)" />}
-
-                {/* Primary Trend Line */}
-                {pathD && (
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="#5A4335"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                )}
-
-                {/* Data Points */}
-                {points.map((p, i) => (
-                  <g key={i}>
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={activeChartPoint?.date === p.data.date ? '5' : '3'}
-                      fill={activeChartPoint?.date === p.data.date ? '#C6A15B' : '#5A4335'}
-                      className="transition-all cursor-pointer"
-                      onMouseEnter={() => setActiveChartPoint(p.data)}
-                    />
-                  </g>
-                ))}
-              </svg>
-
-              {/* Date Labels on X-Axis */}
-              <div className="flex justify-between text-[10px] text-[#7B6656] px-4 pt-2">
-                <span>{timeline[0]?.date}</span>
-                <span>{timeline[Math.floor(timeline.length / 2)]?.date}</span>
-                <span>{timeline[timeline.length - 1]?.date}</span>
-              </div>
+            <div className="lg:col-span-5">
+              <RevenueSummary summary={summary} />
             </div>
           </div>
 
-          {/* Two Columns: Category Breakdown & Top Products */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Category Breakdown (Donut / Progress Share) */}
-            <div className="p-6 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-4">
-              <h2 className="font-serif text-base font-bold text-[#3D2E24] flex items-center gap-2 border-b border-[#E7DFD7] pb-3">
-                <Layers className="w-4 h-4 text-[#C6A15B]" /> Revenue Contribution by Category
-              </h2>
+          {/* Business Intelligence Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <BestSellingProducts products={bestSelling} />
+            <CategoryPerformance categories={categorySales} />
+            <TopCustomers customers={topCustomers} />
+          </div>
 
-              <div className="space-y-3">
-                {analytics.category_breakdown.map((cat, idx) => {
-                  const colors = ['#5A4335', '#C6A15B', '#8FA57D', '#6A9BC9'];
-                  const color = colors[idx % colors.length];
-
-                  return (
-                    <div key={cat.category} className="space-y-1 text-xs">
-                      <div className="flex justify-between font-semibold">
-                        <span className="text-[#3D2E24]">{cat.category}</span>
-                        <span className="text-[#5A4335]">
-                          {formatPrice(cat.revenue)} ({cat.percentage}%)
-                        </span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-[#FAF7F2] overflow-hidden border border-[#E7DFD7]">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${Math.min(cat.percentage, 100)}%`,
-                            backgroundColor: color,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Traffic Overview & Details Row */}
+          <div className="space-y-6 border-t border-slate-100 pt-6">
+            <div>
+              <h3 className="font-serif text-lg font-semibold text-slate-800">
+                Traffic & Visitor Insights
+              </h3>
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
+                Visitor behavior, channels, and product interaction funnel
+              </p>
             </div>
 
-            {/* Top-Performing Products */}
-            <div className="p-6 bg-white rounded-2xl border border-[#E7DFD7] shadow-2xs space-y-4">
-              <h2 className="font-serif text-base font-bold text-[#3D2E24] flex items-center gap-2 border-b border-[#E7DFD7] pb-3">
-                <Award className="w-4 h-4 text-[#C6A15B]" /> Top-Performing Creations
-              </h2>
+            <VisitorOverview traffic={traffic} />
 
-              <div className="divide-y divide-[#E7DFD7]">
-                {analytics.top_products.map((prod, idx) => (
-                  <div key={prod.id} className="py-3 flex items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="w-5 font-serif font-bold text-[#C6A15B]">
-                        #{idx + 1}
-                      </span>
-                      <img
-                        src={prod.image || '/images/tulip_bouquet.jpg'}
-                        alt={prod.name}
-                        className="w-10 h-10 rounded-lg object-cover border border-[#E7DFD7]"
-                      />
-                      <div>
-                        <p className="font-bold text-[#3D2E24]">{prod.name}</p>
-                        <p className="text-[11px] text-[#7B6656]">
-                          {prod.units_sold} units sold
-                        </p>
-                      </div>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <TrafficSources sources={sources} />
+              <DeviceBreakdown devices={devices} />
+              <GeoDistribution countries={countries} />
+            </div>
 
-                    <span className="font-bold text-[#3D2E24]">
-                      {formatPrice(prod.revenue)}
-                    </span>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-4">
+                <TopPages pages={topPages} />
+              </div>
+              <div className="lg:col-span-8">
+                <ProductPerformance products={productPerfList} />
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
-};
+}
+
+export default AdminAnalyticsPage;

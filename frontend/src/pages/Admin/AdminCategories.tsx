@@ -1,24 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { FolderTree, Plus, Edit2, Trash2, X } from 'lucide-react';
-import { Category } from '../../types';
-import { getCategories, createCategory, updateCategory, deleteCategory } from '../../services/api';
-import { slugify } from '../../utils/helpers';
-import { useToast } from '../../context/ToastContext';
+import React, { useEffect, useState } from "react";
+import { Plus, Edit2, Trash2, X, Loader2, Layers } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Category } from "../../types";
+import { getCategories, createCategory, updateCategory, deleteCategory } from "../../services/api";
+import { slugify } from "../../utils/helpers";
+import { useToast } from "../../components/admin/Toast";
 
-export const AdminCategoriesPage: React.FC = () => {
+export function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [form, setForm] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    image_url: '/images/tulip_bouquet.jpg',
+    name: "",
+    slug: "",
+    description: "",
   });
 
-  const { success, error } = useToast();
+  const { showToast } = useToast();
 
   const loadCategories = async () => {
     setIsLoading(true);
@@ -27,6 +30,7 @@ export const AdminCategoriesPage: React.FC = () => {
       setCategories(data || []);
     } catch (err) {
       console.error(err);
+      showToast("Failed to load categories.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -42,16 +46,14 @@ export const AdminCategoriesPage: React.FC = () => {
       setForm({
         name: cat.name,
         slug: cat.slug,
-        description: cat.description || '',
-        image_url: cat.image_url || '/images/tulip_bouquet.jpg',
+        description: cat.description || "",
       });
     } else {
       setEditingCategory(null);
       setForm({
-        name: '',
-        slug: '',
-        description: '',
-        image_url: '/images/tulip_bouquet.jpg',
+        name: "",
+        slug: "",
+        description: "",
       });
     }
     setIsModalOpen(true);
@@ -59,175 +61,299 @@ export const AdminCategoriesPage: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name.trim()) {
+      showToast("Category name is required.", "error");
+      return;
+    }
+
+    setIsSaving(true);
     try {
-      const payload: Partial<Category> = {
-        ...form,
-        slug: form.slug || slugify(form.name),
-        is_active: true,
+      const payload = {
+        name: form.name.trim(),
+        slug: form.slug.trim() || slugify(form.name),
+        description: form.description.trim(),
       };
 
       if (editingCategory) {
         const updated = await updateCategory(editingCategory.id, payload);
-        setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-        success(`Category "${form.name}" updated.`);
+        setCategories((prev) => prev.map((c) => (c.id === editingCategory.id ? updated : c)));
+        showToast("Category updated successfully!", "success");
       } else {
         const created = await createCategory(payload);
         setCategories((prev) => [...prev, created]);
-        success(`Category "${form.name}" created.`);
+        showToast("Category created successfully!", "success");
       }
       setIsModalOpen(false);
-    } catch (err) {
-      error('Failed to save category.');
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.response?.data?.detail || err.message || "Failed to save category.", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Delete category "${name}"?`)) return;
+  const handleDelete = async () => {
+    if (!categoryToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteCategory(id);
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-      success(`Deleted category "${name}"`);
-    } catch (err) {
-      error('Failed to delete category.');
+      await deleteCategory(categoryToDelete.id);
+      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete.id));
+      showToast("Category deleted successfully!", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.response?.data?.detail || err.message || "Failed to delete category.", "error");
+    } finally {
+      setIsDeleting(false);
+      setCategoryToDelete(null);
     }
   };
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8 font-sans">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <FolderTree className="w-6 h-6 text-[#C6A15B]" />
-            <h1 className="font-serif text-3xl font-bold text-[#3D2E24]">Product Categories</h1>
-          </div>
-          <p className="text-xs text-[#7B6656] mt-1">
-            Organize crochet offerings across flowers, handbags, and accessories.
+          <h1 className="font-serif text-3xl font-semibold tracking-wide text-slate-900">Categories</h1>
+          <p className="text-sm font-sans text-slate-500 font-light mt-1">
+            Organize creations into searchable store product collections.
           </p>
         </div>
-
         <button
+          type="button"
           onClick={() => openForm()}
-          className="px-5 py-2.5 bg-[#5A4335] hover:bg-[#3D2E24] text-white text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-sm"
+          className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-xs font-semibold uppercase tracking-wider px-5 py-3 rounded-xl shadow-xs transition-all cursor-pointer font-sans"
         >
-          <Plus className="w-4 h-4" /> Add Category
+          <Plus size={16} />
+          <span>Add Category</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className="bg-white rounded-2xl border border-[#E7DFD7] shadow-xs overflow-hidden flex flex-col justify-between"
-          >
-            <div className="aspect-[4/3] bg-[#F8F5F0]">
-              <img
-                src={cat.image_url || '/images/tulip_bouquet.jpg'}
-                alt={cat.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="p-4 space-y-2">
-              <h3 className="font-serif text-lg font-bold text-[#3D2E24]">{cat.name}</h3>
-              <p className="text-xs text-[#7B6656] line-clamp-2">{cat.description}</p>
-            </div>
-
-            <div className="p-4 pt-2 border-t border-[#E7DFD7] flex items-center justify-end gap-2">
-              <button
-                onClick={() => openForm(cat)}
-                className="p-1.5 text-[#5A4335] hover:text-[#C6A15B] rounded-lg"
-                title="Edit"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleDelete(cat.id, cat.name)}
-                className="p-1.5 text-[#7B6656] hover:text-[#C96A6A] rounded-lg"
-                title="Delete"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+      {/* Main Content Table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        {isLoading ? (
+          <div className="p-16 flex flex-col justify-center items-center gap-3 text-slate-400">
+            <Loader2 className="animate-spin" size={24} />
+            <span className="text-sm">Loading categories...</span>
           </div>
-        ))}
+        ) : categories.length === 0 ? (
+          <div className="p-16 text-center text-slate-400 font-light text-sm">
+            No categories created yet. Click &quot;Add Category&quot; to begin.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-sans text-sm">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                  <th className="py-4 px-6">Name</th>
+                  <th className="py-4 px-6">Slug</th>
+                  <th className="py-4 px-6">Description</th>
+                  <th className="py-4 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {categories.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-slate-800 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                        <Layers size={14} />
+                      </div>
+                      <span>{c.name}</span>
+                    </td>
+                    <td className="py-4 px-6 font-mono text-xs text-slate-500">
+                      {c.slug}
+                    </td>
+                    <td className="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">
+                      {c.description || "—"}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openForm(c)}
+                          className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all cursor-pointer"
+                          title="Edit Category"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCategoryToDelete(c)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                          title="Delete Category"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Category Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-[#E7DFD7] p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E7DFD7] pb-3">
-              <h3 className="font-serif text-xl font-bold text-[#3D2E24]">
-                {editingCategory ? 'Edit Category' : 'New Category'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 text-[#7B6656]">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-[#5A4335] mb-1">Category Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#5A4335] mb-1">Slug</label>
-                <input
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#5A4335] mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#5A4335] mb-1">Image URL</label>
-                <input
-                  type="text"
-                  value={form.image_url}
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24]"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#E7DFD7]">
+      {/* Add / Edit Category Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => !isSaving && setIsModalOpen(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 z-10 relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-slate-800">
+                    {editingCategory ? "Edit Category" : "Add Category"}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-light mt-0.5">
+                    Categorize handmade products for customer browsing.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-[#E7DFD7] rounded-xl text-[#7B6656]"
+                  className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="cat-name" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                    Category Name *
+                  </label>
+                  <input
+                    id="cat-name"
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setForm((prev) => ({
+                        ...prev,
+                        name,
+                        slug: prev.slug ? prev.slug : slugify(name),
+                      }));
+                    }}
+                    placeholder="e.g. Crochet Bouquets"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="cat-slug" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                    Slug
+                  </label>
+                  <input
+                    id="cat-slug"
+                    type="text"
+                    value={form.slug}
+                    onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+                    placeholder="e.g. crochet-bouquets"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="cat-desc" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+                    Description
+                  </label>
+                  <textarea
+                    id="cat-desc"
+                    rows={3}
+                    value={form.description}
+                    onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Short description of this category..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2.5 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={isSaving}
+                    className="px-4 py-2.5 text-xs font-semibold tracking-wider text-slate-500 hover:bg-slate-50 border border-slate-200 uppercase rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-5 py-2.5 text-xs font-semibold tracking-wider text-white bg-accent hover:bg-accent/90 uppercase rounded-xl shadow-xs transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>Save Category</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {categoryToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => !isDeleting && setCategoryToDelete(null)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 z-10 relative overflow-hidden"
+            >
+              <h3 className="font-serif text-xl font-semibold text-slate-800">Delete Category?</h3>
+              <p className="text-slate-500 text-sm font-sans font-light mt-2 leading-relaxed">
+                Are you sure you want to delete <span className="font-semibold text-slate-800">&quot;{categoryToDelete.name}&quot;</span>?
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCategoryToDelete(null)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-xs font-semibold tracking-wider text-slate-500 hover:bg-slate-50 border border-slate-200 uppercase rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#5A4335] text-white font-bold uppercase rounded-xl hover:bg-[#3D2E24]"
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-xs font-semibold tracking-wider text-white bg-rose-600 hover:bg-rose-700 uppercase rounded-xl shadow-xs transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
-                  Save Category
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
-            </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
-};
+}
+
+export default AdminCategoriesPage;
