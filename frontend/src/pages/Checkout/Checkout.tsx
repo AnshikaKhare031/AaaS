@@ -1,19 +1,38 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Truck, ArrowLeft, CheckCircle2, Lock, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { formatPrice } from '../../utils/helpers';
+import { createOrder, createPaymentOrder, verifyPayment } from '../../services/api';
+import { Order } from '../../types';
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export const CheckoutPage: React.FC = () => {
   const { items, itemCount, subtotal, shippingFee, isFreeShipping, total, clearCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { success, error: showToastError } = useToast();
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
+    fullName: user?.full_name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
     address: '',
     city: '',
     state: 'Delhi',
@@ -22,25 +41,132 @@ export const CheckoutPage: React.FC = () => {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.full_name || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || '',
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) {
       showToastError('Your bag is empty.');
       return;
     }
 
+    if (!isAuthenticated) {
+      showToastError('Please sign in or register to complete your order.');
+      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
+
+    try {
+      // 1. Create order on the server (authoritative stock check and pricing)
+      const orderPayload = {
+        items: items.map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+        })),
+        shipping_address: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+        },
+        discount_amount: 0,
+        shipping_fee: isFreeShipping ? 0 : shippingFee,
+      };
+
+      const createdOrder = await createOrder(orderPayload);
+
+      // 2. Initialize provider order with Razorpay
+      const paymentOrder = await createPaymentOrder(createdOrder.id);
+
+      // 3. Dynamically load Razorpay SDK
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !(window as any).Razorpay) {
+        showToastError('Unable to load payment gateway. Please check your internet connection.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // 4. Open Razorpay checkout modal
+      const options = {
+        key: paymentOrder.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: Math.round(paymentOrder.amount * 100),
+        currency: paymentOrder.currency || 'INR',
+        name: 'AaaS Atelier',
+        description: `Order #${createdOrder.order_number}`,
+        order_id: paymentOrder.provider_order_id,
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        notes: {
+          order_id: createdOrder.id,
+        },
+        theme: {
+          color: '#5A4335',
+        },
+        handler: async function (response: any) {
+          try {
+            await verifyPayment({
+              order_id: createdOrder.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            clearCart();
+            setConfirmedOrder(createdOrder);
+            setOrderPlaced(true);
+            success('Payment confirmed! Your order has been placed successfully.');
+          } catch (verifyErr: any) {
+            showToastError(
+              verifyErr.response?.data?.detail ||
+                'Payment verification failed. Please check your account or contact support.'
+            );
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            showToastError('Payment cancelled. Your order remains pending.');
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (resp: any) {
+        setIsProcessing(false);
+        showToastError(`Payment failed: ${resp.error?.description || 'Transaction declined.'}`);
+      });
+      rzp.open();
+    } catch (err: any) {
       setIsProcessing(false);
-      setOrderPlaced(true);
-      clearCart();
-      success('Order initiated! Native payment gateway integration will be completed in Phase 3.');
-    }, 1200);
+      const msg =
+        err.response?.data?.detail || err.message || 'Failed to place order. Please try again.';
+      showToastError(msg);
+    }
   };
 
   if (orderPlaced) {
@@ -50,13 +176,24 @@ export const CheckoutPage: React.FC = () => {
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h1 className="font-serif text-3xl font-bold text-[#3D2E24]">Thank You for Your Order!</h1>
+        {confirmedOrder && (
+          <p className="text-sm font-semibold text-[#5A4335]">
+            Order Reference: <span className="font-mono bg-[#F8F5F0] px-2.5 py-1 rounded-md border border-[#E7DFD7]">{confirmedOrder.order_number}</span>
+          </p>
+        )}
         <p className="text-sm text-[#7B6656] max-w-md mx-auto">
-          Your order request has been received. Our atelier team is preparing your handcrafted pieces with meticulous care.
+          Your order request has been received and verified. Our atelier team is preparing your handcrafted pieces with meticulous care.
         </p>
-        <div className="pt-4">
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            to="/account"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#F8F5F0] border border-[#E7DFD7] text-[#3D2E24] text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#EADCCF]/50 transition-colors shadow-sm"
+          >
+            View Orders
+          </Link>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#3D2E24] transition-colors shadow-md"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#3D2E24] transition-colors shadow-md"
           >
             Continue Shopping
           </Link>

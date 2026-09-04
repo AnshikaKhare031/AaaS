@@ -29,7 +29,11 @@ export async function middleware(request: any) {
     })
   );
 
-  const sessionToken = cookies['admin_session'];
+  let sessionToken = cookies['admin_session'];
+  const authHeader = request.headers.get('authorization') || '';
+  if (!sessionToken && authHeader.toLowerCase().startsWith('bearer ')) {
+    sessionToken = authHeader.slice(7).trim();
+  }
 
   if (!sessionToken) {
     if (pathname.startsWith('/api/')) {
