@@ -27,14 +27,9 @@ import { NotFoundPage } from './pages/NotFound/NotFound';
 import { AdminDashboardPage } from './pages/Admin/AdminDashboard';
 import { AdminProductsListPage } from './pages/Admin/AdminProductsList';
 import { AdminProductFormPage } from './pages/Admin/AdminProductForm';
-import { AdminInventoryPage } from './pages/Admin/AdminInventory';
 import { AdminOrdersPage } from './pages/Admin/AdminOrders';
 import { AdminAnalyticsPage } from './pages/Admin/AdminAnalytics';
 import { AdminLoginPage } from './pages/Admin/AdminLogin';
-import { AdminCategoriesPage } from './pages/Admin/AdminCategories';
-import { AdminCustomOrdersPage } from './pages/Admin/AdminCustomOrders';
-import { AdminReviewsPage } from './pages/Admin/AdminReviews';
-import { AdminSettingsPage } from './pages/Admin/AdminSettings';
 
 import { AdminRoute, CustomerRoute } from './components/auth/ProtectedRoute';
 
@@ -89,11 +84,6 @@ export function App() {
                   <Route path="products/:id/edit" element={<AdminProductFormPage />} />
                   <Route path="orders" element={<AdminOrdersPage />} />
                   <Route path="analytics" element={<AdminAnalyticsPage />} />
-                  <Route path="inventory" element={<AdminInventoryPage />} />
-                  <Route path="categories" element={<AdminCategoriesPage />} />
-                  <Route path="custom-orders" element={<AdminCustomOrdersPage />} />
-                  <Route path="reviews" element={<AdminReviewsPage />} />
-                  <Route path="settings" element={<AdminSettingsPage />} />
                 </Route>
 
                 {/* 404 Fallback */}

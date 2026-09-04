@@ -17,7 +17,6 @@ import { getAdminAnalytics, getAdminOrders } from "../../services/api";
 export function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "ytd">("30d");
 
   const [kpis, setKpis] = useState({
     ordersToday: 0,
@@ -58,14 +57,14 @@ export function AdminAnalyticsPage() {
       setError(null);
       try {
         const [analyticsRes, ordersRes] = await Promise.all([
-          getAdminAnalytics(timeRange).catch(() => null),
+          getAdminAnalytics("30d").catch(() => null),
           getAdminOrders().catch(() => []),
         ]);
 
         const todayStr = new Date().toISOString().split("T")[0];
         const ordersList = ordersRes || [];
 
-        // Calculate today's KPIs from orders
+        // Calculate today's KPIs from actual orders
         const ordersTodayList = ordersList.filter((o) => (o.created_at || "").startsWith(todayStr));
         const ordersToday = ordersTodayList.length;
         const revenueToday = ordersTodayList.reduce(
@@ -165,7 +164,7 @@ export function AdminAnalyticsPage() {
     }
 
     loadAnalytics();
-  }, [timeRange]);
+  }, []);
 
   return (
     <div className="space-y-10 font-sans">
@@ -179,24 +178,6 @@ export function AdminAnalyticsPage() {
             Comprehensive overview of store sales, product performance, and visitor activity.
           </p>
           <AnalyticsTimestamp timestamp={lastUpdated} />
-        </div>
-
-        {/* Time range selector */}
-        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-xl border border-slate-200">
-          {(["7d", "30d", "90d", "ytd"] as const).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setTimeRange(r)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                timeRange === r
-                  ? "bg-accent text-white"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
         </div>
       </div>
 

@@ -8,11 +8,6 @@ import {
   ArrowLeft,
   ClipboardList,
   BarChart3,
-  Boxes,
-  Sparkles,
-  Star,
-  Layers,
-  Settings,
 } from "lucide-react";
 import { ToastProvider } from "../components/admin/Toast";
 import { useAuth } from "../context/AuthContext";
@@ -24,22 +19,17 @@ export function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: ShoppingBag },
     { href: "/admin/orders", label: "Orders", icon: ClipboardList },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/admin/inventory", label: "Inventory", icon: Boxes },
-    { href: "/admin/custom-orders", label: "Custom Orders", icon: Sparkles },
-    { href: "/admin/reviews", label: "Reviews", icon: Star },
-    { href: "/admin/categories", label: "Categories", icon: Layers },
-    { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
   const handleLogout = async () => {
     try {
       await signOut();
     } catch (err) {
-      console.error("Logout error:", err);
+      console.error("Logout failed:", err);
     } finally {
       navigate("/admin/login");
     }
@@ -57,7 +47,6 @@ export function AdminLayout() {
             type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-            aria-label="Toggle menu"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -73,40 +62,40 @@ export function AdminLayout() {
 
         {/* Sidebar */}
         <aside
-          className={`fixed lg:sticky top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed lg:sticky top-0 left-0 bottom-0 w-[228px] min-w-[228px] max-w-[228px] bg-white border-r border-slate-200 z-50 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } h-screen`}
+          } h-screen shrink-0`}
         >
-          <div className="flex flex-col flex-1 overflow-y-auto">
+          <div className="overflow-y-auto flex-1 min-h-0">
             {/* Sidebar Logo Header */}
-            <div className="h-20 border-b border-slate-100 px-6 flex items-center justify-between shrink-0">
-              <Link to="/admin" className="font-serif text-xl font-semibold tracking-wide">
-                AaaS <span className="text-accent font-light italic">Admin</span>
+            <div className="h-16 border-b border-slate-100 px-5 flex items-center justify-between shrink-0">
+              <Link to="/admin" className="font-serif text-lg font-semibold tracking-wide text-slate-900">
+                AaaS <span className="text-accent font-normal italic">Admin</span>
               </Link>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
-                aria-label="Close sidebar"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Sidebar Menu */}
-            <nav className="p-4 space-y-1">
+            <nav className="p-3 space-y-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.exact
-                  ? location.pathname === item.href
-                  : location.pathname.startsWith(item.href);
+                const isActive =
+                  item.href === "/admin"
+                    ? location.pathname === "/admin"
+                    : location.pathname.startsWith(item.href);
 
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                       isActive
                         ? "bg-accent/10 text-accent font-semibold"
                         : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
@@ -121,7 +110,7 @@ export function AdminLayout() {
           </div>
 
           {/* Sidebar Footer Link back to public site */}
-          <div className="p-4 border-t border-slate-100 space-y-2 shrink-0">
+          <div className="p-3.5 border-t border-slate-100 space-y-2 shrink-0">
             <button
               type="button"
               onClick={handleLogout}
@@ -140,8 +129,8 @@ export function AdminLayout() {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-grow flex flex-col min-h-screen min-w-0">
-          <main className="flex-grow p-4 md:p-6 lg:p-10 pt-20 lg:pt-10 overflow-x-hidden">
+        <div className="flex-grow flex flex-col min-h-screen min-w-0 bg-[#FAF7F2]">
+          <main className="flex-grow p-6 md:p-8 lg:p-10 pt-20 lg:pt-10 overflow-x-hidden max-w-7xl w-full mx-auto">
             <Outlet />
           </main>
         </div>

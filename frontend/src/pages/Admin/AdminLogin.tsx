@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
+import { Lock, Loader2, ArrowLeft } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { ToastProvider, useToast } from "../../components/admin/Toast";
 
 function AdminLoginForm() {
-  const [email, setEmail] = useState("admin@aaascrochet.com");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { loginAsAdmin } = useAuth();
@@ -25,12 +24,12 @@ function AdminLoginForm() {
     setIsLoading(true);
 
     try {
-      const res = await loginAsAdmin(email.trim() || "admin@aaascrochet.com", password);
+      const res = await loginAsAdmin("admin@aaascrochet.com", password);
       if (res.success) {
         showToast("Login successful!", "success");
         navigate(from, { replace: true });
       } else {
-        showToast(res.error || "Invalid administrator credentials.", "error");
+        showToast(res.error || "Invalid password.", "error");
       }
     } catch (err: any) {
       console.error("Login submit error:", err);
@@ -48,31 +47,11 @@ function AdminLoginForm() {
             AaaS <span className="text-accent font-light italic">Admin</span>
           </h1>
           <p className="text-sm font-sans text-slate-500 font-light">
-            Please enter your administrator credentials to continue.
+            Please enter the administrator password to continue.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
-              Admin Email
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-3.5 text-slate-400">
-                <Mail size={18} />
-              </span>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@aaascrochet.com"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
             <label htmlFor="password" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
               Password

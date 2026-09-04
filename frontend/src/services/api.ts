@@ -85,53 +85,6 @@ export const getCategories = async (): Promise<Category[]> => {
   return response.data;
 };
 
-export const createCategory = async (data: Partial<Category>): Promise<Category> => {
-  const response = await apiClient.post('/admin/categories', data);
-  return response.data;
-};
-
-export const updateCategory = async (id: string, data: Partial<Category>): Promise<Category> => {
-  const response = await apiClient.put(`/admin/categories/${id}`, data);
-  return response.data;
-};
-
-export const deleteCategory = async (id: string): Promise<{ success: boolean }> => {
-  const response = await apiClient.delete(`/admin/categories/${id}`);
-  return response.data;
-};
-
-// Inventory API
-export const getInventory = async (params?: {
-  search?: string;
-  category?: string;
-  status?: string;
-}): Promise<Product[]> => {
-  const response = await apiClient.get('/admin/inventory', { params });
-  return response.data;
-};
-
-export const updateProductStock = async (
-  productId: string,
-  stockQuantity: number
-): Promise<Product> => {
-  const response = await apiClient.put(`/admin/inventory/${productId}`, {
-    stock_quantity: stockQuantity,
-  });
-  return response.data;
-};
-
-export const adjustProductStock = async (
-  productId: string,
-  delta: number,
-  reason?: string
-): Promise<Product> => {
-  const response = await apiClient.post(`/admin/inventory/${productId}/adjust`, {
-    delta,
-    reason,
-  });
-  return response.data;
-};
-
 // Cart API (For authenticated users)
 export const getCart = async (): Promise<CartItem[]> => {
   const response = await apiClient.get('/cart');
@@ -206,25 +159,6 @@ export const getCustomOrderById = async (id: string): Promise<CustomOrder> => {
   return response.data;
 };
 
-// Admin Custom Orders
-export const getAdminCustomOrders = async (): Promise<CustomOrder[]> => {
-  const response = await apiClient.get('/admin/custom-orders');
-  return response.data;
-};
-
-export const updateCustomOrderStatus = async (
-  id: string,
-  status: string,
-  adminNotes?: string
-): Promise<CustomOrder> => {
-  const response = await apiClient.put(`/admin/custom-orders/${id}/status`, {
-    status,
-    admin_notes: adminNotes,
-  });
-  return response.data;
-};
-
-
 // Reviews API
 export const getProductReviews = async (productId: string): Promise<Review[]> => {
   const response = await apiClient.get(`/products/${productId}/reviews`);
@@ -241,31 +175,9 @@ export const submitReview = async (reviewData: {
   return response.data;
 };
 
-export const getAdminReviews = async (): Promise<Review[]> => {
-  const response = await apiClient.get('/admin/reviews');
-  return response.data;
-};
-
-export const updateReviewStatus = async (
-  id: string,
-  isApproved: boolean
-): Promise<Review> => {
-  const response = await apiClient.put(`/admin/reviews/${id}/status`, {
-    is_approved: isApproved,
-  });
-  return response.data;
-};
-
-// Admin Settings & Dashboard Metrics
+// Admin Settings (Used by Cart Context for shipping calculation) & Dashboard Metrics
 export const getAdminSettings = async (): Promise<AdminSettings> => {
   const response = await apiClient.get('/admin/settings');
-  return response.data;
-};
-
-export const updateAdminSettings = async (
-  settings: Partial<AdminSettings>
-): Promise<AdminSettings> => {
-  const response = await apiClient.put('/admin/settings', settings);
   return response.data;
 };
 

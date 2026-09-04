@@ -28,19 +28,19 @@ export function AdminProductFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Fields
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [stockQuantity, setStockQuantity] = useState("10");
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [isCustomizable, setIsCustomizable] = useState(false);
+  const [category, setCategory] = useState("");
+  const [featured, setFeatured] = useState(false);
+  const [customizable, setCustomizable] = useState(false);
+  const [stockQuantity, setStockQuantity] = useState(10);
 
   // Image Upload State
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Specifications
+  // Dynamic Specifications
   const [specifications, setSpecifications] = useState<SpecificationItem[]>([]);
 
   useEffect(() => {
@@ -49,21 +49,21 @@ export function AdminProductFormPage() {
         const cats = await getCategories();
         setCategories(cats || []);
 
-        if (cats && cats.length > 0 && !categoryId) {
-          setCategoryId(cats[0].id);
+        if (cats && cats.length > 0 && !category) {
+          setCategory(cats[0].id);
         }
 
         if (isEdit && id) {
           const prodsRes = await getProducts({ limit: 100 });
           const found = prodsRes.products?.find((p) => p.id === id);
           if (found) {
-            setName(found.name || "");
+            setTitle(found.name || "");
             setDescription(found.description || "");
             setPrice(found.price?.toString() || "");
-            setCategoryId(found.category_id || (found.category ? (found.category as any).id : "") || "");
-            setStockQuantity(found.stock_quantity?.toString() || "10");
-            setIsFeatured(Boolean(found.is_featured));
-            setIsCustomizable(Boolean(found.is_customizable));
+            setCategory(found.category_id || (found.category ? (found.category as any).id : "") || "");
+            setFeatured(Boolean(found.is_featured));
+            setCustomizable(Boolean(found.is_customizable));
+            setStockQuantity(found.stock_quantity ?? 10);
             const img = found.image_url || found.images?.[0]?.image_url;
             if (img) setImagePreview(img);
             if (found.specifications && Array.isArray(found.specifications)) {
@@ -110,7 +110,7 @@ export function AdminProductFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !description.trim() || !price) {
+    if (!title.trim() || !description.trim() || !price || !category) {
       showToast("Please fill in all required fields.", "error");
       return;
     }
@@ -124,7 +124,7 @@ export function AdminProductFormPage() {
     try {
       let finalImageUrl = imagePreview || "";
 
-      // 1. Upload image if new file is selected
+      // 1. Upload image if new file selected
       if (imageFile) {
         showToast("Uploading product image...", "info");
         const uploadRes = await uploadAdminImage(imageFile);
@@ -134,13 +134,13 @@ export function AdminProductFormPage() {
       }
 
       const productPayload: Partial<Product> = {
-        name: name.trim(),
+        name: title.trim(),
         description: description.trim(),
         price: parseFloat(price) || 0,
-        category_id: categoryId || (categories[0]?.id ?? undefined),
-        stock_quantity: parseInt(stockQuantity, 10) || 10,
-        is_featured: isFeatured,
-        is_customizable: isCustomizable,
+        category_id: category || (categories[0]?.id ?? undefined),
+        stock_quantity: stockQuantity,
+        is_featured: featured,
+        is_customizable: customizable,
         image_url: finalImageUrl,
         specifications: specifications.filter((s) => s.label.trim() && s.value.trim()),
       };
@@ -164,7 +164,7 @@ export function AdminProductFormPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto p-16 flex flex-col justify-center items-center gap-3 text-slate-400">
+      <div className="max-w-3xl mx-auto p-16 flex flex-col justify-center items-center gap-3 text-slate-400 font-sans">
         <Loader2 className="animate-spin" size={24} />
         <span className="text-sm">Loading creation details...</span>
       </div>
@@ -202,15 +202,15 @@ export function AdminProductFormPage() {
           <div className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <label htmlFor="name" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+              <label htmlFor="title" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
                 Product Name *
               </label>
               <input
-                id="name"
+                id="title"
                 type="text"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Hand-crocheted Floral Top"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
               />
@@ -223,8 +223,8 @@ export function AdminProductFormPage() {
               </label>
               <select
                 id="category"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors bg-white cursor-pointer"
               >
                 {categories.map((c) => (
@@ -255,28 +255,12 @@ export function AdminProductFormPage() {
                 />
               </div>
             </div>
-
-            {/* Stock Quantity */}
-            <div className="space-y-2">
-              <label htmlFor="stock" className="text-xs uppercase tracking-wider font-semibold text-slate-500">
-                Stock Quantity
-              </label>
-              <input
-                id="stock"
-                type="number"
-                min="0"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
-                placeholder="10"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-hidden focus:border-accent font-sans text-sm text-slate-800 transition-colors"
-              />
-            </div>
           </div>
 
           {/* Right Column: Image Upload & Preview */}
           <div className="space-y-6 flex flex-col">
             <span className="text-xs uppercase tracking-wider font-semibold text-slate-500">
-              Product Image *
+              {isEdit ? "Product Image" : "Product Image *"}
             </span>
             <div className="flex-grow flex flex-col justify-center items-center">
               {imagePreview ? (
@@ -301,7 +285,7 @@ export function AdminProductFormPage() {
                   <Upload size={32} className="text-slate-400 mb-3" />
                   <span className="text-xs font-semibold text-slate-600 block">Click to Upload</span>
                   <span className="text-[10px] text-slate-400 font-light block mt-1">
-                    PNG, JPG, WEBP up to 5MB
+                    PNG, JPG, JPEG up to 5MB
                   </span>
                 </label>
               )}
@@ -340,8 +324,8 @@ export function AdminProductFormPage() {
             <div className="flex items-center h-5">
               <input
                 type="checkbox"
-                checked={isFeatured}
-                onChange={(e) => setIsFeatured(e.target.checked)}
+                checked={featured}
+                onChange={(e) => setFeatured(e.target.checked)}
                 className="w-4.5 h-4.5 border border-slate-300 rounded-sm text-accent focus:ring-accent accent-accent"
               />
             </div>
@@ -356,8 +340,8 @@ export function AdminProductFormPage() {
             <div className="flex items-center h-5">
               <input
                 type="checkbox"
-                checked={isCustomizable}
-                onChange={(e) => setIsCustomizable(e.target.checked)}
+                checked={customizable}
+                onChange={(e) => setCustomizable(e.target.checked)}
                 className="w-4.5 h-4.5 border border-slate-300 rounded-sm text-accent focus:ring-accent accent-accent"
               />
             </div>
@@ -445,10 +429,10 @@ export function AdminProductFormPage() {
             {isSubmitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                <span>Saving Product...</span>
+                <span>{isEdit ? "Saving Changes..." : "Saving Product..."}</span>
               </>
             ) : (
-              <span>Save Product</span>
+              <span>{isEdit ? "Save Changes" : "Save Product"}</span>
             )}
           </button>
         </div>

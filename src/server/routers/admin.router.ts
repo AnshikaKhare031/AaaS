@@ -10,7 +10,7 @@ export const adminRouter = new Hono();
 
 adminRouter.post('/admin/login', async (c) => {
   const body = await c.req.json();
-  const emailClean = (body.email || '').trim().toLowerCase();
+  const emailClean = (body.email || settings.ADMIN_EMAIL).trim().toLowerCase();
   const expectedEmail = settings.ADMIN_EMAIL;
 
   if (emailClean !== expectedEmail) {
