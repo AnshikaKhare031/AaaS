@@ -91,34 +91,12 @@ export class AdminService {
   }
 
   async getStoreSettings(): Promise<AdminSettings> {
-    if (supabaseClient) {
-      try {
-        const { data } = await supabaseClient.from('admin_settings').select('*').single();
-        if (data) {
-          return data as AdminSettings;
-        }
-      } catch {
-        // Fallback
-      }
-    }
     return store.settings;
   }
 
   async updateStoreSettings(settingsIn: AdminSettingsUpdate): Promise<AdminSettings> {
     Object.assign(store.settings, settingsIn);
     store.settings.updated_at = new Date().toISOString();
-
-    if (supabaseClient) {
-      try {
-        await supabaseClient
-          .from('admin_settings')
-          .update(store.settings)
-          .eq('id', store.settings.id);
-      } catch (e) {
-        console.warn('Supabase settings update error:', e);
-      }
-    }
-
     return store.settings;
   }
 

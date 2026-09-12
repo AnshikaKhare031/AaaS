@@ -64,6 +64,41 @@ export function normalizeProductImages(p: any): Product {
   return p as Product;
 }
 
+export function mapDbProductRow(row: any): Product {
+  const catName = typeof row.category === 'string' && row.category.trim()
+    ? row.category.trim()
+    : (row.category?.name || (row.categories && row.categories.name) || 'Crochet');
+  const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  const primaryImage = row.image_url || (Array.isArray(row.images) && row.images[0]) || '/images/tulip_bouquet.jpg';
+
+  let rawImages: any[] = [];
+  if (Array.isArray(row.images) && row.images.length > 0) {
+    rawImages = row.images;
+  } else if (row.product_images && Array.isArray(row.product_images) && row.product_images.length > 0) {
+    rawImages = row.product_images;
+  } else {
+    rawImages = [primaryImage];
+  }
+
+  const prod: any = {
+    ...row,
+    category: {
+      id: row.category_id || catSlug,
+      name: catName,
+      slug: catSlug,
+    },
+    category_id: row.category_id || catSlug,
+    category_name: catName,
+    image_url: primaryImage,
+    image: primaryImage,
+    product_image: primaryImage,
+    images: rawImages,
+  };
+
+  return normalizeProductImages(prod);
+}
+
 // 1. List products with search, filtering, pagination
 productsRouter.get('/products', async (c) => {
   const query = c.req.query();
@@ -84,16 +119,10 @@ productsRouter.get('/products', async (c) => {
     try {
       const res = await supabaseClient
         .from('products')
-        .select('*, categories(*), product_images(*)')
+        .select('*')
         .eq('is_active', true);
       if (res.data && res.data.length > 0) {
-        productsList = res.data.map((row: any) => ({
-          ...row,
-          category: row.categories,
-          images: row.product_images && row.product_images.length > 0
-            ? row.product_images
-            : [{ image_url: '/images/tulip_bouquet.jpg' }],
-        }));
+        productsList = res.data.map((row: any) => mapDbProductRow(row));
       }
     } catch (e: any) {
       console.warn('Supabase products fetch failed:', e);
@@ -124,8 +153,10 @@ productsRouter.get('/products', async (c) => {
   if (categoryParam && categoryParam !== 'all') {
     filtered = filtered.filter(
       (p) =>
-        (p.category && p.category.slug === categoryParam) ||
-        p.category_id === categoryParam
+        (p.category && (p.category.slug === categoryParam || p.category.name === categoryParam)) ||
+        p.category_id === categoryParam ||
+        (typeof p.category === 'string' && p.category.toLowerCase() === categoryParam.toLowerCase()) ||
+        (p as any).category_name?.toLowerCase() === categoryParam.toLowerCase()
     );
   }
 
@@ -201,19 +232,11 @@ productsRouter.get('/products/slug/:slug', async (c) => {
     try {
       const res = await supabaseClient
         .from('products')
-        .select('*, categories(*), product_images(*)')
+        .select('*')
         .eq('slug', slug)
         .single();
       if (res.data) {
-        const row = res.data;
-        const pObj = {
-          ...row,
-          category: row.categories,
-          images: row.product_images && row.product_images.length > 0
-            ? row.product_images
-            : [{ image_url: '/images/tulip_bouquet.jpg' }],
-        };
-        return c.json(normalizeProductImages(pObj));
+        return c.json(mapDbProductRow(res.data));
       }
     } catch {
       if (isProduction) {
@@ -247,19 +270,11 @@ productsRouter.get('/products/:product_id', async (c) => {
     try {
       const res = await supabaseClient
         .from('products')
-        .select('*, categories(*), product_images(*)')
+        .select('*')
         .eq('id', productId)
         .single();
       if (res.data) {
-        const row = res.data;
-        const pObj = {
-          ...row,
-          category: row.categories,
-          images: row.product_images && row.product_images.length > 0
-            ? row.product_images
-            : [{ image_url: '/images/tulip_bouquet.jpg' }],
-        };
-        return c.json(normalizeProductImages(pObj));
+        return c.json(mapDbProductRow(res.data));
       }
     } catch {
       if (isProduction) {
@@ -420,11 +435,39 @@ async function handleCreateProduct(c: any) {
 
   if (supabaseClient) {
     try {
-      const { images: _, category: __, ...dbDict } = productDict as any;
+      const categoryVal = typeof productDict.category === 'string' && productDict.category
+        ? productDict.category
+        : (productDict.category?.name || productDict.category_id || 'Crochet');
+
+      const dbDict: any = {
+        id: productDict.id,
+        name: productDict.name,
+        slug: productDict.slug,
+        description: productDict.description,
+        price: productDict.price,
+        sale_price: productDict.sale_price,
+        compare_at_price: productDict.compare_at_price,
+        category: categoryVal,
+        image_url: primaryUrl,
+        images: images.map((img: any) => (typeof img === 'string' ? img : img.image_url)),
+        stock_quantity: productDict.stock_quantity ?? 0,
+        inventory_count: productDict.inventory_count ?? productDict.stock_quantity ?? 0,
+        low_stock_threshold: productDict.low_stock_threshold ?? 3,
+        sku: productDict.sku,
+        material: productDict.material,
+        care_instructions: productDict.care_instructions,
+        shipping_information: productDict.shipping_information,
+        tags: productDict.tags || [],
+        specifications: productDict.specifications || [],
+        is_active: productDict.is_active ?? true,
+        is_featured: productDict.is_featured ?? false,
+        is_bestseller: productDict.is_bestseller ?? false,
+        is_new: productDict.is_new ?? false,
+        is_customizable: productDict.is_customizable ?? false,
+        created_at: productDict.created_at,
+        updated_at: productDict.updated_at,
+      };
       await supabaseClient.from('products').insert(dbDict);
-      for (const img of images) {
-        await supabaseClient.from('product_images').insert(img);
-      }
     } catch (e) {
       console.warn('Supabase product insert failed:', e);
     }
@@ -507,7 +550,36 @@ async function handleUpdateProduct(c: any) {
 
   if (supabaseClient) {
     try {
-      const { images: _, category: __, ...dbDict } = prod as any;
+      const categoryVal = typeof prod.category === 'string' && prod.category
+        ? prod.category
+        : (prod.category?.name || prod.category_id || 'Crochet');
+
+      const dbDict: any = {
+        name: prod.name,
+        slug: prod.slug,
+        description: prod.description,
+        price: prod.price,
+        sale_price: prod.sale_price,
+        compare_at_price: prod.compare_at_price,
+        category: categoryVal,
+        image_url: prod.image_url || prod.image,
+        images: (prod.images || []).map((img: any) => (typeof img === 'string' ? img : img.image_url)),
+        stock_quantity: prod.stock_quantity ?? 0,
+        inventory_count: prod.inventory_count ?? prod.stock_quantity ?? 0,
+        low_stock_threshold: prod.low_stock_threshold ?? 3,
+        sku: prod.sku,
+        material: prod.material,
+        care_instructions: prod.care_instructions,
+        shipping_information: prod.shipping_information,
+        tags: prod.tags || [],
+        specifications: prod.specifications || [],
+        is_active: prod.is_active,
+        is_featured: prod.is_featured,
+        is_bestseller: prod.is_bestseller,
+        is_new: prod.is_new,
+        is_customizable: prod.is_customizable,
+        updated_at: prod.updated_at,
+      };
       await supabaseClient.from('products').update(dbDict).eq('id', productId);
     } catch (e) {
       console.warn('Supabase product update failed:', e);

@@ -1,10 +1,10 @@
 -- ==========================================================
--- AaaS Handmade Crochet - Supabase Seed Data
--- Simplified CraftyMinds-like Architecture
+-- AaaS Handmade Crochet - Production Product Catalog Seed
+-- Architecture: CraftyMinds-like Simplified Schema
+-- Inserts canonical product catalog with direct category and image_url attributes
+-- Uses valid RFC 4122 hexadecimal UUIDs
 -- ==========================================================
 
--- 1. SEED DEFAULT PRODUCTS
--- Direct category text and image_url attributes matching CraftyMinds reference
 INSERT INTO public.products (
     id, name, slug, description, price, sale_price, compare_at_price,
     category, image_url, images, stock_quantity, inventory_count,
@@ -12,7 +12,7 @@ INSERT INTO public.products (
 )
 VALUES
     (
-        'p1111111-1111-1111-1111-111111111111',
+        '01111111-1111-1111-1111-111111111111',
         'Crochet Tulip Bouquet',
         'crochet-tulip-bouquet',
         'An enchanting bouquet of handcrafted crochet tulips in delicate shades of soft blush, warm ivory, and gentle peach. Each bloom is individually crocheted from premium milk cotton yarn with flexible wire-reinforced stems, wrapped in eco-conscious kraft paper with an antique gold ribbon tie. A timeless gift that never withers.',
@@ -33,7 +33,7 @@ VALUES
         true
     ),
     (
-        'p2222222-2222-2222-2222-222222222222',
+        '02222222-2222-2222-2222-222222222222',
         'Crochet Mini Handbag',
         'crochet-mini-handbag',
         'Crafted for modern elegance, this chunky-knit artisan handbag features a warm ivory and taupe weave, sturdy structured bamboo top handles, and a soft cotton interior. Perfectly sized to hold your essentials—phone, keys, compact wallet, and lip balm—while adding a warm, handcrafted statement to any outfit.',
@@ -54,7 +54,7 @@ VALUES
         true
     ),
     (
-        'p3333333-3333-3333-3333-333333333333',
+        '03333333-3333-3333-3333-333333333333',
         'Crochet Daisy Bouquet',
         'crochet-daisy-bouquet',
         'A cheerful yet elegant arrangement of bright white crochet daisies with golden textured sunburst centers and delicate sage green foliage. Lovingly tied with an organic linen ribbon, this bouquet brings warm, sunny craftsmanship into any room.',
@@ -75,7 +75,7 @@ VALUES
         true
     ),
     (
-        'p4444444-4444-4444-4444-444444444444',
+        '04444444-4444-4444-4444-444444444444',
         'Crochet Flower Coaster Set',
         'crochet-flower-coaster',
         'Set of 4 artisan botanical coasters handcrafted in harmonious tones of sage green, ivory cream, and warm taupe. Thick, heat-resistant, and absorbent, these coasters protect your tabletops while bringing warmth and organic beauty to your coffee and tea rituals.',
@@ -96,7 +96,7 @@ VALUES
         false
     ),
     (
-        'p5555555-5555-5555-5555-555555555555',
+        '05555555-5555-5555-5555-555555555555',
         'Crochet Keychain & Charm Set',
         'crochet-keychain-charm-set',
         'An adorable trio of mini handcrafted accessories: a sweet crochet strawberry charm, a soft peach keyring, and a delicate floral scrunchie. Finished with durable antique gold metal lobster clasps to clip effortlessly onto bags, keys, or pouches.',
@@ -117,7 +117,7 @@ VALUES
         true
     ),
     (
-        'p6666666-6666-6666-6666-666666666666',
+        '06666666-6666-6666-6666-666666666666',
         'Bespoke Personalized Crochet Piece',
         'bespoke-custom-crochet-piece',
         'Have a dream crochet design in mind? Collaborate directly with our master artisan to create custom bridal bouquets, heirloom baby blankets, bespoke color-matched handbags, or unique decor pieces. Price starts as a base deposit and adjusts according to your requirements.',
@@ -143,23 +143,11 @@ ON CONFLICT (slug) DO UPDATE SET
     images = EXCLUDED.images,
     price = EXCLUDED.price,
     sale_price = EXCLUDED.sale_price,
-    stock_quantity = EXCLUDED.stock_quantity;
-
--- 2. SEED SAMPLE ADDRESS
-INSERT INTO public.addresses (
-    id, user_id, full_name, phone, address_line1, address_line2, city, state, pincode, country, is_default
-)
-VALUES (
-    'a1111111-1111-1111-1111-111111111111',
-    'customer-user-id-001',
-    'Priya Sharma',
-    '+91 98765 43210',
-    '123 Artisan Lane, Malviya Nagar',
-    'Near Lotus Garden',
-    'Jaipur',
-    'Rajasthan',
-    '302017',
-    'India',
-    true
-)
-ON CONFLICT (id) DO NOTHING;
+    compare_at_price = EXCLUDED.compare_at_price,
+    stock_quantity = EXCLUDED.stock_quantity,
+    inventory_count = EXCLUDED.inventory_count,
+    is_active = EXCLUDED.is_active,
+    is_featured = EXCLUDED.is_featured,
+    is_bestseller = EXCLUDED.is_bestseller,
+    is_new = EXCLUDED.is_new,
+    updated_at = now();

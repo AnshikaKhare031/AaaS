@@ -65,7 +65,7 @@ export interface ProductSpecification {
 export interface Product {
   id: string;
   category_id?: string | null;
-  category?: Category | null;
+  category?: Category | string | any;
   name: string;
   slug: string;
   description: string;

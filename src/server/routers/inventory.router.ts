@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { store, supabaseClient } from '../database';
 import { requireAdmin } from '../lib/auth';
 import { inventoryService } from '../services/inventory.service';
-import { normalizeProductImages } from './products.router';
+import { normalizeProductImages, mapDbProductRow } from './products.router';
 
 export const inventoryRouter = new Hono();
 
@@ -21,13 +21,9 @@ inventoryRouter.get('/admin/inventory', async (c) => {
     try {
       const res = await supabaseClient
         .from('products')
-        .select('*, categories(*), product_images(*)');
+        .select('*');
       if (res.data) {
-        productsList = res.data.map((row: any) => ({
-          ...row,
-          category: row.categories,
-          images: row.product_images || [{ image_url: '/images/tulip_bouquet.jpg' }],
-        }));
+        productsList = res.data.map((row: any) => mapDbProductRow(row));
       }
     } catch {
       // Fallback

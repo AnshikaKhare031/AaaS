@@ -367,6 +367,7 @@ export class InMemoryStore {
     for (const p of prods) {
       if (p.category_id && this.categories[p.category_id]) {
         p.category = this.categories[p.category_id];
+        (p as any).category_name = this.categories[p.category_id].name;
       }
       this.products[p.id] = p;
     }

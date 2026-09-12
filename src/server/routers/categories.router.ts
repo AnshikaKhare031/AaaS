@@ -9,27 +9,31 @@ export const categoriesRouter = new Hono();
 categoriesRouter.get('/categories', async (c) => {
   if (supabaseClient) {
     try {
-      const { data, error } = await supabaseClient
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
-      if (data) {
-        return c.json(data);
-      }
-      if (error && isProduction) {
-        return c.json({ detail: error.message }, 500);
+      const { data } = await supabaseClient
+        .from('products')
+        .select('category')
+        .eq('is_active', true);
+      if (data && data.length > 0) {
+        const distinctNames = Array.from(new Set(data.map((r: any) => r.category).filter(Boolean)));
+        if (distinctNames.length > 0) {
+          const list: Category[] = distinctNames.map((name: any, idx: number) => {
+            const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            return {
+              id: slug,
+              name: String(name),
+              slug,
+              description: null,
+              image_url: null,
+              is_active: true,
+              display_order: idx + 1,
+            };
+          });
+          return c.json(list);
+        }
       }
     } catch (e: any) {
-      console.warn('Supabase categories fetch error:', e);
-      if (isProduction) {
-        return c.json({ detail: e.message || 'Failed to fetch categories' }, 500);
-      }
+      console.warn('Supabase categories fetch note:', e);
     }
-  }
-
-  if (isProduction) {
-    return c.json([]);
   }
 
   const cats = Object.values(store.categories).filter((cat) => cat.is_active !== false);
@@ -48,7 +52,7 @@ categoriesRouter.post('/admin/categories', async (c) => {
   const newCat: Category = {
     id: catId,
     name: body.name,
-    slug: body.slug,
+    slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
     description: body.description ?? null,
     image_url: body.image_url ?? null,
     is_active: body.is_active ?? true,
@@ -56,14 +60,6 @@ categoriesRouter.post('/admin/categories', async (c) => {
     created_at: nowStr,
     updated_at: nowStr,
   };
-
-  if (supabaseClient) {
-    try {
-      await supabaseClient.from('categories').insert(newCat);
-    } catch (e) {
-      console.warn('Supabase category insert error:', e);
-    }
-  }
 
   store.categories[catId] = newCat;
   return c.json(newCat);
@@ -83,14 +79,6 @@ categoriesRouter.put('/admin/categories/:cat_id', async (c) => {
   Object.assign(cat, body);
   cat.updated_at = new Date().toISOString();
 
-  if (supabaseClient) {
-    try {
-      await supabaseClient.from('categories').update(cat).eq('id', catId);
-    } catch (e) {
-      console.warn('Supabase category update error:', e);
-    }
-  }
-
   return c.json(cat);
 });
 
@@ -99,14 +87,6 @@ categoriesRouter.delete('/admin/categories/:cat_id', async (c) => {
   if (adminOrRes instanceof Response) return adminOrRes;
 
   const catId = c.req.param('cat_id');
-  if (supabaseClient) {
-    try {
-      await supabaseClient.from('categories').delete().eq('id', catId);
-    } catch (e) {
-      console.warn('Supabase category delete error:', e);
-    }
-  }
-
   if (store.categories[catId]) {
     delete store.categories[catId];
     return c.json({ success: true, message: 'Category deleted' });

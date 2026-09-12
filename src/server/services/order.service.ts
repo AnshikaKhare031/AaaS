@@ -10,13 +10,58 @@ import {
   Product,
 } from '../types';
 
+export function mapDbOrderRow(row: any): Order {
+  const items = (row.order_items && row.order_items.length > 0)
+    ? row.order_items
+    : (Array.isArray(row.items) ? row.items : []);
+
+  const shipping = (row.shipping_address && typeof row.shipping_address === 'object' && Object.keys(row.shipping_address).length > 0)
+    ? row.shipping_address
+    : {
+        fullName: row.shipping_name || row.customer_name || '',
+        email: row.shipping_email || row.customer_email || '',
+        phone: row.shipping_phone || row.customer_phone || '',
+        address: typeof row.shipping_address === 'string' ? row.shipping_address : '',
+        city: row.shipping_city || '',
+        state: row.shipping_state || '',
+        pincode: row.shipping_pincode || '',
+      };
+
+  return {
+    id: row.id,
+    order_number: row.order_number,
+    user_id: row.user_id || row.customer_id,
+    customer_name: row.customer_name || row.shipping_name,
+    customer_email: row.customer_email || row.shipping_email,
+    customer_phone: row.customer_phone || row.shipping_phone,
+    items,
+    shipping_address: shipping,
+    subtotal: Number(row.subtotal || 0),
+    discount_amount: Number(row.discount_amount || 0),
+    shipping_fee: Number(row.shipping_fee || 0),
+    total_amount: Number(row.total_amount || row.total || 0),
+    status: row.order_status || row.status || 'pending',
+    payment_status: row.payment_status || 'pending',
+    payment_method: row.payment_method || 'razorpay',
+    payment_id: row.payment_id,
+    provider_order_id: row.provider_order_id,
+    provider_payment_id: row.provider_payment_id,
+    payment_confirmation_sent_at: row.payment_confirmation_sent_at,
+    carrier_name: row.carrier_name,
+    tracking_number: row.tracking_number,
+    notes: row.notes,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
 export class OrderService {
   private async fetchProduct(productId: string): Promise<Product | null> {
     if (supabaseClient) {
       try {
         const { data } = await supabaseClient
           .from('products')
-          .select('*, product_images(*)')
+          .select('*')
           .eq('id', productId)
           .single();
         if (data) {
@@ -143,19 +188,28 @@ export class OrderService {
           id: orderId,
           order_number: orderNumber,
           user_id: userId,
-          subtotal,
-          shipping_fee: computedShippingFee,
-          total: totalAmount,
-          currency: 'INR',
-          order_status: 'pending',
-          payment_status: 'pending',
+          customer_id: userId,
+          customer_name: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.fullName || '' : '',
+          customer_email: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.email || '' : '',
+          customer_phone: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.phone || '' : '',
+          shipping_address: orderIn.shipping_address,
           shipping_name: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.fullName || '' : '',
           shipping_email: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.email || '' : '',
           shipping_phone: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.phone || '' : '',
-          shipping_address: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.address || '' : String(orderIn.shipping_address),
           shipping_city: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.city || '' : '',
           shipping_state: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.state || '' : '',
           shipping_pincode: typeof orderIn.shipping_address === 'object' ? orderIn.shipping_address?.pincode || '' : '',
+          items: validatedItems,
+          subtotal,
+          discount_amount: discount,
+          shipping_fee: computedShippingFee,
+          total: totalAmount,
+          total_amount: totalAmount,
+          currency: 'INR',
+          order_status: 'pending',
+          status: 'pending',
+          payment_status: 'pending',
+          payment_method: 'razorpay',
           created_at: nowStr,
           updated_at: nowStr,
         };
@@ -170,7 +224,9 @@ export class OrderService {
             product_image: item.product_image,
             quantity: item.quantity,
             unit_price: item.unit_price,
+            price: item.unit_price,
             subtotal: item.subtotal,
+            total: item.subtotal,
           });
         }
       } catch (err: any) {
@@ -199,36 +255,7 @@ export class OrderService {
           .order('created_at', { ascending: false });
 
         if (data) {
-          return data.map((row: any) => ({
-            id: row.id,
-            order_number: row.order_number,
-            user_id: row.user_id,
-            customer_name: row.shipping_name,
-            customer_email: row.shipping_email,
-            customer_phone: row.shipping_phone,
-            items: row.order_items || [],
-            shipping_address: {
-              fullName: row.shipping_name,
-              email: row.shipping_email,
-              phone: row.shipping_phone,
-              address: row.shipping_address,
-              city: row.shipping_city,
-              state: row.shipping_state,
-              pincode: row.shipping_pincode,
-            },
-            subtotal: Number(row.subtotal || 0),
-            discount_amount: 0,
-            shipping_fee: Number(row.shipping_fee || 0),
-            total_amount: Number(row.total || 0),
-            status: row.order_status || row.status || 'pending',
-            payment_status: row.payment_status || 'pending',
-            payment_method: row.payment_method || 'razorpay',
-            payment_id: row.payment_id,
-            provider_order_id: row.provider_order_id,
-            provider_payment_id: row.provider_payment_id,
-            created_at: row.created_at,
-            updated_at: row.updated_at,
-          }));
+          return data.map((row: any) => mapDbOrderRow(row));
         }
       } catch (err) {
         console.warn('Supabase get_user_orders error:', err);
@@ -258,36 +285,7 @@ export class OrderService {
           .single();
 
         if (data) {
-          order = {
-            id: data.id,
-            order_number: data.order_number,
-            user_id: data.user_id,
-            customer_name: data.shipping_name,
-            customer_email: data.shipping_email,
-            customer_phone: data.shipping_phone,
-            items: data.order_items || [],
-            shipping_address: {
-              fullName: data.shipping_name,
-              email: data.shipping_email,
-              phone: data.shipping_phone,
-              address: data.shipping_address,
-              city: data.shipping_city,
-              state: data.shipping_state,
-              pincode: data.shipping_pincode,
-            },
-            subtotal: Number(data.subtotal || 0),
-            discount_amount: 0,
-            shipping_fee: Number(data.shipping_fee || 0),
-            total_amount: Number(data.total || 0),
-            status: data.order_status || data.status || 'pending',
-            payment_status: data.payment_status || 'pending',
-            payment_method: data.payment_method || 'razorpay',
-            payment_id: data.payment_id,
-            provider_order_id: data.provider_order_id,
-            provider_payment_id: data.provider_payment_id,
-            created_at: data.created_at,
-            updated_at: data.updated_at,
-          };
+          order = mapDbOrderRow(data);
         }
       } catch {
         // Fallback
@@ -329,39 +327,7 @@ export class OrderService {
           .order('created_at', { ascending: false });
 
         if (data) {
-          return data.map((row: any) => ({
-            id: row.id,
-            order_number: row.order_number,
-            user_id: row.user_id,
-            customer_name: row.shipping_name,
-            customer_email: row.shipping_email,
-            customer_phone: row.shipping_phone,
-            items: row.order_items || [],
-            shipping_address: {
-              fullName: row.shipping_name,
-              email: row.shipping_email,
-              phone: row.shipping_phone,
-              address: row.shipping_address,
-              city: row.shipping_city,
-              state: row.shipping_state,
-              pincode: row.shipping_pincode,
-            },
-            subtotal: Number(row.subtotal || 0),
-            discount_amount: 0,
-            shipping_fee: Number(row.shipping_fee || 0),
-            total_amount: Number(row.total || 0),
-            status: row.order_status || row.status || 'pending',
-            payment_status: row.payment_status || 'pending',
-            payment_method: row.payment_method || 'razorpay',
-            payment_id: row.payment_id,
-            provider_order_id: row.provider_order_id,
-            provider_payment_id: row.provider_payment_id,
-            carrier_name: row.carrier_name,
-            tracking_number: row.tracking_number,
-            notes: row.notes,
-            created_at: row.created_at,
-            updated_at: row.updated_at,
-          }));
+          return data.map((row: any) => mapDbOrderRow(row));
         }
       } catch (err) {
         console.warn('Supabase get_all_orders error:', err);
@@ -449,6 +415,7 @@ export class OrderService {
       try {
         const updateFields: any = {
           order_status: newStatus,
+          status: newStatus,
           updated_at: nowStr,
         };
         if (order.carrier_name) updateFields.carrier_name = order.carrier_name;
