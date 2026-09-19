@@ -414,4 +414,30 @@ describe('Complete Product Lifecycle & Serverless Persistence Flow', () => {
     const getRes = await app.request(`/api/products/${rawDbRow.id}`);
     expect(getRes.status).toBe(404);
   });
+
+  // 5. Verifies database persistence fail-fast
+  it('5. Verifies database persistence fail-fast: refuses silent in-memory fallback when not in test mode', async () => {
+    const origEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'development';
+      const res = await app.request('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'Fail Fast Test Product',
+          price: 999,
+          category_id: 'handbags',
+        }),
+      });
+      // When supabaseClient is not connected, it must return 503 instead of silently saving in memory
+      expect(res.status).toBe(503);
+      const json = await res.json();
+      expect(json.detail).toContain('Database persistence unavailable');
+    } finally {
+      process.env.NODE_ENV = origEnv;
+    }
+  });
 });

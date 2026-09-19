@@ -171,7 +171,12 @@ productsRouter.get('/products', async (c) => {
         .from('products')
         .select('*')
         .eq('is_active', true);
-      if (res.data && res.data.length > 0) {
+      if (res.error) {
+        console.warn('Supabase products fetch failed:', res.error);
+        if (isProduction) {
+          return c.json({ detail: res.error.message || 'Failed to fetch products' }, 500);
+        }
+      } else if (res.data) {
         productsList = res.data.map((row: any) => mapDbProductRow(row));
       }
     } catch (e: any) {
@@ -180,11 +185,8 @@ productsRouter.get('/products', async (c) => {
         return c.json({ detail: e.message || 'Failed to fetch products' }, 500);
       }
     }
-  }
-
-  if (isProduction) {
-    // In production, products list from Supabase is authoritative
-  } else if (productsList.length === 0) {
+  } else {
+    // In-memory fallback only when Supabase is not configured
     productsList = Object.values(store.products).map((p) => {
       const prod = { ...p };
       if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
@@ -346,7 +348,12 @@ productsRouter.get('/admin/products', async (c) => {
       const res = await supabaseClient
         .from('products')
         .select('*');
-      if (res.data && res.data.length > 0) {
+      if (res.error) {
+        console.warn('Supabase admin products fetch failed:', res.error);
+        if (isProduction) {
+          return c.json({ detail: res.error.message || 'Failed to fetch products' }, 500);
+        }
+      } else if (res.data) {
         prodsList = res.data.map((row: any) => mapDbProductRow(row));
       }
     } catch (e: any) {
@@ -355,11 +362,8 @@ productsRouter.get('/admin/products', async (c) => {
         return c.json({ detail: e.message || 'Failed to fetch products' }, 500);
       }
     }
-  }
-
-  if (isProduction) {
-    // In production, products list from Supabase is authoritative
-  } else if (prodsList.length === 0) {
+  } else {
+    // In-memory fallback only when Supabase is not configured
     prodsList = Object.values(store.products).map((p) => {
       const prod = { ...p };
       if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
@@ -525,10 +529,29 @@ async function handleCreateProduct(c: any) {
         created_at: productDict.created_at,
         updated_at: productDict.updated_at,
       };
-      await supabaseClient.from('products').insert(dbDict);
-    } catch (e) {
-      console.warn('Supabase product insert failed:', e);
+      const { error: insertError } = await supabaseClient.from('products').insert(dbDict);
+      if (insertError) {
+        console.error('Supabase product insert failed:', insertError);
+        return c.json(
+          { detail: `Failed to persist product to database: ${insertError.message}` },
+          500
+        );
+      }
+    } catch (e: any) {
+      console.error('Supabase product insert exception:', e);
+      return c.json(
+        { detail: `Database exception during product persistence: ${e.message || e}` },
+        500
+      );
     }
+  } else if (process.env.NODE_ENV !== 'test') {
+    return c.json(
+      {
+        detail:
+          'Database persistence unavailable: Supabase client is not connected. Please configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your root .env file.',
+      },
+      503
+    );
   }
 
   normalizeProductImages(productDict);
@@ -645,10 +668,29 @@ async function handleUpdateProduct(c: any) {
         is_customizable: updatedProd.is_customizable,
         updated_at: updatedProd.updated_at,
       };
-      await supabaseClient.from('products').update(dbDict).eq('id', productId);
-    } catch (e) {
-      console.warn('Supabase product update failed:', e);
+      const { error: updateError } = await supabaseClient.from('products').update(dbDict).eq('id', productId);
+      if (updateError) {
+        console.error('Supabase product update failed:', updateError);
+        return c.json(
+          { detail: `Failed to update product in database: ${updateError.message}` },
+          500
+        );
+      }
+    } catch (e: any) {
+      console.error('Supabase product update exception:', e);
+      return c.json(
+        { detail: `Database exception during product update: ${e.message || e}` },
+        500
+      );
     }
+  } else if (process.env.NODE_ENV !== 'test') {
+    return c.json(
+      {
+        detail:
+          'Database persistence unavailable: Supabase client is not connected. Please configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your root .env file.',
+      },
+      503
+    );
   }
 
   store.products[productId] = updatedProd;
@@ -684,10 +726,29 @@ productsRouter.patch('/admin/products/:product_id/status', async (c) => {
       const dbUpd: any = { updated_at };
       if (body.is_active !== undefined) dbUpd.is_active = Boolean(body.is_active);
       if (body.is_featured !== undefined) dbUpd.is_featured = Boolean(body.is_featured);
-      await supabaseClient.from('products').update(dbUpd).eq('id', productId);
-    } catch (e) {
-      console.warn('Supabase product status toggle error:', e);
+      const { error: toggleError } = await supabaseClient.from('products').update(dbUpd).eq('id', productId);
+      if (toggleError) {
+        console.error('Supabase product status toggle failed:', toggleError);
+        return c.json(
+          { detail: `Failed to update product status in database: ${toggleError.message}` },
+          500
+        );
+      }
+    } catch (e: any) {
+      console.error('Supabase product status toggle exception:', e);
+      return c.json(
+        { detail: `Database exception during status update: ${e.message || e}` },
+        500
+      );
     }
+  } else if (process.env.NODE_ENV !== 'test') {
+    return c.json(
+      {
+        detail:
+          'Database persistence unavailable: Supabase client is not connected. Please configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your root .env file.',
+      },
+      503
+    );
   }
 
   store.products[productId] = prod;
@@ -707,10 +768,29 @@ productsRouter.delete('/admin/products/:product_id', async (c) => {
 
   if (supabaseClient) {
     try {
-      await supabaseClient.from('products').delete().eq('id', productId);
-    } catch (e) {
-      console.warn('Supabase product delete failed:', e);
+      const { error: deleteError } = await supabaseClient.from('products').delete().eq('id', productId);
+      if (deleteError) {
+        console.error('Supabase product delete failed:', deleteError);
+        return c.json(
+          { detail: `Failed to delete product from database: ${deleteError.message}` },
+          500
+        );
+      }
+    } catch (e: any) {
+      console.error('Supabase product delete exception:', e);
+      return c.json(
+        { detail: `Database exception during product deletion: ${e.message || e}` },
+        500
+      );
     }
+  } else if (process.env.NODE_ENV !== 'test') {
+    return c.json(
+      {
+        detail:
+          'Database persistence unavailable: Supabase client is not connected. Please configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your root .env file.',
+      },
+      503
+    );
   }
 
   if (store.products[productId]) {

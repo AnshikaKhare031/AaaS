@@ -1,5 +1,11 @@
 import dotenv from 'dotenv';
+import path from 'path';
+
+// 1. Load root .env
 dotenv.config();
+
+// 2. Also load frontend/.env as fallback for VITE_ variables if not already set
+dotenv.config({ path: path.resolve(process.cwd(), 'frontend', '.env') });
 
 export const isProduction =
   process.env.NODE_ENV === 'production' ||
