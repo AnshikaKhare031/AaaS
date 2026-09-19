@@ -70,6 +70,16 @@ export function mapDbProductRow(row: any): Product {
     : (row.category?.name || (row.categories && row.categories.name) || 'Crochet');
   const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+  let matchedCategoryId = row.category_id;
+  if (!matchedCategoryId) {
+    const matched = Object.values(store.categories).find(
+      (c) => c.slug === catSlug || c.name.toLowerCase() === catName.toLowerCase()
+    );
+    if (matched) {
+      matchedCategoryId = matched.id;
+    }
+  }
+
   const primaryImage = row.image_url || (Array.isArray(row.images) && row.images[0]) || '/images/tulip_bouquet.jpg';
 
   let rawImages: any[] = [];
@@ -81,14 +91,23 @@ export function mapDbProductRow(row: any): Product {
     rawImages = [primaryImage];
   }
 
+  const stock = Number(row.stock_quantity ?? row.inventory_count ?? 0);
+  const comparePrice = row.compare_at_price ?? row.sale_price ?? null;
+
   const prod: any = {
     ...row,
+    price: Number(row.price || 0),
+    sale_price: comparePrice !== null && comparePrice !== undefined ? Number(comparePrice) : null,
+    compare_at_price: comparePrice !== null && comparePrice !== undefined ? Number(comparePrice) : null,
+    stock_quantity: stock,
+    inventory_count: stock,
+    low_stock_threshold: Number(row.low_stock_threshold ?? 3),
     category: {
-      id: row.category_id || catSlug,
+      id: matchedCategoryId || row.category_id || catSlug,
       name: catName,
       slug: catSlug,
     },
-    category_id: row.category_id || catSlug,
+    category_id: matchedCategoryId || row.category_id || catSlug,
     category_name: catName,
     image_url: primaryImage,
     image: primaryImage,
@@ -97,6 +116,37 @@ export function mapDbProductRow(row: any): Product {
   };
 
   return normalizeProductImages(prod);
+}
+
+export async function fetchProductRow(productId: string): Promise<Product | null> {
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Supabase fetchProductRow error:', error);
+      } else if (data) {
+        return mapDbProductRow(data);
+      }
+    } catch (err) {
+      console.warn('Supabase fetchProductRow exception:', err);
+    }
+  }
+
+  const p = store.products[productId];
+  if (p) {
+    const prod = { ...p };
+    if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
+      prod.category = store.categories[prod.category_id];
+    }
+    return normalizeProductImages(prod);
+  }
+
+  return null;
 }
 
 // 1. List products with search, filtering, pagination
@@ -262,40 +312,21 @@ productsRouter.get('/products/slug/:slug', async (c) => {
   return c.json({ detail: `Product with slug '${slug}' not found` }, 404);
 });
 
-// 3. Get product by ID
-productsRouter.get('/products/:product_id', async (c) => {
-  const productId = c.req.param('product_id');
-
-  if (supabaseClient) {
-    try {
-      const res = await supabaseClient
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
-      if (res.data) {
-        return c.json(mapDbProductRow(res.data));
-      }
-    } catch {
-      if (isProduction) {
-        return c.json({ detail: `Product with id '${productId}' not found` }, 404);
-      }
-    }
+// 3. Get product by ID (both public /products/:id and /admin/products/:id)
+const handleGetProductById = async (c: any) => {
+  const productId = c.req.param('product_id') || c.req.param('id');
+  const prod = await fetchProductRow(productId);
+  if (prod) {
+    return c.json(prod);
   }
+  return c.json({ detail: `Product with id '${productId}' not found` }, 404);
+};
 
-  if (isProduction) {
-    return c.json({ detail: `Product with id '${productId}' not found` }, 404);
-  }
-
-  if (store.products[productId]) {
-    const prod = { ...store.products[productId] };
-    if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
-      prod.category = store.categories[prod.category_id];
-    }
-    return c.json(normalizeProductImages(prod));
-  }
-
-  return c.json({ detail: 'Product not found' }, 404);
+productsRouter.get('/products/:product_id', handleGetProductById);
+productsRouter.get('/admin/products/:product_id', async (c) => {
+  const adminOrRes = await requireAdmin(c);
+  if (adminOrRes instanceof Response) return adminOrRes;
+  return handleGetProductById(c);
 });
 
 // 4. Admin List Products
@@ -308,12 +339,39 @@ productsRouter.get('/admin/products', async (c) => {
   const categoryId = query.category || query.category_id;
   const statusFilter = query.status || 'all';
 
-  let prods = Object.values(store.products).map((p) => {
-    const prod = { ...p };
-    if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
-      prod.category = store.categories[prod.category_id];
+  let prodsList: any[] = [];
+
+  if (supabaseClient) {
+    try {
+      const res = await supabaseClient
+        .from('products')
+        .select('*');
+      if (res.data && res.data.length > 0) {
+        prodsList = res.data.map((row: any) => mapDbProductRow(row));
+      }
+    } catch (e: any) {
+      console.warn('Supabase admin products fetch failed:', e);
+      if (isProduction) {
+        return c.json({ detail: e.message || 'Failed to fetch products' }, 500);
+      }
     }
-    if (!prod.inventory_count) prod.inventory_count = prod.stock_quantity ?? 0;
+  }
+
+  if (isProduction) {
+    // In production, products list from Supabase is authoritative
+  } else if (prodsList.length === 0) {
+    prodsList = Object.values(store.products).map((p) => {
+      const prod = { ...p };
+      if (!prod.category && prod.category_id && store.categories[prod.category_id]) {
+        prod.category = store.categories[prod.category_id];
+      }
+      return prod;
+    });
+  }
+
+  let prods = prodsList.map((p) => {
+    const prod = { ...p };
+    if (prod.inventory_count === undefined) prod.inventory_count = prod.stock_quantity ?? 0;
     if (!prod.sku) prod.sku = `AAAS-${String(prod.id).slice(0, 6).toUpperCase()}`;
     return normalizeProductImages(prod);
   });
@@ -487,9 +545,9 @@ async function handleUpdateProduct(c: any) {
   const adminOrRes = await requireAdmin(c);
   if (adminOrRes instanceof Response) return adminOrRes;
 
-  const productId = c.req.param('product_id');
-  const prod = store.products[productId];
-  if (!prod) {
+  const productId = c.req.param('product_id') || c.req.param('id');
+  const existing = await fetchProductRow(productId);
+  if (!existing) {
     return c.json({ detail: 'Product not found' }, 404);
   }
 
@@ -506,6 +564,7 @@ async function handleUpdateProduct(c: any) {
     }
   }
 
+  let updatedImages = existing.images || [];
   if (rawUpdateImages.length > 0) {
     const newImgs: ProductImage[] = [];
     rawUpdateImages.forEach((item, idx) => {
@@ -515,70 +574,76 @@ async function handleUpdateProduct(c: any) {
           id: crypto.randomUUID(),
           product_id: productId,
           image_url: String(url).trim(),
-          alt_text: prod.name || 'Product',
+          alt_text: body.name || existing.name || 'Product',
           display_order: idx + 1,
         });
       }
     });
     if (newImgs.length > 0) {
-      prod.images = newImgs;
-      prod.image = newImgs[0].image_url;
-      prod.image_url = newImgs[0].image_url;
-      prod.product_image = newImgs[0].image_url;
+      updatedImages = newImgs;
     }
   }
 
-  if (body.inventory_count !== undefined) {
-    body.stock_quantity = body.inventory_count;
-  } else if (body.stock_quantity !== undefined) {
-    body.inventory_count = body.stock_quantity;
+  const stock = body.inventory_count ?? body.stock_quantity ?? existing.stock_quantity ?? 0;
+  const comparePrice = body.compare_at_price !== undefined
+    ? body.compare_at_price
+    : (body.sale_price !== undefined ? body.sale_price : existing.compare_at_price ?? null);
+  const price = body.price !== undefined ? Number(body.price) : existing.price;
+
+  const updatedProd: Product = {
+    ...existing,
+    ...body,
+    id: productId,
+    price,
+    sale_price: comparePrice !== null && comparePrice !== undefined ? Number(comparePrice) : null,
+    compare_at_price: comparePrice !== null && comparePrice !== undefined ? Number(comparePrice) : null,
+    stock_quantity: Number(stock),
+    inventory_count: Number(stock),
+    low_stock_threshold: Number(body.low_stock_threshold ?? existing.low_stock_threshold ?? 3),
+    images: updatedImages,
+    image: updatedImages[0]?.image_url || existing.image_url || '/images/tulip_bouquet.jpg',
+    image_url: updatedImages[0]?.image_url || existing.image_url || '/images/tulip_bouquet.jpg',
+    product_image: updatedImages[0]?.image_url || existing.image_url || '/images/tulip_bouquet.jpg',
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updatedProd.category_id && store.categories[updatedProd.category_id]) {
+    updatedProd.category = store.categories[updatedProd.category_id];
   }
 
-  if (body.compare_at_price !== undefined) {
-    body.sale_price = body.compare_at_price;
-  } else if (body.sale_price !== undefined) {
-    body.compare_at_price = body.sale_price;
-  }
-
-  Object.assign(prod, body);
-  prod.updated_at = new Date().toISOString();
-  if (prod.category_id && store.categories[prod.category_id]) {
-    prod.category = store.categories[prod.category_id];
-  }
-
-  normalizeProductImages(prod);
+  normalizeProductImages(updatedProd);
 
   if (supabaseClient) {
     try {
-      const categoryVal = typeof prod.category === 'string' && prod.category
-        ? prod.category
-        : (prod.category?.name || prod.category_id || 'Crochet');
+      const categoryVal = typeof updatedProd.category === 'string' && updatedProd.category
+        ? updatedProd.category
+        : (updatedProd.category?.name || updatedProd.category_id || 'Crochet');
 
       const dbDict: any = {
-        name: prod.name,
-        slug: prod.slug,
-        description: prod.description,
-        price: prod.price,
-        sale_price: prod.sale_price,
-        compare_at_price: prod.compare_at_price,
+        name: updatedProd.name,
+        slug: updatedProd.slug,
+        description: updatedProd.description,
+        price: updatedProd.price,
+        sale_price: updatedProd.sale_price,
+        compare_at_price: updatedProd.compare_at_price,
         category: categoryVal,
-        image_url: prod.image_url || prod.image,
-        images: (prod.images || []).map((img: any) => (typeof img === 'string' ? img : img.image_url)),
-        stock_quantity: prod.stock_quantity ?? 0,
-        inventory_count: prod.inventory_count ?? prod.stock_quantity ?? 0,
-        low_stock_threshold: prod.low_stock_threshold ?? 3,
-        sku: prod.sku,
-        material: prod.material,
-        care_instructions: prod.care_instructions,
-        shipping_information: prod.shipping_information,
-        tags: prod.tags || [],
-        specifications: prod.specifications || [],
-        is_active: prod.is_active,
-        is_featured: prod.is_featured,
-        is_bestseller: prod.is_bestseller,
-        is_new: prod.is_new,
-        is_customizable: prod.is_customizable,
-        updated_at: prod.updated_at,
+        image_url: updatedProd.image_url || updatedProd.image,
+        images: (updatedProd.images || []).map((img: any) => (typeof img === 'string' ? img : img.image_url)),
+        stock_quantity: updatedProd.stock_quantity ?? 0,
+        inventory_count: updatedProd.inventory_count ?? updatedProd.stock_quantity ?? 0,
+        low_stock_threshold: updatedProd.low_stock_threshold ?? 3,
+        sku: updatedProd.sku,
+        material: updatedProd.material,
+        care_instructions: updatedProd.care_instructions,
+        shipping_information: updatedProd.shipping_information,
+        tags: updatedProd.tags || [],
+        specifications: updatedProd.specifications || [],
+        is_active: updatedProd.is_active,
+        is_featured: updatedProd.is_featured,
+        is_bestseller: updatedProd.is_bestseller,
+        is_new: updatedProd.is_new,
+        is_customizable: updatedProd.is_customizable,
+        updated_at: updatedProd.updated_at,
       };
       await supabaseClient.from('products').update(dbDict).eq('id', productId);
     } catch (e) {
@@ -586,7 +651,8 @@ async function handleUpdateProduct(c: any) {
     }
   }
 
-  return c.json(prod);
+  store.products[productId] = updatedProd;
+  return c.json(updatedProd);
 }
 
 // 6. Product Update (both /admin/products/:id and /products/:id)
@@ -599,27 +665,32 @@ productsRouter.patch('/admin/products/:product_id/status', async (c) => {
   if (adminOrRes instanceof Response) return adminOrRes;
 
   const productId = c.req.param('product_id');
-  const prod = store.products[productId];
-  if (!prod) {
+  const existing = await fetchProductRow(productId);
+  if (!existing) {
     return c.json({ detail: 'Product not found' }, 404);
   }
 
   const body = await c.req.json();
-  if (body.is_active !== undefined) prod.is_active = body.is_active;
-  if (body.is_featured !== undefined) prod.is_featured = body.is_featured;
-  prod.updated_at = new Date().toISOString();
+  const updated_at = new Date().toISOString();
+  const prod: Product = {
+    ...existing,
+    updated_at,
+  };
+  if (body.is_active !== undefined) prod.is_active = Boolean(body.is_active);
+  if (body.is_featured !== undefined) prod.is_featured = Boolean(body.is_featured);
 
   if (supabaseClient) {
     try {
-      const dbUpd: any = { updated_at: prod.updated_at };
-      if (body.is_active !== undefined) dbUpd.is_active = body.is_active;
-      if (body.is_featured !== undefined) dbUpd.is_featured = body.is_featured;
+      const dbUpd: any = { updated_at };
+      if (body.is_active !== undefined) dbUpd.is_active = Boolean(body.is_active);
+      if (body.is_featured !== undefined) dbUpd.is_featured = Boolean(body.is_featured);
       await supabaseClient.from('products').update(dbUpd).eq('id', productId);
     } catch (e) {
       console.warn('Supabase product status toggle error:', e);
     }
   }
 
+  store.products[productId] = prod;
   return c.json(prod);
 });
 
@@ -629,6 +700,10 @@ productsRouter.delete('/admin/products/:product_id', async (c) => {
   if (adminOrRes instanceof Response) return adminOrRes;
 
   const productId = c.req.param('product_id');
+  const existing = await fetchProductRow(productId);
+  if (!existing) {
+    return c.json({ detail: 'Product not found' }, 404);
+  }
 
   if (supabaseClient) {
     try {
@@ -640,8 +715,7 @@ productsRouter.delete('/admin/products/:product_id', async (c) => {
 
   if (store.products[productId]) {
     delete store.products[productId];
-    return c.json({ success: true, message: 'Product deleted successfully' });
   }
 
-  return c.json({ detail: 'Product not found' }, 404);
+  return c.json({ success: true, message: 'Product deleted successfully' });
 });

@@ -143,8 +143,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'SIGNED_OUT' || !newSession) {
           setSession(null);
           setSupabaseUser(null);
-          setUser(null);
-          localStorage.removeItem('aaas_auth_token');
+          const adminToken = localStorage.getItem('admin_token');
+          if (!adminToken) {
+            setUser(null);
+            localStorage.removeItem('aaas_auth_token');
+          }
         }
         setIsLoading(false);
       }

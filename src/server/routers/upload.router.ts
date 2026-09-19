@@ -6,7 +6,14 @@ export const uploadRouter = new Hono();
 
 uploadRouter.post('/upload', async (c) => {
   const adminOrRes = await requireAdmin(c);
-  if (adminOrRes instanceof Response) return adminOrRes;
+  if (adminOrRes instanceof Response) {
+    try {
+      await c.req.raw.arrayBuffer();
+    } catch {
+      // Stream could already be terminated
+    }
+    return adminOrRes;
+  }
 
   try {
     const formData = await c.req.formData();
