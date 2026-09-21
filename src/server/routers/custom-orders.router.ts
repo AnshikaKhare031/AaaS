@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import crypto from 'crypto';
 import { store } from '../database';
-import { getCurrentUser, requireAdmin } from '../lib/auth';
+import { getCurrentUser, requireAuth, requireAdmin } from '../lib/auth';
 import { CustomOrder } from '../types';
 
 export const customOrdersRouter = new Hono();
@@ -42,28 +42,41 @@ customOrdersRouter.post('/custom-orders', async (c) => {
 });
 
 customOrdersRouter.get('/custom-orders', async (c) => {
-  const user = await getCurrentUser(c);
-  const userId = user?.id || null;
+  const userOrRes = await requireAuth(c);
+  if (userOrRes instanceof Response) return userOrRes;
 
   let orders = Object.values(store.custom_orders);
-  if (userId) {
-    orders = orders.filter((o) => o.user_id === userId);
+  if (userOrRes.role === 'admin') {
+    // Authorized admin can view all custom orders
+  } else {
+    // Authenticated customer can only view their own custom orders
+    orders = orders.filter((o) => o.user_id === userOrRes.id);
   }
   orders.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   return c.json(orders);
 });
 
 customOrdersRouter.get('/custom-orders/:custom_id', async (c) => {
+  const userOrRes = await requireAuth(c);
+  if (userOrRes instanceof Response) return userOrRes;
+
   const customId = c.req.param('custom_id');
-  if (store.custom_orders[customId]) {
-    return c.json(store.custom_orders[customId]);
+  const isAdmin = userOrRes.role === 'admin';
+
+  let order: CustomOrder | undefined = store.custom_orders[customId];
+  if (!order) {
+    order = Object.values(store.custom_orders).find((o) => o.request_id === customId);
   }
-  for (const o of Object.values(store.custom_orders)) {
-    if (o.request_id === customId) {
-      return c.json(o);
-    }
+
+  if (!order) {
+    return c.json({ detail: 'Custom order request not found' }, 404);
   }
-  return c.json({ detail: 'Custom order request not found' }, 404);
+
+  if (!isAdmin && order.user_id !== userOrRes.id) {
+    return c.json({ detail: 'Custom order request not found' }, 404);
+  }
+
+  return c.json(order);
 });
 
 // Admin endpoints

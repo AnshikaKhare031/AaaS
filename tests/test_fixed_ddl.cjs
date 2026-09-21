@@ -274,6 +274,9 @@ async function testFixedDDL() {
     db.public.none(`CREATE INDEX IF NOT EXISTS idx_webhook_events_event_id ON public.webhook_events(event_id);`);
     db.public.none(`CREATE INDEX IF NOT EXISTS idx_webhook_events_order_id ON public.webhook_events(order_id);`);
 
+    // 8. Drop obsolete phone column from public.profiles
+    db.public.none(`ALTER TABLE public.profiles DROP COLUMN IF EXISTS phone;`);
+
     console.log(`✓ Iteration ${iteration} completed successfully without errors!`);
   }
 
@@ -284,6 +287,11 @@ async function testFixedDDL() {
   const p1 = db.public.many('SELECT id, role FROM public.profiles;');
   if (p1.length !== 5) throw new Error('Expected 5 profiles, got ' + p1.length);
   console.log('✓ Profiles preserved: 5 profiles remain intact');
+
+  // Verify phone column dropped from public.profiles
+  const phoneCol = db.public.many("SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'phone';");
+  if (phoneCol.length > 0) throw new Error('Column phone was not dropped from public.profiles');
+  console.log('✓ Column profiles.phone successfully dropped and verified absent');
 
   // Verify sku index and column
   const prodSkuCol = db.public.many("SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'sku';");

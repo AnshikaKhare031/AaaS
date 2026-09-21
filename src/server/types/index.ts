@@ -4,8 +4,7 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  phone?: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
   role: UserRole;
   created_at?: string;
 }

@@ -1,22 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Package, Heart, Sparkles, LogOut, Shield, MapPin, Phone, Mail } from 'lucide-react';
+import { User, Package, Heart, Sparkles, LogOut, Shield, MapPin, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 
 export const MyAccountPage: React.FC = () => {
-  const { user, isAdmin, signOut, updateProfile } = useAuth();
+  const { user, isAdmin, signOut, updateProfile, refreshProfile } = useAuth();
   const { items: wishlistItems } = useWishlist();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name || '');
-  const [phone, setPhone] = useState(user?.phone || '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Refresh profile from public.profiles on mount
+  useEffect(() => {
+    refreshProfile?.();
+  }, [refreshProfile]);
+
+  // Keep local form fields synchronized with persisted user profile
+  useEffect(() => {
+    if (user && !isEditing) {
+      setFullName(user.full_name || '');
+    }
+  }, [user, isEditing]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateProfile({ full_name: fullName, phone });
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        full_name: fullName.trim() || user?.full_name || 'Valued Patron',
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
     setIsEditing(false);
+    setFullName(user?.full_name || '');
   };
 
   return (
@@ -107,26 +133,18 @@ export const MyAccountPage: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#5A4335] mb-1">Phone Number</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs bg-[#F8F5F0] border border-[#E7DFD7] rounded-xl text-[#3D2E24] focus:outline-none focus:border-[#C6A15B]"
-              />
-            </div>
-
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24]"
+                disabled={isSaving}
+                className="px-6 py-2.5 bg-[#5A4335] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#3D2E24] disabled:opacity-50"
               >
-                Save Changes
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
               <button
                 type="button"
-                onClick={() => setIsEditing(false)}
+                disabled={isSaving}
+                onClick={handleCancel}
                 className="px-6 py-2.5 border border-[#E7DFD7] text-xs font-semibold text-[#7B6656] rounded-xl hover:bg-[#F8F5F0]"
               >
                 Cancel
@@ -148,14 +166,6 @@ export const MyAccountPage: React.FC = () => {
               <div>
                 <p className="text-[#7B6656]">Email</p>
                 <p className="font-semibold text-[#3D2E24] text-sm">{user?.email || 'customer@aaascrochet.com'}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-[#F8F5F0] rounded-xl">
-              <Phone className="w-4 h-4 text-[#C6A15B]" />
-              <div>
-                <p className="text-[#7B6656]">Phone</p>
-                <p className="font-semibold text-[#3D2E24] text-sm">{user?.phone || '+91 98765 12345'}</p>
               </div>
             </div>
           </div>

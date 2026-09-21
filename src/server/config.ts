@@ -1,11 +1,7 @@
 import dotenv from 'dotenv';
-import path from 'path';
 
-// 1. Load root .env
+// Load root .env
 dotenv.config();
-
-// 2. Also load frontend/.env as fallback for VITE_ variables if not already set
-dotenv.config({ path: path.resolve(process.cwd(), 'frontend', '.env') });
 
 export const isProduction =
   process.env.NODE_ENV === 'production' ||
@@ -60,8 +56,14 @@ export const settings = {
  * Validates that all required security-sensitive variables are properly configured in production.
  * Strictly fails fast without leaking secret values.
  */
-export function validateProductionConfig(): void {
-  if (!isProduction) {
+export function validateProductionConfig(force = false): void {
+  const currentIsProd =
+    force ||
+    process.env.NODE_ENV === 'production' ||
+    process.env.ENVIRONMENT === 'production' ||
+    process.env.VERCEL_ENV === 'production';
+
+  if (!currentIsProd) {
     return;
   }
 
@@ -92,6 +94,8 @@ export function validateProductionConfig(): void {
     'admin123',
     'super-secret-jwt-token-with-at-least-32-characters-long',
     'super-secret-admin-session-hmac-sha256-key-32chars',
+    'your-supabase-jwt-secret-min-32-chars',
+    'your-supabase-jwt-secret',
     'secret_placeholder_key_32chars_aaas',
     'webhook_secret_key_32chars_aaas',
     'rzp_test_placeholder_key',

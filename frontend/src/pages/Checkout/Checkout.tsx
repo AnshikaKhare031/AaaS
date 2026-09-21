@@ -32,7 +32,7 @@ export const CheckoutPage: React.FC = () => {
   const [formData, setFormData] = useState({
     fullName: user?.full_name || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    phone: '',
     address: '',
     city: '',
     state: 'Delhi',
@@ -49,7 +49,7 @@ export const CheckoutPage: React.FC = () => {
         ...prev,
         fullName: prev.fullName || user.full_name || '',
         email: prev.email || user.email || '',
-        phone: prev.phone || user.phone || '',
+        phone: prev.phone || '',
       }));
     }
   }, [user]);

@@ -85,11 +85,17 @@ describe('End-to-End API Smoke Test Matrix', () => {
     expect(Array.isArray(body)).toBe(true);
   });
 
-  // 8. Custom Orders: POST 200, GET 200
-  it('POST & GET /api/custom-orders -> 200', async () => {
+  // 8. Custom Orders: 401 unauth, 200 auth
+  it('Custom Orders: 401 unauth, 200 auth', async () => {
+    const unauthGet = await app.request('/api/custom-orders');
+    expect(unauthGet.status).toBe(401);
+
     const postRes = await app.request('/api/custom-orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${customerToken}`,
+      },
       body: JSON.stringify({
         name: 'Pooja Hegde',
         email: 'pooja.custom@example.com',
@@ -103,7 +109,9 @@ describe('End-to-End API Smoke Test Matrix', () => {
     const created = await postRes.json();
     expect(created.id).toBeDefined();
 
-    const getRes = await app.request('/api/custom-orders?email=pooja.custom@example.com');
+    const getRes = await app.request('/api/custom-orders', {
+      headers: { Authorization: `Bearer ${customerToken}` },
+    });
     expect(getRes.status).toBe(200);
     const list = await getRes.json();
     expect(list.length).toBeGreaterThan(0);

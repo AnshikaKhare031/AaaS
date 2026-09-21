@@ -38,9 +38,14 @@ export const RegisterPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const { error: err } = await signUpWithEmail(email, password, fullName);
+      const { error: err, session } = await signUpWithEmail(email, password, fullName);
       if (!err) {
-        navigate('/account');
+        if (session) {
+          navigate('/account', { replace: true });
+        } else {
+          // Email verification is required: redirect to login page so customer can sign in once verified
+          navigate('/login', { replace: true });
+        }
       }
     } finally {
       setIsSubmitting(false);

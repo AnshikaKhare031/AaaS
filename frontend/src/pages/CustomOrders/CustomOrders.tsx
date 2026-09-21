@@ -22,7 +22,7 @@ export const CustomOrdersPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: user?.full_name || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    phone: '',
     product_type: 'Bridal Floral Bouquet',
     category: 'Crochet Flowers & Bouquets',
     color_preference: 'Soft Blush, Warm Ivory & Sage Green',
