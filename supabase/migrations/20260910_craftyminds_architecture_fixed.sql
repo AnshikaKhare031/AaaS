@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name TEXT,
     email TEXT UNIQUE,
     phone TEXT,
-    avatar_url TEXT,
     role TEXT NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -399,18 +398,16 @@ CREATE INDEX IF NOT EXISTS idx_webhook_events_order_id ON public.webhook_events(
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, email, avatar_url, role)
+    INSERT INTO public.profiles (id, full_name, email, role)
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'Valued Customer'),
         NEW.email,
-        NEW.raw_user_meta_data->>'avatar_url',
         COALESCE(NEW.raw_user_meta_data->>'role', 'customer')
     )
     ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
         full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
         updated_at = now();
     RETURN NEW;
 END;

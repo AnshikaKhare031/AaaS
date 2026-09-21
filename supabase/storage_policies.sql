@@ -7,8 +7,7 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES 
     ('product-images', 'product-images', true),
     ('category-images', 'category-images', true),
-    ('custom-order-images', 'custom-order-images', false),
-    ('avatars', 'avatars', true)
+    ('custom-order-images', 'custom-order-images', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Storage Policies for product-images (Public read, Admin write)
@@ -42,11 +41,3 @@ CREATE POLICY "Users Upload Custom Order Images"
 ON storage.objects FOR INSERT
 WITH CHECK (bucket_id = 'custom-order-images' AND (auth.role() = 'authenticated' OR auth.role() = 'anon'));
 
--- 5. Storage Policies for avatars (Public read, Owner update)
-CREATE POLICY "Public Read Avatars"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'avatars');
-
-CREATE POLICY "Users Upload Own Avatar"
-ON storage.objects FOR INSERT
-WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);

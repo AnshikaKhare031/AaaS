@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.id,
           email: data.email || email,
           full_name: data.full_name || email.split('@')[0],
-          avatar_url: data.avatar_url ?? null,
           role: (data.role === 'admin' ? 'admin' : 'customer') as UserRole,
           created_at: data.created_at,
         };
@@ -77,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authUser.user_metadata?.full_name ||
       authUser.user_metadata?.name ||
       (authUser.email || emailFallback || '').split('@')[0],
-    avatar_url: authUser.user_metadata?.avatar_url ?? null,
     role: (authUser.user_metadata?.role === 'admin' ? 'admin' : 'customer') as UserRole,
   });
 
@@ -257,7 +255,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user.id,
           email: data.user.email || trimmedEmail,
           full_name: trimmedFullName || (data.user.email || trimmedEmail).split('@')[0],
-          avatar_url: data.user.user_metadata?.avatar_url ?? null,
           role: 'customer',
         };
         setUser(immediateProfile);
@@ -339,7 +336,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: new Date().toISOString(),
       };
       if (data.full_name !== undefined) updatePayload.full_name = data.full_name;
-      if (data.avatar_url !== undefined) updatePayload.avatar_url = data.avatar_url;
 
       const { data: updatedRecord, error } = await supabase
         .from('profiles')
@@ -359,7 +355,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: updatedRecord.id,
         email: updatedRecord.email || user.email,
         full_name: updatedRecord.full_name || user.email.split('@')[0],
-        avatar_url: updatedRecord.avatar_url ?? null,
         role: (updatedRecord.role === 'admin' ? 'admin' : 'customer') as UserRole,
         created_at: updatedRecord.created_at,
       });

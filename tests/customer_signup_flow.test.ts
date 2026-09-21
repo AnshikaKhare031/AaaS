@@ -72,16 +72,18 @@ describe('Customer Signup Flow & Supabase Response Handling', () => {
     // Verify row automatically exists in profiles table
     const { data: profile, error: profileErr } = await adminClient
       .from('profiles')
-      .select('*')
+      .select('id, full_name, email, role')
       .eq('id', createdUserId)
       .single();
 
     expect(profileErr).toBeNull();
     expect(profile).toBeDefined();
-    expect(profile.id).toBe(createdUserId);
-    expect(profile.email).toBe(uniqueEmail);
-    expect(profile.full_name).toBe(fullName);
-    expect(profile.role).toBe('customer');
+    expect(profile!.id).toBe(createdUserId);
+    expect(profile!.email).toBe(uniqueEmail);
+    expect(profile!.full_name).toBe(fullName);
+    expect(profile!.role).toBe('customer');
+    expect((profile as any)?.phone).toBeUndefined();
+    expect((profile as any)?.avatar_url).toBeUndefined();
 
     // Clean up test user
     await adminClient.auth.admin.deleteUser(createdUserId);
@@ -99,12 +101,14 @@ describe('Customer Signup Flow & Supabase Response Handling', () => {
 
     const { data: profile } = await adminClient
       .from('profiles')
-      .select('*')
+      .select('id, full_name, email, role')
       .eq('id', userInAuth!.id)
       .single();
 
     expect(profile).toBeDefined();
-    expect(profile.email).toBe(targetEmail);
-    expect(profile.role).toBe('customer');
+    expect(profile!.email).toBe(targetEmail);
+    expect(profile!.role).toBe('customer');
+    expect((profile as any)?.phone).toBeUndefined();
+    expect((profile as any)?.avatar_url).toBeUndefined();
   });
 });

@@ -3,7 +3,7 @@ const fs = require('fs');
 
 async function testMigration() {
   console.log('--- Initializing pg-mem PostgreSQL simulator ---');
-  const db = newDb();
+  const db = newDb({ noAstCoverageCheck: true });
 
   // Register uuid-ossp / pgcrypto mock functions
   db.registerExtension('uuid-ossp', (schema) => {
@@ -35,8 +35,6 @@ async function testMigration() {
       id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
       full_name TEXT,
       email TEXT UNIQUE,
-      phone TEXT,
-      avatar_url TEXT,
       role TEXT NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

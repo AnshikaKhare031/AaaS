@@ -277,6 +277,9 @@ async function testFixedDDL() {
     // 8. Drop obsolete phone column from public.profiles
     db.public.none(`ALTER TABLE public.profiles DROP COLUMN IF EXISTS phone;`);
 
+    // 9. Drop obsolete avatar_url column from public.profiles
+    db.public.none(`ALTER TABLE public.profiles DROP COLUMN IF EXISTS avatar_url;`);
+
     console.log(`✓ Iteration ${iteration} completed successfully without errors!`);
   }
 
@@ -292,6 +295,11 @@ async function testFixedDDL() {
   const phoneCol = db.public.many("SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'phone';");
   if (phoneCol.length > 0) throw new Error('Column phone was not dropped from public.profiles');
   console.log('✓ Column profiles.phone successfully dropped and verified absent');
+
+  // Verify avatar_url column dropped from public.profiles
+  const avatarCol = db.public.many("SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'avatar_url';");
+  if (avatarCol.length > 0) throw new Error('Column avatar_url was not dropped from public.profiles');
+  console.log('✓ Column profiles.avatar_url successfully dropped and verified absent');
 
   // Verify sku index and column
   const prodSkuCol = db.public.many("SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'sku';");
