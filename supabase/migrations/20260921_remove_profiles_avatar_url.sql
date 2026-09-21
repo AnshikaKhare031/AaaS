@@ -13,10 +13,7 @@ BEGIN
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'role', 'customer')
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
-        updated_at = now();
+    ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
