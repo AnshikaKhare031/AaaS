@@ -1,200 +1,65 @@
-# AaaS — Premium Handmade Crochet Boutique E-Commerce
+# Crafty Mind Studio
 
-A full-stack, production-ready luxury e-commerce platform crafted for **AaaS**, an independent boutique brand specializing in handmade crochet flowers, bags, accessories, and bespoke personalized creations.
+A premium Next.js e-commerce storefront for handcrafted arts (MDF Arts, Pouches, Magnets, Rakhis, and Crochet). Built with Next.js, Tailwind CSS, Supabase, and Razorpay.
 
-The backend is built with **TypeScript (Hono)**, running as high-performance serverless functions on **Vercel** alongside the **React (Vite)** storefront, backed by **Supabase** (PostgreSQL, Auth, Storage) and **Razorpay** (Payments & Webhooks).
-
----
-
-## ✨ Brand Identity & Design System
-
-- **Brand Aesthetic**: Warm, minimal, feminine, editorial, artisan luxury.
-- **Color Palette**:
-  - Main Background: Soft Ivory (`#F8F5F0`)
-  - Secondary Background: Warm Beige (`#EADCCF`)
-  - Typography Primary: Espresso Brown (`#5A4335`)
-  - Typography Dark: Dark Brown (`#3D2E24`)
-  - Secondary Text: Taupe Brown (`#7B6656`)
-  - Primary Accent: Antique Gold (`#C6A15B`)
-  - Soft Accent: Sage Green (`#B7C0A6`)
-  - Borders: Warm Neutral (`#E7DFD7`)
-- **Typography**:
-  - Headings / Editorial: **Cormorant Garamond**
-  - Body / Interfaces: **Manrope**
-  - Subtle Accents: **Allura**
+## Features
+- **Storefront**: Premium, dynamic catalog filtering and product detail views.
+- **Cart & Checkout**: Real-time persistent shopping cart supporting guest and logged-in checkouts.
+- **Razorpay Integration**: Seamless payment flows with support for payment recovery, retries, and automatic failed-order cleanup.
+- **Secure Authentication**: Consolidated Supabase auth synchronization with server cookies, protecting admin and customer dashboards.
+- **Guest Order Linking**: Automatically links historical guest orders with newly created/logged-in customer accounts sharing the same email address.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## Environment Variables
 
-```text
-                               VERCEL
-        ┌────────────────────────────────────────────────────────┐
-        │                                                        │
-        │   React Frontend (Vite SPA)   ──>   /                  │
-        │   TypeScript Backend (Hono)   ──>   /api/*             │
-        │   Edge Middleware (Auth/Role) ──>   /admin/*           │
-        │                                                        │
-        └───────────────────────────┬────────────────────────────┘
-                                    │
-                  ┌─────────────────┴─────────────────┐
-                  ▼                                   ▼
-          Supabase Platform                  Razorpay Gateway
-     - PostgreSQL Database              - Payment Orders
-     - Row Level Security (RLS)         - Webhook Events
-     - Auth (Customer Sessions)         - HMAC Verification
-     - Storage (Product WebP Images)
-```
+To run this application locally or in production, configure the following environment variables in your `.env.local` or hosting provider:
 
-```
-AaaS/
-├── frontend/             # React 19 + TypeScript + Vite + Tailwind CSS + Framer Motion
-│   ├── src/
-│   │   ├── components/   # Logo, Navbar, Footer, ProductCard, SearchModal, etc.
-│   │   ├── pages/        # Storefront, Checkout, Custom Orders, Admin Portal
-│   │   ├── context/      # AuthContext, CartContext, WishlistContext, ToastContext
-│   │   ├── services/     # Axios REST client + Supabase JS Client
-│   │   └── types/        # Comprehensive TypeScript Interfaces
-│   └── public/images/    # High-resolution lifestyle crochet photography
-│
-├── src/server/           # TypeScript Backend Engine (Hono)
-│   ├── app.ts            # Hono application assembly & error handling
-│   ├── config.ts         # Environment settings validation
-│   ├── database.ts       # Supabase PostgreSQL client + seeded fallback store
-│   ├── lib/              # Auth (JWT verification), Razorpay HMAC helpers
-│   ├── services/         # Order, Payment, Inventory, Storage, Admin services
-│   └── routers/          # 13 Modular routers (products, orders, payments, admin...)
-│
-├── api/
-│   └── index.ts          # Vercel Serverless Function entry point (hono/vercel)
-│
-├── server.ts             # Local development server (port 8000 via @hono/node-server)
-├── middleware.ts         # Edge middleware for /admin security boundary
-├── vercel.json           # Unified Vercel deployment configuration
-├── tests/                # Vitest comprehensive integration test suite (31 tests)
-└── supabase/             # Relational Database Schema & Storage
-    ├── schema.sql        # PostgreSQL tables + RLS Security Policies
-    ├── seed.sql          # Seed categories, demo products, reviews, settings
-    └── storage_policies.sql # Storage bucket policies (product-images)
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=            # Your public Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=       # Your public Supabase anonymous key
+SUPABASE_SERVICE_ROLE_KEY=           # Supabase service role key (keep secret, server-only)
+
+# Authentication Secrets
+ADMIN_PASSWORD=                      # Password for the admin dashboard session encryption
+CUSTOMER_SESSION_SECRET=             # 64-character hex string for signing customer cookies
+
+# Razorpay Integration
+NEXT_PUBLIC_RAZORPAY_KEY_ID=         # Public Razorpay key ID
+RAZORPAY_KEY_ID=                     # Secret Razorpay key ID
+RAZORPAY_KEY_SECRET=                 # Razorpay key secret (keep secret, server-only)
+
+# Email Notifications
+RESEND_API_KEY=                      # Resend service API key
+RESEND_FROM_EMAIL=                   # Source email for transactional updates (e.g., Crafty Mind Studio <orders@craftymindstudio.in>)
+RESEND_REPLY_TO=                     # Reply-to email for customer replies (e.g., hello@craftymindstudio.in)
 ```
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## Getting Started
 
-### 1. Prerequisites
-- **Node.js** (v20+) & **npm**
-
-### 2. Installation
+### 1. Install Dependencies
 ```bash
-# Install root dependencies (backend, dev tools, test runner)
 npm install
-
-# Install frontend dependencies
-npm install --prefix frontend
 ```
 
-### 3. Environment Configuration
-Copy `.env.example` to `.env` and set your credentials:
+### 2. Run the Development Server
 ```bash
-cp .env.example .env
-```
-
-### 4. Run Development Servers
-```bash
-# Concurrently runs the TypeScript backend on port 8000 and Vite frontend on port 5173
 npm run dev
 ```
-- **Storefront**: [http://localhost:5173](http://localhost:5173)
-- **API Health Check**: [http://localhost:8000/api/health](http://localhost:8000/api/health)
+Open [http://localhost:3000](http://localhost:3000) to view the storefront.
 
-### 5. Run Automated Tests & Typecheck
+### 3. Build for Production
 ```bash
-# Run the 31-test integration suite
-npm test
-
-# Run TypeScript typechecks and frontend production build
-npm run typecheck
+npm run build
+npm run start
 ```
 
 ---
 
-## 🔐 Supabase Setup Guide
-
-### 1. Create a Supabase Project
-1. Go to [supabase.com](https://supabase.com) and create a new project.
-2. Under **Project Settings -> API**, copy:
-   - **Project URL** (`SUPABASE_URL`)
-   - **anon public key** (`SUPABASE_ANON_KEY`)
-   - **service_role secret key** (`SUPABASE_SERVICE_ROLE_KEY`)
-   - **JWT Secret** (`SUPABASE_JWT_SECRET`)
-
-### 2. Run Database Migrations & Storage Policies
-1. Open the **SQL Editor** in your Supabase dashboard.
-2. Execute [supabase/schema.sql](file:///D:/AaaS/supabase/schema.sql).
-3. Execute [supabase/seed.sql](file:///D:/AaaS/supabase/seed.sql).
-4. Execute [supabase/storage_policies.sql](file:///D:/AaaS/supabase/storage_policies.sql).
-5. Ensure a public bucket named `product-images` exists in Storage.
-
-### 3. Create the First Admin User
-1. Register an account with your email via `/register` or `/login`.
-2. In Supabase Dashboard -> **SQL Editor**, run:
-```sql
-UPDATE public.profiles
-SET role = 'admin'
-WHERE email = 'your-email@example.com';
-```
-
----
-
-## 💳 Razorpay Payment & Webhook Integration
-
-1. Sign up on [dashboard.razorpay.com](https://dashboard.razorpay.com).
-2. Generate API Keys in **Settings -> API Keys** (Test Mode).
-3. Set your webhook URL in **Settings -> Webhooks**:
-   - **URL**: `https://<your-vercel-domain>/api/payment/webhook`
-   - **Secret**: Set matching `RAZORPAY_WEBHOOK_SECRET`
-   - **Events**: `order.paid`, `payment.captured`, `payment.failed`
-
-### Secure Payment Flow:
-1. Customer initiates checkout on `/checkout`.
-2. Frontend requests order creation: `POST /api/orders` (stock check & authoritative pricing).
-3. Backend generates Razorpay Order: `POST /api/payment/create-order`.
-4. Razorpay checkout modal opens.
-5. Upon payment completion, Razorpay returns `razorpay_order_id`, `razorpay_payment_id`, and `razorpay_signature`.
-6. Frontend sends payment details to backend: `POST /api/payment/verify`.
-7. **Backend cryptographically verifies the HMAC-SHA256 signature** with constant-time equality check using `RAZORPAY_KEY_SECRET`.
-8. Once verified, backend transactionally commits payment, transitions state to `paid`, decrements stock, and triggers confirmation.
-9. **Webhook Deduplication**: Webhooks carry cryptographic signatures, deduplicate event IDs, and reconcile delayed payments via an automated recovery sweep.
-
----
-
-## 📦 Admin Management Features
-
-Access the protected portal at `/admin`:
-- **Overview & Analytics** (`/admin`): Real-time revenue, order counts, customer metrics, sales charts.
-- **Inventory & Products** (`/admin/inventory`): Add, edit, delete products, upload images, update stock levels, configure low-stock alerts.
-- **Orders** (`/admin/orders`): Track fulfillment, update order statuses (`pending`, `confirmed`, `processing`, `shipped`, `delivered`), assign tracking numbers and carriers.
-- **Custom Orders** (`/admin/custom-orders`): Review bespoke customer submissions and reference photos.
-- **Reviews Moderation** (`/admin/reviews`): Moderate customer reviews.
-- **Store Settings** (`/admin/settings`): Configure fixed shipping charge, free shipping threshold, store contact details.
-
----
-
-## 🛡️ Security Highlights
-- **Vercel Serverless Architecture**: Zero external backend hosting needed; unified build deployed to Vercel edge/serverless infrastructure.
-- **Edge Middleware Boundary**: Strict Edge-compatible middleware on `/admin/*` and `/api/admin/*` inspecting session cookies and JWT signatures.
-- **Never Trust Client Prices**: Order subtotals, discounts, and shipping fees are computed authoritatively on the backend.
-- **Transactional Stock Reservation**: Stock is validated prior to order creation and safely restored if orders are cancelled.
-- **Constant-Time Crypto Verification**: Razorpay payment and webhook signatures use `crypto.timingSafeEqual` to prevent timing attacks.
-- **Secret Isolation**: Sensitive secrets (`RAZORPAY_KEY_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_JWT_SECRET`) are never leaked to the client bundle.
-
----
-
-## 🚢 Deployment to Vercel
-
-See [DEPLOYMENT.md](file:///D:/AaaS/DEPLOYMENT.md) for detailed step-by-step instructions on deploying the unified application to Vercel.
-
----
-
-© AaaS. Lovingly handcrafted.
+## Production Deployment Checklist
+1. Configure all required environment variables in your hosting provider (e.g., Vercel, Netlify).
+2. Configure Razorpay webhooks pointing to your production host `/api/payment/verify` endpoint.
+3. Keep database indexes up-to-date in Supabase (specifically `orders(user_id)` and `orders(email)`).

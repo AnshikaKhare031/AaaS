@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+:root {
+  /* AaaS Official Palette - Modern Artisan Crochet */
+  --color-cream: #F8F2E7;
+  --color-deep-green: #25382E;
+  --color-forest-green: #405F4C;
+  --color-blush: #F6C4C2;
+  --color-pink: #EC8D99;
+  --color-yellow: #F5C842;
+  --color-warm-white: #FFFAF1;
+  --color-sage: #5C745F;
+
+  /* Global Semantics */
+  --background: #F8F2E7;
+  --foreground: #25382E;
+  --card: #FFFAF1;
+  --accent: #25382E;
+  --accent-forest: #405F4C;
+  --accent-blush: #F6C4C2;
+  --accent-pink: #EC8D99;
+  --accent-yellow: #F5C842;
+  --accent-sage: #5C745F;
+  --border: #E5DACB;
+}
+
+@theme {
+  --color-cream: #F8F2E7;
+  --color-deep-green: #25382E;
+  --color-forest-green: #405F4C;
+  --color-blush: #F6C4C2;
+  --color-pink: #EC8D99;
+  --color-yellow: #F5C842;
+  --color-warm-white: #FFFAF1;
+  --color-sage: #5C745F;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border-custom: var(--border);
+
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-manrope), "Manrope", system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), "Manrope", system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+}
+
+.font-sans {
+  font-family: var(--font-manrope), "Manrope", system-ui, sans-serif;
+}
+
+/* Custom scrollbar matching AaaS Warm Cream & Deep Green tone */
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #F8F2E7;
+}
+::-webkit-scrollbar-thumb {
+  background: #E5DACB;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5C745F;
+}
+
+/* Hide scrollbar for clean horizontal scrollers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Premium Skeleton & Loading Styles */
+.skeleton-shimmer {
+  background-color: #F6C4C2;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(248, 242, 231, 0) 0%,
+    rgba(255, 250, 241, 0.4) 30%,
+    rgba(255, 250, 241, 0.8) 60%,
+    rgba(248, 242, 231, 0) 100%
+  );
+  animation: shimmer-animation 2.2s infinite ease-out;
+}
+
+@keyframes shimmer-animation {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Page Transition Fades */
+.page-fade-in {
+  animation: fade-in-animation 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-animation {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button & Card Micro-interactions */
+.aaas-btn-primary {
+  background-color: #25382E;
+  color: #FFFAF1;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.aaas-btn-primary:hover {
+  background-color: #405F4C;
+}
+
+.aaas-btn-secondary {
+  background-color: transparent;
+  color: #25382E;
+  border: 1px solid #25382E;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.aaas-btn-secondary:hover {
+  background-color: #25382E;
+  color: #FFFAF1;
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after,
+  .page-fade-in,
+  .animate-pulse,
+  .transition-all,
+  .transition-colors,
+  .transition-transform {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
