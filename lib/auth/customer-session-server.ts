@@ -1,43 +1,51 @@
-import { cookies } from "next/headers";
-import {
-  CUSTOMER_SESSION_COOKIE_NAME,
-  CustomerSessionPayload,
-  decryptCustomerSession,
-  encryptCustomerSession,
-} from "./customer-session";
-
-const SESSION_MAX_AGE_BUFFER_SECONDS = 60;
+import { createServerUserClient } from "@/lib/supabase/server";
+import { CustomerSessionPayload } from "./customer-session";
 
 export async function getCustomerSession(): Promise<CustomerSessionPayload | null> {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(CUSTOMER_SESSION_COOKIE_NAME)?.value;
-  if (!sessionToken) return null;
+  try {
+    const supabase = await createServerUserClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  const session = await decryptCustomerSession(sessionToken);
-  if (!session) return null;
+    if (error || !user) {
+      return null;
+    }
 
-  if (Date.now() >= session.expiresAt) {
+    const fullName =
+      (user.user_metadata?.full_name as string | undefined) ??
+      (user.user_metadata?.name as string | undefined) ??
+      user.email?.split("@")[0] ??
+      null;
+
+    const avatarUrl =
+      (user.user_metadata?.avatar_url as string | undefined) ??
+      (user.user_metadata?.picture as string | undefined) ??
+      null;
+
+    return {
+      accessToken: "",
+      refreshToken: "",
+      expiresAt: Date.now() + 3600 * 1000,
+      user: {
+        id: user.id,
+        email: user.email ?? null,
+        fullName,
+        avatarUrl,
+        createdAt: user.created_at ?? null,
+      },
+    };
+  } catch (err) {
+    console.error("getCustomerSession error:", err);
     return null;
   }
-
-  return session;
 }
 
-export async function setCustomerSession(payload: CustomerSessionPayload) {
-  const cookieStore = await cookies();
-  const token = await encryptCustomerSession(payload);
-  const maxAge = Math.max(SESSION_MAX_AGE_BUFFER_SECONDS, Math.floor((payload.expiresAt - Date.now()) / 1000));
-
-  cookieStore.set(CUSTOMER_SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge,
-  });
+export async function setCustomerSession(_payload?: CustomerSessionPayload) {
+  // Supabase SSR automatically persists session cookies
 }
 
 export async function clearCustomerSession() {
-  const cookieStore = await cookies();
-  cookieStore.delete(CUSTOMER_SESSION_COOKIE_NAME);
+  // Supabase SSR automatically clears session cookies on signOut
 }

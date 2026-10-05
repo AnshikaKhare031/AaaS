@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { clearCustomerSession } from "@/lib/auth/customer-session-server";
+import { createServerUserClient } from "@/lib/supabase/server";
 
 export async function POST() {
   try {
-    await clearCustomerSession();
+    const supabase = await createServerUserClient();
+    await supabase.auth.signOut();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Customer logout error:", error);

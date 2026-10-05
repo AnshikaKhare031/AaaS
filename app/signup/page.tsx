@@ -41,10 +41,12 @@ function SignupContent() {
     setIsLoading(true);
 
     try {
+      const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
+          emailRedirectTo,
           data: {
             full_name: fullName.trim(),
           },
@@ -61,12 +63,14 @@ function SignupContent() {
         return;
       }
 
-      setMessage("Account created. Please check your email to verify your account before logging in.");
+      setMessage("Account created successfully! Please check your email (including Spam folder) for the verification link to activate your account.");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unable to create account.";
       setMessage(
         errorMessage.toLowerCase().includes("already")
           ? "An account already exists with this email address."
+          : errorMessage.toLowerCase().includes("rate limit")
+          ? "Email rate limit exceeded. Supabase built-in email service is currently throttled. Please try again later or contact support."
           : errorMessage.toLowerCase().includes("password")
           ? "Please choose a stronger password."
           : errorMessage

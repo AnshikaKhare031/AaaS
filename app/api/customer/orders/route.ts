@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("orders")
-      .select("id, order_number, customer_name, email, phone, total, subtotal, payment_status, order_status, created_at, items")
+      .select("id, order_number, customer_name, customer_email, customer_phone, total, subtotal, payment_status, order_status, created_at, items")
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false });
 
@@ -25,7 +25,13 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, orders: data ?? [] });
+    const orders = (data ?? []).map((o) => ({
+      ...o,
+      email: o.customer_email ?? "",
+      phone: o.customer_phone ?? "",
+    }));
+
+    return NextResponse.json({ success: true, orders });
   } catch (error) {
     console.error("Load customer orders error:", error);
     return NextResponse.json({ success: false, error: "Unable to load orders." }, { status: 500 });

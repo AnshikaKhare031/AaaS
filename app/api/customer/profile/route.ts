@@ -12,7 +12,7 @@ export async function GET() {
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, full_name, email, avatar_url, created_at, updated_at")
+      .select("id, full_name, email, role, created_at, updated_at")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -20,7 +20,14 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, profile: data });
+    const profile = data
+      ? {
+          ...data,
+          avatar_url: session.user.avatarUrl ?? null,
+        }
+      : null;
+
+    return NextResponse.json({ success: true, profile });
   } catch (error) {
     console.error("Load profile error:", error);
     return NextResponse.json({ success: false, error: "Unable to load profile." }, { status: 500 });
@@ -53,14 +60,19 @@ export async function PATCH(request: Request) {
         },
         { onConflict: "id" }
       )
-      .select("id, full_name, email, avatar_url, created_at, updated_at")
+      .select("id, full_name, email, role, created_at, updated_at")
       .single();
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, profile: data });
+    const profile = {
+      ...data,
+      avatar_url: session.user.avatarUrl ?? null,
+    };
+
+    return NextResponse.json({ success: true, profile });
   } catch (error) {
     console.error("Update profile error:", error);
     return NextResponse.json({ success: false, error: "Unable to update profile." }, { status: 500 });

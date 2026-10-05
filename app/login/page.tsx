@@ -42,6 +42,8 @@ function LoginContent() {
       setMessage(
         errorMessage.toLowerCase().includes("invalid") || errorMessage.toLowerCase().includes("credentials")
           ? "Invalid email or password. Please try again."
+          : errorMessage.toLowerCase().includes("not confirmed")
+          ? "Your email is not confirmed. Please check your inbox or spam folder for the activation link."
           : errorMessage
       );
     } finally {

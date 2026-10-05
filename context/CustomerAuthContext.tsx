@@ -3,7 +3,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { CustomerSessionPayload } from "@/lib/auth/customer-session";
 
 export interface CustomerProfileState {
   id: string;
@@ -26,62 +25,14 @@ interface CustomerAuthContextValue {
 
 const CustomerAuthContext = createContext<CustomerAuthContextValue | undefined>(undefined);
 
-export function buildCustomerSessionPayload(session: Session): CustomerSessionPayload {
-  return {
-    accessToken: session.access_token,
-    refreshToken: session.refresh_token ?? "",
-    expiresAt: (session.expires_at ?? Math.floor(Date.now() / 1000)) * 1000,
-    user: {
-      id: session.user.id,
-      email: session.user.email ?? null,
-      fullName:
-        (session.user.user_metadata?.full_name as string | undefined) ??
-        (session.user.user_metadata?.name as string | undefined) ??
-        session.user.email ?? null,
-      avatarUrl:
-        (session.user.user_metadata?.avatar_url as string | undefined) ??
-        (session.user.user_metadata?.picture as string | undefined) ??
-        null,
-      createdAt: session.user.created_at ?? null,
-    },
-  };
-}
-
-async function pushSessionToServer(session: Session | null) {
-  await fetch("/api/auth/session", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ session: session ? buildCustomerSessionPayload(session) : null }),
-  });
-}
-
 async function clearSessionOnServer() {
-  await fetch("/api/auth/logout", {
-    method: "POST",
-  });
-}
-
-async function syncSessionToServerIfNeeded(
-  session: Session | null,
-  lastSyncedAccessTokenRef: React.MutableRefObject<string | null>
-) {
-  if (!session) {
-    lastSyncedAccessTokenRef.current = null;
-    await clearSessionOnServer();
-    return;
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+  } catch {
+    // ignore
   }
-
-  if (lastSyncedAccessTokenRef.current === session.access_token) {
-    return;
-  }
-
-  // The loop came from re-registering the auth listener on every session change,
-  // which caused Supabase to immediately emit the current session again.
-  // We only sync when the access token actually changes.
-  await pushSessionToServer(session);
-  lastSyncedAccessTokenRef.current = session.access_token;
 }
 
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
@@ -89,7 +40,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   const [profile, setProfile] = useState<CustomerProfileState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const sessionRef = useRef<Session | null>(null);
-  const lastSyncedAccessTokenRef = useRef<string | null>(null);
 
   const user = session?.user ?? null;
   sessionRef.current = session;
@@ -109,14 +59,24 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       }
 
       const data = await response.json();
-      setProfile(data.profile ?? null);
-    } catch (error) {
-      console.error("Failed to refresh profile:", error);
+      if (data.profile) {
+        setProfile(data.profile);
+        return;
+      }
+      throw new Error("No profile returned.");
+    } catch {
       setProfile({
         id: activeSession.user.id,
-        full_name: activeSession.user.user_metadata?.full_name ?? activeSession.user.email ?? null,
+        full_name:
+          (activeSession.user.user_metadata?.full_name as string | undefined) ??
+          (activeSession.user.user_metadata?.name as string | undefined) ??
+          activeSession.user.email ??
+          null,
         email: activeSession.user.email ?? null,
-        avatar_url: activeSession.user.user_metadata?.avatar_url ?? activeSession.user.user_metadata?.picture ?? null,
+        avatar_url:
+          (activeSession.user.user_metadata?.avatar_url as string | undefined) ??
+          (activeSession.user.user_metadata?.picture as string | undefined) ??
+          null,
         created_at: activeSession.user.created_at ?? null,
         updated_at: null,
       });
@@ -128,45 +88,44 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     sessionRef.current = nextSession;
 
     if (nextSession) {
-      await syncSessionToServerIfNeeded(nextSession, lastSyncedAccessTokenRef);
       await refreshProfile(nextSession);
-      return;
-    }
-
-    setProfile(null);
-    if (lastSyncedAccessTokenRef.current !== null) {
-      lastSyncedAccessTokenRef.current = null;
-      await clearSessionOnServer();
+    } else {
+      setProfile(null);
+      try {
+        await clearSessionOnServer();
+      } catch {
+        // ignore
+      }
     }
   }, [refreshProfile]);
 
   useEffect(() => {
     let isActive = true;
 
+    // Get current session on mount (ensures instant hydration from cookies)
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!isActive) return;
+      if (initialSession) {
+        setSession(initialSession);
+        sessionRef.current = initialSession;
+        void refreshProfile(initialSession);
+      }
+      setIsLoading(false);
+    });
+
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!isActive) return;
-
-      if (event === "SIGNED_OUT" || !nextSession) {
-        setSession(null);
-        sessionRef.current = null;
-        setProfile(null);
-        if (lastSyncedAccessTokenRef.current !== null) {
-          lastSyncedAccessTokenRef.current = null;
-          await clearSessionOnServer();
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      const isNewSession = lastSyncedAccessTokenRef.current !== nextSession.access_token;
 
       setSession(nextSession);
       sessionRef.current = nextSession;
 
-      if (isNewSession) {
-        await syncSessionToServerIfNeeded(nextSession, lastSyncedAccessTokenRef);
-        await refreshProfile(nextSession);
+      if (event === "SIGNED_OUT" || !nextSession) {
+        setProfile(null);
+        setIsLoading(false);
+        return;
       }
+
+      await refreshProfile(nextSession);
       setIsLoading(false);
     });
 
@@ -177,13 +136,18 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   }, [refreshProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("SignOut error:", err);
+    }
     setSession(null);
     sessionRef.current = null;
     setProfile(null);
-    if (lastSyncedAccessTokenRef.current !== null) {
-      lastSyncedAccessTokenRef.current = null;
+    try {
       await clearSessionOnServer();
+    } catch {
+      // ignore
     }
   }, []);
 

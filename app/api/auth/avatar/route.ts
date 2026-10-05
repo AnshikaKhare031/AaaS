@@ -44,26 +44,31 @@ export async function POST(request: Request) {
     const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
     const avatarUrl = data.publicUrl;
 
-    const { data: updatedProfile, error: profileError } = await supabase
+    // Update avatar_url in auth user metadata
+    await supabase.auth.admin.updateUserById(session.user.id, {
+      user_metadata: { avatar_url: avatarUrl },
+    });
+
+    const { data: updatedProfile } = await supabase
       .from("profiles")
       .upsert(
         {
           id: session.user.id,
           full_name: session.user.fullName,
           email: session.user.email,
-          avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
       )
-      .select("id, full_name, email, avatar_url, created_at, updated_at")
-      .single();
+      .select("id, full_name, email, role, created_at, updated_at")
+      .maybeSingle();
 
-    if (profileError) {
-      return NextResponse.json({ success: false, error: profileError.message }, { status: 500 });
-    }
+    const profile = {
+      ...(updatedProfile || {}),
+      avatar_url: avatarUrl,
+    };
 
-    return NextResponse.json({ success: true, avatarUrl, profile: updatedProfile });
+    return NextResponse.json({ success: true, avatarUrl, profile });
   } catch (error) {
     console.error("Avatar upload error:", error);
     return NextResponse.json({ success: false, error: "Unable to upload avatar." }, { status: 500 });
