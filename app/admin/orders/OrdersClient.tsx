@@ -465,7 +465,7 @@ export default function OrdersClient({ initialOrders, errorMsg }: OrdersClientPr
                                         <div className="relative w-10 h-10 border border-[#E5DACB] bg-[#F8F2E7] rounded-lg shrink-0 overflow-hidden">
                                           <Image
                                             src={item.product.image_url}
-                                            alt={item.product.title}
+                                            alt={item.product?.title || (item.product as unknown as { name?: string })?.name || "Order item"}
                                             fill
                                             className="object-cover"
                                             sizes="40px"

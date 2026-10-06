@@ -209,7 +209,7 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                         <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                           <Image
                             src={product.image_url}
-                            alt={product.title}
+                            alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
                             fill
                             className="object-cover"
                             sizes="44px"
@@ -274,7 +274,7 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                   <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                     <Image
                       src={product.image_url}
-                      alt={product.title}
+                      alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
                       fill
                       className="object-cover"
                       sizes="56px"

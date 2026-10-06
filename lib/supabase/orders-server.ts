@@ -8,8 +8,12 @@ import { expirePendingOrders } from "./expire-orders";
 export async function getOrdersServer(): Promise<Order[]> {
   const supabase = createServerSupabaseClient();
   
-  // Clean up any abandoned pending orders
-  await expirePendingOrders(supabase);
+  // Clean up any abandoned pending orders safely without crashing admin orders page
+  try {
+    await expirePendingOrders(supabase);
+  } catch (sweepErr) {
+    console.error("[Order Expiration Sweep] Error in sweep:", sweepErr);
+  }
 
   const { data, error } = await supabase
     .from("orders")

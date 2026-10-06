@@ -18,14 +18,48 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
     const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000).toISOString();
 
     // 1. Fetch pending orders older than 30 minutes
-    const { data: pendingOrders, error: fetchError } = await supabase
+    // Uses provider_order_id from existing schema with fallback to base columns
+    let pendingOrders: Array<{
+      id: string;
+      order_number: string;
+      provider_order_id?: string | null;
+      razorpay_order_id?: string | null;
+      payment_status: string;
+    }> | null = null;
+
+    let fetchError: unknown = null;
+
+    const res = await supabase
       .from("orders")
-      .select("id, order_number, razorpay_order_id, payment_status")
+      .select("id, order_number, provider_order_id, payment_status")
       .eq("payment_status", "pending")
       .lt("created_at", thirtyMinutesAgo);
 
+    if (res.error) {
+      // Schema fallback: if provider_order_id is not present, query base columns
+      const fallbackRes = await supabase
+        .from("orders")
+        .select("id, order_number, payment_status")
+        .eq("payment_status", "pending")
+        .lt("created_at", thirtyMinutesAgo);
+
+      if (fallbackRes.error) {
+        fetchError = fallbackRes.error;
+      } else {
+        pendingOrders = fallbackRes.data;
+      }
+    } else {
+      pendingOrders = res.data;
+    }
+
     if (fetchError) {
-      console.error("[Order Expiration Sweep] Error fetching pending orders:", fetchError);
+      const err = fetchError as { message?: string; code?: string; details?: string; hint?: string };
+      console.error("[Order Expiration Sweep] Supabase error:", {
+        message: err?.message,
+        code: err?.code,
+        details: err?.details,
+        hint: err?.hint,
+      });
       return;
     }
 
@@ -35,8 +69,10 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
 
     // 2. Process each pending order safely
     for (const order of pendingOrders) {
+      const gatewayOrderId = order.provider_order_id || order.razorpay_order_id || null;
+
       // Case A: Missing Razorpay order ID (never initiated payment gateway order)
-      if (!order.razorpay_order_id) {
+      if (!gatewayOrderId) {
         const { error: expireError } = await supabase
           .from("orders")
           .update({
@@ -47,21 +83,26 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
           .eq("payment_status", "pending");
 
         if (expireError) {
-          console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, expireError);
+          console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, {
+            message: expireError?.message,
+            code: expireError?.code,
+            details: expireError?.details,
+            hint: expireError?.hint,
+          });
         }
         continue;
       }
 
-      // Case B: Has razorpay_order_id -> Cross-check status with Razorpay
+      // Case B: Has gateway order ID -> Cross-check status with Razorpay
       try {
         const razorpay = getRazorpayServerClient();
-        const rzpOrder = await razorpay.orders.fetch(order.razorpay_order_id);
+        const rzpOrder = await razorpay.orders.fetch(gatewayOrderId);
 
         if (rzpOrder && rzpOrder.status === "paid") {
           // Fetch payment(s) to obtain a verified captured payment ID
           let capturedPaymentId: string | null = null;
           try {
-            const payments = await razorpay.orders.fetchPayments(order.razorpay_order_id);
+            const payments = await razorpay.orders.fetchPayments(gatewayOrderId);
             const capturedPayment = payments?.items?.find(
               (p: { id?: unknown; status?: unknown }) =>
                 p.status === "captured" &&
@@ -73,7 +114,7 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
             }
           } catch (payErr) {
             console.warn(
-              `[Order Expiration Sweep] Could not fetch payments list for ${order.razorpay_order_id}:`,
+              `[Order Expiration Sweep] Could not fetch payments list for ${gatewayOrderId}:`,
               payErr instanceof Error ? payErr.message : "Fetch payments error"
             );
           }
@@ -81,14 +122,14 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
           // Payment ID Guard: Only reconcile if a verified captured payment ID exists
           if (capturedPaymentId) {
             console.log(
-              `[Order Expiration Sweep] Order ${order.order_number} (${order.razorpay_order_id}) verified with captured payment ${capturedPaymentId}. Auto-reconciling...`
+              `[Order Expiration Sweep] Order ${order.order_number} (${gatewayOrderId}) verified with captured payment ${capturedPaymentId}. Auto-reconciling...`
             );
 
             // Idempotently reconcile order to 'paid'
             await reconcileOrderPayment({
               orderId: order.id,
               orderNumber: order.order_number,
-              razorpay_order_id: order.razorpay_order_id,
+              razorpay_order_id: gatewayOrderId,
               razorpay_payment_id: capturedPaymentId,
             });
           } else {
@@ -96,7 +137,7 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
             // DO NOT reconcile with empty ID, DO NOT expire, and DO NOT send email.
             // Leave payment_status = pending so the next sweep or webhook can retry.
             console.warn(
-              `[Order Expiration Sweep] Order ${order.order_number} (${order.razorpay_order_id}) is marked paid in Razorpay, but no verified captured payment ID (pay_...) was found. Keeping as pending for retry.`
+              `[Order Expiration Sweep] Order ${order.order_number} (${gatewayOrderId}) is marked paid in Razorpay, but no verified captured payment ID (pay_...) was found. Keeping as pending for retry.`
             );
           }
         } else {
@@ -112,14 +153,19 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
             .eq("payment_status", "pending");
 
           if (expireError) {
-            console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, expireError);
+            console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, {
+              message: expireError?.message,
+              code: expireError?.code,
+              details: expireError?.details,
+              hint: expireError?.hint,
+            });
           }
         }
       } catch (rzpErr) {
         // Razorpay API failure (timeout, rate limit, network/server error).
         // CRITICAL: DO NOT EXPIRE THE ORDER. Leave payment_status = pending.
         console.error(
-          `[Order Expiration Sweep] Razorpay API check failed for order ${order.order_number} (${order.razorpay_order_id}). Keeping as pending:`,
+          `[Order Expiration Sweep] Razorpay API check failed for order ${order.order_number} (${gatewayOrderId}). Keeping as pending:`,
           rzpErr instanceof Error ? rzpErr.message : "API error"
         );
       }

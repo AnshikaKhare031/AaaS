@@ -17,6 +17,9 @@ function parseProduct(product: any): Product {
   }
   return {
     ...product,
+    title: product.title || product.name || "Untitled Creation",
+    featured: typeof product.featured === "boolean" ? product.featured : !!product.is_featured,
+    customizable: typeof product.customizable === "boolean" ? product.customizable : !!product.is_customizable,
     specifications: Array.isArray(specifications) ? specifications : [],
   };
 }

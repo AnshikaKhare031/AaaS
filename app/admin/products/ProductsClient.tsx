@@ -130,7 +130,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shrink-0">
                         <Image
                           src={product.image_url}
-                          alt={product.title}
+                          alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
                           fill
                           className="object-cover"
                           sizes="48px"
@@ -226,7 +226,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shrink-0">
                   <Image
                     src={product.image_url}
-                    alt={product.title}
+                    alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
                     fill
                     className="object-cover"
                     sizes="64px"
