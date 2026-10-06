@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Lock, Mail, UserRound } from "lucide-react";
@@ -19,6 +19,19 @@ function SignupContent() {
   const [message, setMessage] = useState<string | null>(null);
 
   const nextPath = searchParams.get("next") || "/profile";
+  const errorParam = searchParams.get("error");
+  const errorDescParam = searchParams.get("error_description");
+
+  useEffect(() => {
+    const err = errorDescParam || errorParam;
+    if (err) {
+      if (err === "auth-code-error") {
+        setMessage("Authentication link or session has expired. Please try signing up again.");
+      } else {
+        setMessage(decodeURIComponent(err));
+      }
+    }
+  }, [errorParam, errorDescParam]);
 
   const validate = () => {
     if (fullName.trim().length < 2) return "Please enter your full name.";
@@ -86,15 +99,42 @@ function SignupContent() {
 
     try {
       const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo,
+          skipBrowserRedirect: true,
         },
       });
 
       if (error) {
         throw error;
+      }
+
+      if (data?.url) {
+        // Quick pre-flight check so users don't get thrown onto a raw Supabase 400 error page if the provider is disabled in Supabase dashboard
+        try {
+          const testRes = await fetch(data.url, {
+            method: "GET",
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "",
+            },
+            redirect: "manual",
+          });
+
+          if (testRes.status === 400) {
+            const errJson = await testRes.json().catch(() => null);
+            if (errJson?.msg?.includes("Unsupported provider") || errJson?.msg?.includes("not enabled")) {
+              setMessage("Google Sign-Up is not enabled yet in your Supabase project. Please enable Google provider in the Supabase Dashboard under Authentication -> Providers.");
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch {
+          // If pre-flight fetch fails (e.g. network restriction), proceed with normal navigation
+        }
+
+        window.location.assign(data.url);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Google signup failed.";

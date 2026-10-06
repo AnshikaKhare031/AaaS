@@ -1,26 +1,55 @@
-import { NextResponse } from "next/server";
-import { createServerUserClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/profile";
+  const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
+
+  // Handle provider-level errors (e.g. user canceled or provider misconfigured)
+  if (error || errorDescription) {
+    console.error("Auth callback error from provider:", error, errorDescription);
+    const errorMessage = errorDescription || error || "Authentication failed.";
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorMessage)}`);
+  }
 
   if (code) {
-    const supabase = await createServerUserClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      } else {
-        return NextResponse.redirect(`${origin}${next}`);
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const isLocalEnv = process.env.NODE_ENV === "development";
+    const redirectUrl = isLocalEnv
+      ? `${origin}${next}`
+      : forwardedHost
+      ? `https://${forwardedHost}${next}`
+      : `${origin}${next}`;
+
+    const response = NextResponse.redirect(redirectUrl);
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      });
+
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      if (!exchangeError) {
+        return response;
       }
+      console.error("Auth callback code exchange error:", exchangeError);
     }
-    console.error("Auth callback code exchange error:", error);
+
     return NextResponse.redirect(`${origin}/login?error=auth-code-error`);
   }
 
