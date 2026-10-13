@@ -37,28 +37,23 @@ export default function Footer() {
           </h4>
           <ul className="space-y-2.5 text-xs sm:text-sm text-[#FFFAF1]/85 font-sans font-light">
             <li>
-              <Link href="/crochet" className="hover:text-[#EC8D99] transition-colors duration-200">
-                Crochet Creations
+              <Link href="/products" className="hover:text-[#EC8D99] transition-colors duration-200">
+                All Products
               </Link>
             </li>
             <li>
-              <Link href="/pouches" className="hover:text-[#EC8D99] transition-colors duration-200">
-                Hand-painted Pouches
+              <Link href="/category/handbags" className="hover:text-[#EC8D99] transition-colors duration-200">
+                Handbags
               </Link>
             </li>
             <li>
-              <Link href="/mdf" className="hover:text-[#EC8D99] transition-colors duration-200">
-                MDF Board Arts
+              <Link href="/category/keychains" className="hover:text-[#EC8D99] transition-colors duration-200">
+                Keychains
               </Link>
             </li>
             <li>
-              <Link href="/magnets" className="hover:text-[#EC8D99] transition-colors duration-200">
-                Fridge Magnets
-              </Link>
-            </li>
-            <li>
-              <Link href="/rakhis" className="hover:text-[#EC8D99] transition-colors duration-200">
-                Handmade Rakhis
+              <Link href="/category/accessories" className="hover:text-[#EC8D99] transition-colors duration-200">
+                Accessories
               </Link>
             </li>
             <li>

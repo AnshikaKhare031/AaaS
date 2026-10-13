@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductServer, getProductsServer } from "@/lib/supabase/products-server";
+import { getCanonicalCategoryName, getCategorySlug, matchesCategory } from "@/lib/constants/categories";
 import ProductCard from "@/components/ProductCard";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import ProductPurchaseSection from "@/components/ProductPurchaseSection";
@@ -31,33 +32,34 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     };
   }
 
+  const productName = product.name || product.title || "Handcrafted Creation";
   const cleanDescription = product.description
     ? product.description.substring(0, 160)
-    : `Buy ${product.title} from AaaS. Premium handmade crochet and artisan craft, high-quality and thoughtfully crafted in India.`;
+    : `Buy ${productName} from ${siteConfig.brandName}. Premium handmade crochet and artisan lifestyle collection, thoughtfully crafted in India.`;
 
-  const pageUrl = getCanonicalUrl(`/product/${product.id}`);
+  const pageUrl = getCanonicalUrl(`/product/${product.slug || product.id}`);
 
   return {
-    title: product.title,
+    title: productName,
     description: cleanDescription,
     alternates: {
       canonical: pageUrl,
     },
     openGraph: {
-      title: `${product.title} | ${siteConfig.name}`,
+      title: `${productName} | ${siteConfig.name}`,
       description: cleanDescription,
       url: pageUrl,
       type: "article",
       images: [
         {
           url: product.image_url,
-          alt: product.title,
+          alt: productName,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.title} | ${siteConfig.name}`,
+      title: `${productName} | ${siteConfig.name}`,
       description: cleanDescription,
       images: [product.image_url],
     },
@@ -80,39 +82,44 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
     notFound();
   }
 
+  const productName = product.name || product.title || "Handcrafted Creation";
+  const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
+  const canonicalCategory = getCanonicalCategoryName(product.category) || product.category || "Handmade";
+  const categorySlug = getCategorySlug(product.category);
+  const categoryPath = categorySlug === "products" ? "/products" : `/category/${categorySlug}`;
+
   // Get related products from same category, excluding current product
   const allProducts = await getProductsServer();
   const relatedProducts = allProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
+    .filter(
+      (p) =>
+        p.is_active !== false &&
+        p.id !== product.id &&
+        matchesCategory(p.category, product.category)
+    )
     .slice(0, 3);
 
   const getCareInstructions = (category: string) => {
-    switch (category) {
-      case "crochet":
-        return "Gentle hand wash with mild detergent in cold water. Do not wring or twist. Lay flat on a clean dry towel in the shade to preserve shape and tension. Avoid sharp accessories that may snag artisan yarn stitches.";
-      case "mdf":
-        return "Wipe gently with a dry microfiber cloth. Avoid water submergence or abrasive cleaners. Display away from direct harsh sunlight to preserve the hand-painted luster.";
-      case "pouch":
-        return "Hand-wash in cold water with mild detergent. Do not wring or tumble dry. Dry flat in shade. Iron on reverse side on low heat if needed.";
-      case "magnet":
-        return "Clean gently with a soft dry cloth. Handle with care to prevent chipping. Keep in a dry ambient space.";
-      case "rakhis":
-        return "Keep dry and store safely in the keepsake pouch. Avoid contact with moisture, perfumes, and lotions.";
+    const canonical = (getCanonicalCategoryName(category) || category).toLowerCase();
+    switch (canonical) {
+      case "handbags":
+        return "Gentle spot clean with a soft damp cloth. If washing is necessary, immerse gently in cold water with mild liquid detergent. Do not twist or wring. Dry flat on a clean towel in the shade to preserve artisan stitches and shape.";
+      case "keychains":
+        return "Gently wipe with a soft dry microfiber cloth. Keep metal keyrings protected from excess moisture to prevent tarnishing.";
+      case "accessories":
+        return "Hand-wash gently in cold water with mild detergent. Lay flat to dry away from direct heat or harsh sunlight. Handle delicate crochet accents with gentle care.";
       default:
-        return "Handle with care as an original handcrafted creation. Clean with a soft dry cloth.";
+        return "Handle with care as an original handcrafted creation. Clean with a soft dry cloth and store in a cool, dry place.";
     }
   };
 
   const careInstructions = getCareInstructions(product.category);
   const productSchema = generateProductSchema(product);
 
-  const categoryPath = product.category === "pouch" ? "/pouches" : product.category === "magnet" ? "/magnets" : `/${product.category}`;
-  const categoryName = product.category === "crochet" ? "Crochet Creations" : product.category === "mdf" ? "MDF Arts" : product.category === "pouch" ? "Hand-painted Pouches" : product.category === "rakhis" ? "Handmade Rakhis" : "Fridge Magnets";
-
   const breadcrumbsSchema = generateBreadcrumbSchema([
     { name: "Home", item: siteConfig.url },
-    { name: categoryName, item: `${siteConfig.url}${categoryPath}` },
-    { name: product.title, item: `${siteConfig.url}/product/${product.id}` },
+    { name: canonicalCategory, item: `${siteConfig.url}${categoryPath}` },
+    { name: productName, item: `${siteConfig.url}/product/${product.slug || product.id}` },
   ]);
 
   return (
@@ -128,39 +135,34 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
-        
         {/* Back Link */}
         <Link
           href={categoryPath}
           className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] font-medium mb-6 md:mb-10 transition-colors duration-200 group font-sans"
         >
           <ChevronLeft size={13} className="group-hover:-translate-x-0.5 transition-transform" />
-          <span>Back to {categoryName}</span>
+          <span>Back to {canonicalCategory}</span>
         </Link>
 
         {/* Product Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start pb-12 md:pb-20 border-b border-[#E5DACB]">
-          
           {/* Left: Product Images Frame */}
           <div className="lg:col-span-6 relative lg:sticky lg:top-28 self-start w-full">
-            <ProductImage src={product.image_url} alt={product.title} />
+            <ProductImage src={product.image_url} alt={productName} />
           </div>
 
           {/* Right: Product Meta Data */}
           <div className="lg:col-span-6 flex flex-col space-y-6 md:space-y-8 font-sans">
-            
             {/* Header info */}
             <div className="space-y-3 order-1 lg:order-1">
               <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#5C745F] font-medium">
-                <span className="text-[#EC8D99]">
-                  {product.category === "crochet" ? "Crochet" : product.category === "mdf" ? "MDF Wood Art" : product.category === "pouch" ? "Handmade Pouch" : product.category === "rakhis" ? "Handmade Rakhi" : "Clay Magnet"}
-                </span>
+                <span className="text-[#EC8D99]">{canonicalCategory}</span>
                 <span>•</span>
                 <span className="text-[#5C745F]">100% Handcrafted</span>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl tracking-tight text-[#25382E] leading-[1.12] font-light">
-                {product.title}
+                {productName}
               </h1>
 
               <div className="flex items-center gap-4 pt-1">
@@ -174,13 +176,13 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
             </div>
 
             {/* Customization Note Box */}
-            {product.customizable && (
+            {isCustomizable && (
               <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-5 flex items-start gap-3.5 order-3 lg:order-2 shadow-2xs">
                 <Sparkles className="text-[#F5C842] shrink-0 mt-0.5" size={18} />
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.18em] font-medium text-[#25382E]">Customizable Piece</p>
                   <p className="text-[#5C745F] text-xs sm:text-sm font-light leading-relaxed">
-                    This creation is handcrafted to order. You can request tailored color palettes, custom sizes, or personalized details by emailing us at craftymindstudios@gmail.com or via WhatsApp.
+                    This creation is handcrafted to order. You can request tailored color palettes, custom sizes, or personalized details by reaching out via WhatsApp or our atelier team.
                   </p>
                 </div>
               </div>
@@ -203,7 +205,9 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
                     {product.specifications.map((spec, idx) => (
                       <li key={idx} className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99] shrink-0" />
-                        <span><strong className="font-medium text-[#25382E]">{spec.label}:</strong> {spec.value}</span>
+                        <span>
+                          <strong className="font-medium text-[#25382E]">{spec.label}:</strong> {spec.value}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -240,9 +244,7 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
 
         {/* Suggested / Related Products Section */}
@@ -267,7 +269,6 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
             </div>
           </div>
         )}
-
       </div>
     </section>
   );

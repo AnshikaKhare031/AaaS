@@ -384,7 +384,7 @@ export default function TrackOrderPage() {
                   disabled={loading}
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
-                  placeholder="e.g. CM-1001"
+                  placeholder="e.g. AAAS-1001"
                   className="w-full px-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 />
               </div>

@@ -15,6 +15,7 @@ interface CartItemProps {
 export default function CartItem({ item }: CartItemProps) {
   const { updateQuantity, removeFromCart } = useCart();
   const { product, quantity } = item;
+  const productName = product.name || product.title || "Handmade Piece";
 
   const handleDecrease = () => {
     updateQuantity(product.id, quantity - 1);
@@ -32,7 +33,7 @@ export default function CartItem({ item }: CartItemProps) {
       <div className="relative aspect-[3/4] w-24 sm:w-20 md:w-24 overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
         <Image
           src={product.image_url}
-          alt={product.title}
+          alt={productName}
           fill
           className="object-cover"
           sizes="(max-width: 640px) 96px, (max-width: 768px) 80px, 96px"
@@ -43,24 +44,16 @@ export default function CartItem({ item }: CartItemProps) {
       <div className="flex-grow flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full text-center sm:text-left">
         <div className="space-y-1">
           <Link
-            href={`/product/${product.id}`}
+            href={`/product/${product.slug || product.id}`}
             className="font-serif text-base sm:text-lg font-medium text-[#25382E] hover:text-[#EC8D99] transition-colors line-clamp-2 leading-tight block"
           >
-            {product.title}
+            {productName}
           </Link>
           <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#5C745F] font-sans">
             <span>₹{product.price.toLocaleString("en-IN")}</span>
             <span>•</span>
             <span className="text-[#25382E] bg-[#F6C4C2]/50 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium">
-              {product.category === "crochet"
-                ? "Crochet"
-                : product.category === "pouch"
-                ? "Pouch"
-                : product.category === "mdf"
-                ? "MDF Art"
-                : product.category === "rakhis"
-                ? "Rakhi"
-                : "Magnet"}
+              {product.category || "Handmade"}
             </span>
           </div>
         </div>
@@ -80,7 +73,7 @@ export default function CartItem({ item }: CartItemProps) {
             <button
               onClick={() => removeFromCart(product.id)}
               className="p-2 text-[#5C745F] hover:text-[#EC8D99] hover:bg-[#F6C4C2]/30 rounded-lg transition-colors duration-200 cursor-pointer"
-              aria-label={`Remove ${product.title} from cart`}
+              aria-label={`Remove ${productName} from cart`}
             >
               <Trash2 size={15} />
             </button>

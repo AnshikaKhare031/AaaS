@@ -16,31 +16,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/mdf`,
+      url: `${baseUrl}/products`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/category/handbags`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/pouches`,
+      url: `${baseUrl}/category/keychains`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/magnets`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/rakhis`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/crochet`,
+      url: `${baseUrl}/category/accessories`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
@@ -75,20 +69,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const products = await getProductsServer();
     
-    const productUrls: MetadataRoute.Sitemap = products.map((product) => {
-      const dateString = product.updated_at || product.created_at || null;
-      return {
-        url: `${baseUrl}/product/${product.id}`,
-        lastModified: dateString ? new Date(dateString) : new Date(),
-        changeFrequency: "weekly",
-        priority: 0.7,
-      };
-    });
+    const productUrls: MetadataRoute.Sitemap = products
+      .filter((p) => p.is_active !== false)
+      .map((product) => {
+        const dateString = product.updated_at || product.created_at || null;
+        return {
+          url: `${baseUrl}/product/${product.slug || product.id}`,
+          lastModified: dateString ? new Date(dateString) : new Date(),
+          changeFrequency: "weekly",
+          priority: 0.7,
+        };
+      });
 
     return [...staticUrls, ...productUrls];
   } catch (error) {
     console.error("Failed to generate dynamic products sitemap mapping:", error);
-    // Graceful fallback to static core catalog pages
     return staticUrls;
   }
 }

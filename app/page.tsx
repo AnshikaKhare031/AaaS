@@ -13,34 +13,20 @@ import CTASection from "@/components/CTASection";
 export default function Home() {
   const categories = [
     {
-      title: "Crochet Creations",
-      description: "Artisan-stitched crochet accessories, botanical flowers, heirloom amigurumi, and lifestyle accents.",
-      imageSrc: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1785334975837_1000230095.jpg",
-      href: "/crochet",
+      title: "Handbags",
+      description: "Artisan-stitched crochet handbags, heirloom potlis, and everyday totes crafted with luxury yarn.",
+      imageSrc: "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp",
+      href: "/category/handbags",
     },
     {
-      title: "Hand-painted Pouches",
-      description: "Charming cotton canvas zipper pouches and cosmetic bags, individually hand-sewn and decorated with original art.",
-      imageSrc: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783101753699_ChatGPT_Image_Jul_3__2026__02_02_17_AM.png",
-      href: "/pouches",
+      title: "Keychains",
+      description: "Delicate handcrafted floral, animal, and amigurumi charm keychains.",
+      href: "/category/keychains",
     },
     {
-      title: "MDF Board Arts",
-      description: "Intricately hand-painted wooden welcome plaques and wall decor designed to add a warm, personal touch.",
-      imageSrc: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783099587508_ChatGPT_Image_Jul_3__2026__10_55_05_PM.png",
-      href: "/mdf",
-    },
-    {
-      title: "Fridge Magnets",
-      description: "Hand-sculpted clay bears, personalized name magnets, and hand-painted wood slices that brighten magnetic surfaces.",
-      imageSrc: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783102042086_ChatGPT_Image_Jul_3__2026__11_36_43_PM.png",
-      href: "/magnets",
-    },
-    {
-      title: "Handmade Rakhis",
-      description: "Celebrate sacred bonds with handcrafted designer rakhis made from premium threads, delicate beads, and crochet.",
-      imageSrc: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1785334975837_1000230095.jpg",
-      href: "/rakhis",
+      title: "Accessories",
+      description: "Exquisite handmade lifestyle accents, pouches, and wearable crochet accessories.",
+      href: "/category/accessories",
     },
   ];
 

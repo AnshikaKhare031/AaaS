@@ -2,20 +2,10 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/utils/auth";
 import { updateProductServer, deleteProductServer, getProductServer, deleteImageServer } from "@/lib/supabase/products-server";
 import { revalidatePath } from "next/cache";
+import { getCategoryPath } from "@/lib/constants/categories";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
-}
-
-function getCategoryPath(category: string): string {
-  switch (category) {
-    case "pouch":
-      return "/pouches";
-    case "magnet":
-      return "/magnets";
-    default:
-      return `/${category}`;
-  }
 }
 
 export async function PUT(request: Request, { params }: RouteParams) {
@@ -45,7 +35,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     // Invalidate caches to ensure storefront is immediately updated
     revalidatePath("/");
+    revalidatePath("/products");
     revalidatePath(`/product/${id}`);
+    if (updatedProduct.slug) {
+      revalidatePath(`/product/${updatedProduct.slug}`);
+    }
     revalidatePath(getCategoryPath(updatedProduct.category));
     if (oldProduct && oldProduct.category !== updatedProduct.category) {
       revalidatePath(getCategoryPath(oldProduct.category));
@@ -86,7 +80,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     // Invalidate caches to ensure storefront is immediately updated
     revalidatePath("/");
+    revalidatePath("/products");
     revalidatePath(`/product/${id}`);
+    if (product?.slug) {
+      revalidatePath(`/product/${product.slug}`);
+    }
     if (product) {
       revalidatePath(getCategoryPath(product.category));
     }
@@ -99,5 +97,3 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-
-

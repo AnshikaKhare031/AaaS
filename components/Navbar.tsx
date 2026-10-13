@@ -12,11 +12,10 @@ import AaaSLogo from "@/components/AaaSLogo";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/crochet", label: "Crochet" },
-  { href: "/mdf", label: "MDF Arts" },
-  { href: "/pouches", label: "Pouches" },
-  { href: "/magnets", label: "Magnets" },
-  { href: "/rakhis", label: "Rakhis" },
+  { href: "/products", label: "All Products" },
+  { href: "/category/handbags", label: "Handbags" },
+  { href: "/category/keychains", label: "Keychains" },
+  { href: "/category/accessories", label: "Accessories" },
   { href: "/track-order", label: "Track Order" },
 ];
 

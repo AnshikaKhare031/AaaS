@@ -15,7 +15,11 @@ export default function FeaturedCreations() {
   useEffect(() => {
     getProducts()
       .then((products) => {
-        setFeatured(products.filter((p) => p.featured).slice(0, 6));
+        setFeatured(
+          products
+            .filter((p) => (p.is_featured ?? p.featured) && p.is_active !== false)
+            .slice(0, 6)
+        );
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -57,54 +61,58 @@ export default function FeaturedCreations() {
 
         {/* Large Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
-          {featured.map((product, idx) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className="group cursor-pointer"
-            >
-              <Link href={`/product/${product.id}`} className="block space-y-5">
-                {/* Image Box - Image First */}
-                <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border-custom bg-background shadow-xs transition-shadow duration-500 group-hover:shadow-lg">
-                  <Image
-                    src={product.image_url}
-                    alt={product.title}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  {/* Subtle Badge */}
-                  {product.customizable && (
-                    <span className="absolute top-4 left-4 z-10 text-[9px] uppercase tracking-widest bg-accent-secondary/90 text-white font-medium px-2.5 py-1 rounded-xs">
-                      Customizable
-                    </span>
-                  )}
-                  {/* Hover Overlay Arrow */}
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-xs p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
-                    <ArrowUpRight size={16} className="text-accent" />
+          {featured.map((product, idx) => {
+            const productName = product.name || product.title || "Featured Piece";
+            const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                className="group cursor-pointer"
+              >
+                <Link href={`/product/${product.slug || product.id}`} className="block space-y-5">
+                  {/* Image Box - Image First */}
+                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border-custom bg-background shadow-xs transition-shadow duration-500 group-hover:shadow-lg">
+                    <Image
+                      src={product.image_url}
+                      alt={productName}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    {/* Subtle Badge */}
+                    {isCustomizable && (
+                      <span className="absolute top-4 left-4 z-10 text-[9px] uppercase tracking-widest bg-accent-secondary/90 text-white font-medium px-2.5 py-1 rounded-xs">
+                        Customizable
+                      </span>
+                    )}
+                    {/* Hover Overlay Arrow */}
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-xs p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
+                      <ArrowUpRight size={16} className="text-accent" />
+                    </div>
                   </div>
-                </div>
 
-                {/* Text - Minimal & Elegant */}
-                <div className="space-y-1.5 px-1">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-serif text-xl sm:text-2xl tracking-wide text-foreground group-hover:text-accent transition-colors duration-300">
-                      {product.title}
-                    </h3>
-                    <span className="font-serif text-lg text-foreground/80 pl-2">
-                      ₹{product.price.toLocaleString("en-IN")}
-                    </span>
+                  {/* Text - Minimal & Elegant */}
+                  <div className="space-y-1.5 px-1">
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="font-serif text-xl sm:text-2xl tracking-wide text-foreground group-hover:text-accent transition-colors duration-300">
+                        {productName}
+                      </h3>
+                      <span className="font-serif text-lg text-foreground/80 pl-2">
+                        ₹{product.price.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-widest text-foreground/50 font-medium">
+                      {product.category || "Handmade"}
+                    </p>
                   </div>
-                  <p className="text-[10px] uppercase tracking-widest text-foreground/50 font-medium">
-                    {product.category === "mdf" ? "MDF Board Art" : product.category === "pouch" ? "Hand-painted Pouch" : product.category === "rakhis" ? "Handmade Rakhi" : product.category === "crochet" ? "Crochet" : "Fridge Magnet"}
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

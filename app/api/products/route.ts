@@ -2,17 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/utils/auth";
 import { getProductsServer, createProductServer } from "@/lib/supabase/products-server";
 import { revalidatePath } from "next/cache";
-
-function getCategoryPath(category: string): string {
-  switch (category) {
-    case "pouch":
-      return "/pouches";
-    case "magnet":
-      return "/magnets";
-    default:
-      return `/${category}`;
-  }
-}
+import { getCategoryPath } from "@/lib/constants/categories";
 
 export async function GET() {
   try {
@@ -51,6 +41,7 @@ export async function POST(request: Request) {
 
     // Invalidate caches to ensure storefront is immediately updated
     revalidatePath("/");
+    revalidatePath("/products");
     revalidatePath(getCategoryPath(category));
     revalidatePath("/admin/products");
 

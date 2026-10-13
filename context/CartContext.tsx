@@ -25,9 +25,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount (supports aaas_cart with fallback to legacy craftyminds_cart)
   useEffect(() => {
-    const savedCart = localStorage.getItem("craftyminds_cart");
+    const savedCart = localStorage.getItem("aaas_cart") || localStorage.getItem("craftyminds_cart");
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -41,14 +41,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save cart to localStorage whenever it changes, but only after it has been loaded
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("craftyminds_cart", JSON.stringify(cart));
+      localStorage.setItem("aaas_cart", JSON.stringify(cart));
     }
   }, [cart, isLoaded]);
 
   // Listen for storage events to sync cart across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "craftyminds_cart") {
+      if (e.key === "aaas_cart" || e.key === "craftyminds_cart") {
         if (e.newValue) {
           try {
             setCart(JSON.parse(e.newValue));
@@ -66,6 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
+
 
   const addToCart = (product: Product, quantity = 1) => {
     setCart((prevCart) => {

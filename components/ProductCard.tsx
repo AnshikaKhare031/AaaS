@@ -13,10 +13,15 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const productName = product.name || product.title || "Handcrafted Creation";
+  const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
+  const stock = product.stock_quantity ?? product.inventory_count ?? 1;
+  const inStock = stock > 0;
+  const productHref = `/product/${product.slug || product.id}`;
 
   return (
     <Link
-      href={`/product/${product.id}`}
+      href={productHref}
       className="group block focus:outline-none focus-visible:ring-1 focus-visible:ring-[#EC8D99] rounded-2xl"
     >
       <motion.div
@@ -28,8 +33,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       >
         {/* Product Image Frame */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F8F2E7]">
-          {/* Customization / Stock Badge */}
-          {product.customizable && (
+          {/* Customization Badge */}
+          {isCustomizable && (
             <span className="absolute top-2.5 left-2.5 md:top-3 md:left-3 z-10 text-[9px] uppercase tracking-[0.2em] bg-[#FFFAF1]/90 backdrop-blur-xs text-[#5C745F] border border-[#E5DACB] font-medium font-sans px-2.5 py-0.5 rounded-full shadow-2xs">
               Customizable
             </span>
@@ -37,7 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           <Image
             src={product.image_url}
-            alt={product.title}
+            alt={productName}
             fill
             onLoad={() => setImgLoaded(true)}
             className={`object-cover transition-transform duration-700 ease-out group-hover:scale-104 ${
@@ -55,25 +60,19 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Meta Details */}
         <div className="p-3.5 sm:p-5 flex flex-col flex-grow justify-between space-y-3 font-sans">
           <div className="space-y-1.5">
-            {/* Category / Artisan label */}
+            {/* Category / Stock label */}
             <div className="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-[#5C745F]">
-              <span className="font-medium">
-                {product.category === "crochet"
-                  ? "Crochet"
-                  : product.category === "pouch"
-                  ? "Handmade Pouch"
-                  : product.category === "mdf"
-                  ? "MDF Wood Art"
-                  : product.category === "rakhis"
-                  ? "Rakhi"
-                  : "Clay Magnet"}
+              <span className="font-medium truncate max-w-[65%]">
+                {product.category || "Handmade"}
               </span>
-              <span className="text-[#405F4C] font-medium">In Stock</span>
+              <span className={`font-medium ${inStock ? "text-[#405F4C]" : "text-[#C96A6A]"}`}>
+                {inStock ? "In Stock" : "Sold Out"}
+              </span>
             </div>
 
             {/* Product Title */}
             <h3 className="font-serif text-base sm:text-lg tracking-tight text-[#25382E] transition-colors duration-200 line-clamp-1 font-medium">
-              {product.title}
+              {productName}
             </h3>
           </div>
 

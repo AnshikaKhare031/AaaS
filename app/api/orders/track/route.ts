@@ -39,31 +39,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Query Supabase: match both order_number and email case-insensitively
+    // 2. Query Supabase: match both order_number and email case-insensitively using real schema columns
     // We select only tracking-relevant fields. Never expose signatures, IDs, or metadata.
     const { data: order, error } = await supabase
       .from("orders")
       .select(`
+        id,
         order_number,
         created_at,
         customer_name,
-        email,
-        phone,
-        house_flat,
-        street,
-        landmark,
-        city,
-        state,
-        pin_code,
+        customer_email,
+        customer_phone,
+        shipping_name,
+        shipping_email,
+        shipping_phone,
+        shipping_address,
+        shipping_city,
+        shipping_state,
+        shipping_pincode,
+        shipping_country,
         items,
         subtotal,
+        shipping_fee,
         total,
         payment_status,
-        order_status
+        order_status,
+        status,
+        tracking_number
       `)
       .eq("order_number", trimmedOrderNumber)
       .eq("user_id", customerSession.user.id)
-      .ilike("email", trimmedEmail)
+      .or(`customer_email.ilike.${trimmedEmail},shipping_email.ilike.${trimmedEmail}`)
       .maybeSingle();
 
     if (error) {
@@ -82,10 +88,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const mappedOrder = {
+      ...order,
+      email: order.customer_email || order.shipping_email || "",
+      phone: order.customer_phone || order.shipping_phone || "",
+      house_flat: order.shipping_address || "",
+      street: "",
+      landmark: null,
+      city: order.shipping_city || "",
+      state: order.shipping_state || "",
+      pin_code: order.shipping_pincode || "",
+    };
+
     return NextResponse.json({
       success: true,
-      order,
+      order: mappedOrder,
     });
+
   } catch (err: unknown) {
     console.error("Tracking API error:", err);
     return NextResponse.json(

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const supabase = createServerSupabaseClient();
-    const bucketName = "customer-avatars";
+    const bucketName = "avatars";
     const extension = file.name.split(".").pop() || "png";
     const filePath = `${session.user.id}/${Date.now()}.${extension}`;
     const buffer = await file.arrayBuffer();

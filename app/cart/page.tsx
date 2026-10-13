@@ -33,40 +33,40 @@ export default function CartPage() {
               Your cart is waiting for something handmade.
             </h1>
             <p className="text-[#5C745F] text-xs sm:text-sm font-light leading-relaxed">
-              Explore our boutique collections of handcrafted crochet pieces, embroidered pouches, and artisan plaques.
+              Explore our boutique collections of handcrafted crochet handbags, delicate charm keychains, and bespoke lifestyle accessories.
             </p>
           </div>
           <div className="pt-2 space-y-4">
             <Link
-              href="/#categories"
+              href="/products"
               className="w-full block text-center py-4 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] font-medium uppercase tracking-[0.2em] text-xs transition-colors duration-200 shadow-xs cursor-pointer"
             >
               Explore Collections
             </Link>
             <div className="grid grid-cols-2 gap-2.5 text-[10px] uppercase tracking-[0.18em] font-medium pt-1">
               <Link
-                href="/crochet"
+                href="/category/handbags"
                 className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
               >
-                Crochet
+                Handbags
               </Link>
               <Link
-                href="/pouches"
+                href="/category/keychains"
                 className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
               >
-                Pouches
+                Keychains
               </Link>
               <Link
-                href="/mdf"
+                href="/category/accessories"
                 className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
               >
-                MDF Arts
+                Accessories
               </Link>
               <Link
-                href="/magnets"
+                href="/products"
                 className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
               >
-                Magnets
+                All Products
               </Link>
             </div>
           </div>

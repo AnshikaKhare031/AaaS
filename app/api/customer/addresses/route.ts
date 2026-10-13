@@ -1,6 +1,33 @@
 import { NextResponse } from "next/server";
 import { createServerUserClient } from "@/lib/supabase/server";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function formatAddressRow(row: any) {
+  if (!row) return row;
+  return {
+    ...row,
+    id: row.id,
+    user_id: row.user_id,
+    full_name: row.full_name,
+    fullName: row.full_name,
+    phone: row.phone,
+    address_line1: row.address_line1,
+    address_line2: row.address_line2,
+    city: row.city,
+    state: row.state,
+    pincode: row.pincode,
+    country: row.country || "India",
+    is_default: Boolean(row.is_default),
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    // Frontend compatibility aliases:
+    house_flat: row.address_line1,
+    street: row.address_line2 || "",
+    landmark: row.address_line2 || null,
+    pin_code: row.pincode,
+  };
+}
+
 // GET /api/customer/addresses
 export async function GET() {
   try {
@@ -22,7 +49,8 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, addresses: data || [] });
+    const formattedAddresses = (data || []).map(formatAddressRow);
+    return NextResponse.json({ success: true, addresses: formattedAddresses });
   } catch (error) {
     console.error("Fetch addresses error:", error);
     return NextResponse.json({ success: false, error: "Unable to fetch addresses." }, { status: 500 });
@@ -40,10 +68,28 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { fullName, phone, houseFlat, street, landmark, city, state, pinCode, isDefault } = body;
+    const fullName = (body.fullName || body.full_name || "").toString().trim();
+    const phone = (body.phone || "").toString().trim();
+    const houseFlat = (body.houseFlat || body.house_flat || "").toString().trim();
+    const street = (body.street || "").toString().trim();
+    const landmark = (body.landmark || "").toString().trim();
+    const city = (body.city || "").toString().trim();
+    const state = (body.state || "").toString().trim();
+    const pinCode = (body.pinCode || body.pin_code || body.pincode || "").toString().trim();
+    const country = (body.country || "India").toString().trim();
+    const isDefault = Boolean(body.isDefault ?? body.is_default ?? false);
 
-    if (!fullName || !phone || !houseFlat || !street || !city || !state || !pinCode) {
-      return NextResponse.json({ success: false, error: "Missing required fields." }, { status: 400 });
+    const addressLine1 = (
+      body.address_line1 ||
+      (houseFlat && street ? houseFlat : (houseFlat || street))
+    ).toString().trim();
+
+    const addressLine2 = body.address_line2 !== undefined
+      ? (body.address_line2 ? body.address_line2.toString().trim() : null)
+      : (houseFlat && street ? (landmark ? `${street}, ${landmark}` : street) : (landmark || null));
+
+    if (!fullName || !phone || !addressLine1 || !city || !state || !pinCode) {
+      return NextResponse.json({ success: false, error: "Missing required address fields." }, { status: 400 });
     }
 
     // If isDefault is true, set all other addresses for this user to is_default = false
@@ -61,15 +107,15 @@ export async function POST(request: Request) {
       .from("addresses")
       .insert({
         user_id: user.id,
-        full_name: fullName.trim(),
-        phone: phone.trim(),
-        house_flat: houseFlat.trim(),
-        street: street.trim(),
-        landmark: landmark ? landmark.trim() : null,
-        city: city.trim(),
-        state: state.trim(),
-        pin_code: pinCode.trim(),
-        is_default: Boolean(isDefault)
+        full_name: fullName,
+        phone: phone,
+        address_line1: addressLine1,
+        address_line2: addressLine2,
+        city: city,
+        state: state,
+        pincode: pinCode,
+        country: country,
+        is_default: isDefault,
       })
       .select("*")
       .single();
@@ -78,7 +124,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, address: data });
+    return NextResponse.json({ success: true, address: formatAddressRow(data) });
   } catch (error) {
     console.error("Create address error:", error);
     return NextResponse.json({ success: false, error: "Unable to create address." }, { status: 500 });
@@ -96,7 +142,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { id, fullName, phone, houseFlat, street, landmark, city, state, pinCode, isDefault } = body;
+    const id = body.id;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "Address ID is required." }, { status: 400 });
@@ -114,6 +160,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: "Address not found or unauthorized." }, { status: 404 });
     }
 
+    const isDefault = body.isDefault !== undefined ? Boolean(body.isDefault) : (body.is_default !== undefined ? Boolean(body.is_default) : undefined);
+
     // If isDefault is true, set all other addresses for this user to is_default = false
     if (isDefault) {
       const { error: resetError } = await supabase
@@ -125,21 +173,44 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const updatePayload: Record<string, unknown> = {};
-    if (fullName !== undefined) updatePayload.full_name = fullName.trim();
-    if (phone !== undefined) updatePayload.phone = phone.trim();
-    if (houseFlat !== undefined) updatePayload.house_flat = houseFlat.trim();
-    if (street !== undefined) updatePayload.street = street.trim();
-    if (landmark !== undefined) updatePayload.landmark = landmark ? landmark.trim() : null;
-    if (city !== undefined) updatePayload.city = city.trim();
-    if (state !== undefined) updatePayload.state = state.trim();
-    if (pinCode !== undefined) updatePayload.pin_code = pinCode.trim();
-    if (isDefault !== undefined) updatePayload.is_default = Boolean(isDefault);
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (body.fullName !== undefined || body.full_name !== undefined) {
+      updatePayload.full_name = (body.fullName || body.full_name || "").toString().trim();
+    }
+    if (body.phone !== undefined) {
+      updatePayload.phone = body.phone.toString().trim();
+    }
+    if (body.address_line1 !== undefined) {
+      updatePayload.address_line1 = body.address_line1.toString().trim();
+    } else if (body.houseFlat !== undefined || body.house_flat !== undefined) {
+      const hf = (body.houseFlat || body.house_flat || "").toString().trim();
+      updatePayload.address_line1 = hf;
+    }
+
+    if (body.address_line2 !== undefined) {
+      updatePayload.address_line2 = body.address_line2 ? body.address_line2.toString().trim() : null;
+    } else if (body.street !== undefined || body.landmark !== undefined) {
+      const street = (body.street || "").toString().trim();
+      const landmark = (body.landmark || "").toString().trim();
+      updatePayload.address_line2 = street ? (landmark ? `${street}, ${landmark}` : street) : (landmark || null);
+    }
+
+    if (body.city !== undefined) updatePayload.city = body.city.toString().trim();
+    if (body.state !== undefined) updatePayload.state = body.state.toString().trim();
+    if (body.pinCode !== undefined || body.pin_code !== undefined || body.pincode !== undefined) {
+      updatePayload.pincode = (body.pinCode || body.pin_code || body.pincode || "").toString().trim();
+    }
+    if (body.country !== undefined) updatePayload.country = body.country.toString().trim();
+    if (isDefault !== undefined) updatePayload.is_default = isDefault;
 
     const { data, error } = await supabase
       .from("addresses")
       .update(updatePayload)
       .eq("id", id)
+      .eq("user_id", user.id)
       .select("*")
       .single();
 
@@ -147,7 +218,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, address: data });
+    return NextResponse.json({ success: true, address: formatAddressRow(data) });
   } catch (error) {
     console.error("Update address error:", error);
     return NextResponse.json({ success: false, error: "Unable to update address." }, { status: 500 });
@@ -187,4 +258,5 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: "Unable to delete address." }, { status: 500 });
   }
 }
+
 

@@ -18,26 +18,27 @@ async function generateOrderNumber(supabase: SupabaseClient): Promise<string> {
     if (error) {
       console.error("Error fetching latest order number:", error);
       // Safe fallback using timestamp slice in case query fails
-      return `CM-${Date.now().toString().slice(-6)}`;
+      return `AAAS-${Date.now().toString().slice(-6)}`;
     }
 
     if (!data || !data.order_number) {
-      return "CM-1001";
+      return "AAAS-1001";
     }
 
-    // Match sequential order numbers in format CM-XXXX
-    const match = data.order_number.match(/CM-(\d+)/);
+    // Match sequential order numbers in format AAAS-XXXX or legacy CM-XXXX
+    const match = data.order_number.match(/(?:AAAS|CM)-(\d+)/);
     if (match) {
       const lastNum = parseInt(match[1], 10);
-      return `CM-${lastNum + 1}`;
+      return `AAAS-${lastNum + 1}`;
     }
 
-    return "CM-1001";
+    return "AAAS-1001";
   } catch (err) {
     console.error("Failed to generate order number:", err);
-    return `CM-${Date.now().toString().slice(-6)}`;
+    return `AAAS-${Date.now().toString().slice(-6)}`;
   }
 }
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -138,24 +139,44 @@ export async function POST(req: NextRequest) {
       // Generate sequential order number
       const orderNumber = await generateOrderNumber(supabase);
 
-      // Prepare Database Record structure mapping target schema
+      const shippingAddressStr = (
+        address.shipping_address ||
+        [address.houseFlat, address.street, address.landmark].filter(Boolean).join(", ") ||
+        address.address_line1 ||
+        ""
+      ).trim();
+      const shippingCity = (address.shipping_city || address.city || "").trim();
+      const shippingState = (address.shipping_state || address.state || "").trim();
+      const shippingPincode = (address.shipping_pincode || address.pinCode || address.pincode || "").trim();
+      const shippingCountry = (address.shipping_country || address.country || "India").trim();
+      const shippingFee = calculateShipping(subtotal);
+
+      // Prepare Database Record structure matching live orders schema
       const orderRecord = {
-        customer_name: customer.fullName,
-        email: customer.email,
-        phone: customer.phone,
+        order_number: orderNumber,
         user_id: customerSession.user.id,
-        house_flat: address.houseFlat,
-        street: address.street,
-        landmark: address.landmark || null,
-        city: address.city,
-        state: address.state,
-        pin_code: address.pinCode,
+        customer_id: customerSession.user.id,
+        customer_name: customer.fullName.trim(),
+        customer_email: customer.email.trim(),
+        customer_phone: customer.phone.trim(),
+        shipping_name: customer.fullName.trim(),
+        shipping_email: customer.email.trim(),
+        shipping_phone: customer.phone.trim(),
+        shipping_address: shippingAddressStr,
+        shipping_city: shippingCity,
+        shipping_state: shippingState,
+        shipping_pincode: shippingPincode,
+        shipping_country: shippingCountry,
         items: verifiedItems, // Server-verified against the products table, never trusted from the client
         subtotal: subtotal,
+        shipping_fee: shippingFee,
+        discount_amount: 0,
         total: total,
+        total_amount: total,
+        currency: "INR",
         payment_status: "pending",
         order_status: "pending",
-        order_number: orderNumber,
+        status: "pending",
       };
 
       const { data, error } = await supabase
@@ -163,6 +184,7 @@ export async function POST(req: NextRequest) {
         .insert([orderRecord])
         .select("id, order_number")
         .single();
+
 
       if (error) {
         insertError = error;
@@ -237,19 +259,38 @@ export async function PATCH(req: NextRequest) {
     };
 
     if (customer) {
-      if (customer.fullName) updateFields.customer_name = customer.fullName;
-      if (customer.email) updateFields.email = customer.email;
-      if (customer.phone) updateFields.phone = customer.phone;
+      if (customer.fullName) {
+        updateFields.customer_name = customer.fullName.trim();
+        updateFields.shipping_name = customer.fullName.trim();
+      }
+      if (customer.email) {
+        updateFields.customer_email = customer.email.trim();
+        updateFields.shipping_email = customer.email.trim();
+      }
+      if (customer.phone) {
+        updateFields.customer_phone = customer.phone.trim();
+        updateFields.shipping_phone = customer.phone.trim();
+      }
     }
 
     if (address) {
-      if (address.houseFlat) updateFields.house_flat = address.houseFlat;
-      if (address.street) updateFields.street = address.street;
-      updateFields.landmark = address.landmark || null;
-      if (address.city) updateFields.city = address.city;
-      if (address.state) updateFields.state = address.state;
-      if (address.pinCode) updateFields.pin_code = address.pinCode;
+      const addrStr = (
+        address.shipping_address ||
+        [address.houseFlat, address.street, address.landmark].filter(Boolean).join(", ") ||
+        address.address_line1 ||
+        ""
+      ).trim();
+      if (addrStr) updateFields.shipping_address = addrStr;
+      if (address.city || address.shipping_city) {
+        updateFields.shipping_city = (address.city || address.shipping_city).trim();
+      }
+      if (address.state || address.shipping_state) {
+        updateFields.shipping_state = (address.state || address.shipping_state).trim();
+      }
+      const pin = address.pinCode || address.pincode || address.shipping_pincode;
+      if (pin) updateFields.shipping_pincode = pin.trim();
     }
+
 
     const supabase = createServerSupabaseClient();
     const { data: updatedOrder, error: updateError } = await supabase

@@ -6,12 +6,13 @@ import { contactConfig } from "./contact";
  * Generates schema.org Product structured data markup.
  */
 export function generateProductSchema(product: Product) {
-  const cleanDescription = product.description || `Buy ${product.title} from Crafty Mind Studio. Handcrafted, high-quality, and hand-painted in India.`;
+  const productName = product.name || product.title || "Handcrafted Piece";
+  const cleanDescription = product.description || `Buy ${productName} from ${siteConfig.brandName}. Premium handcrafted crochet and artisan lifestyle collection.`;
   
   return {
     "@context": "https://schema.org" as const,
     "@type": "Product" as const,
-    "name": product.title,
+    "name": productName,
     "image": product.image_url,
     "description": cleanDescription,
     "brand": {
@@ -20,7 +21,7 @@ export function generateProductSchema(product: Product) {
     },
     "offers": {
       "@type": "Offer" as const,
-      "url": `${siteConfig.url}/product/${product.id}`,
+      "url": `${siteConfig.url}/product/${product.slug || product.id}`,
       "priceCurrency": "INR",
       "price": product.price,
       "availability": "https://schema.org/InStock" as const,

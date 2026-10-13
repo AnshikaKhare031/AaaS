@@ -5,7 +5,7 @@ import ProductsClient from "./ProductsClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Manage Products | Crafty Minds Admin",
+  title: "Manage Products | AaaS Admin",
   description: "View, update, and manage your products.",
   robots: {
     index: false,

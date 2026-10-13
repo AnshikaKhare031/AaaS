@@ -15,11 +15,29 @@ function parseProduct(product: any): Product {
       specifications = [];
     }
   }
+
+  const name = product.name || product.title || "Untitled Creation";
+  const slug = product.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const is_featured = typeof product.is_featured === "boolean" ? product.is_featured : !!product.featured;
+  const is_customizable = typeof product.is_customizable === "boolean" ? product.is_customizable : !!product.customizable;
+  const stock = typeof product.stock_quantity === "number" ? product.stock_quantity : (product.inventory_count ?? 10);
+  const imageUrl = product.image_url || (Array.isArray(product.images) && product.images[0]) || "";
+
   return {
     ...product,
-    title: product.title || product.name || "Untitled Creation",
-    featured: typeof product.featured === "boolean" ? product.featured : !!product.is_featured,
-    customizable: typeof product.customizable === "boolean" ? product.customizable : !!product.is_customizable,
+    name,
+    title: name,
+    slug,
+    category: product.category || "Handbags",
+    image_url: imageUrl,
+    images: Array.isArray(product.images) && product.images.length > 0 ? product.images : (imageUrl ? [imageUrl] : []),
+    featured: is_featured,
+    is_featured,
+    customizable: is_customizable,
+    is_customizable,
+    stock_quantity: stock,
+    inventory_count: stock,
+    is_active: product.is_active !== false,
     specifications: Array.isArray(specifications) ? specifications : [],
   };
 }
@@ -42,22 +60,42 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 /**
- * Fetch a single product by its ID.
+ * Fetch active storefront products (is_active = true), ordered by created_at desc.
  */
-export async function getProduct(id: string): Promise<Product | null> {
+export async function getActiveProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("id", id)
-    .maybeSingle();
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error(`Error fetching product ${id}:`, error);
+    console.error("Error fetching active products:", error);
+    throw new Error(error.message);
+  }
+
+  return (data || []).map(parseProduct);
+}
+
+/**
+ * Fetch a single product by its ID or slug.
+ */
+export async function getProduct(idOrSlug: string): Promise<Product | null> {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+
+  const query = supabase.from("products").select("*");
+  const { data, error } = isUuid
+    ? await query.eq("id", idOrSlug).maybeSingle()
+    : await query.eq("slug", idOrSlug).maybeSingle();
+
+  if (error) {
+    console.error(`Error fetching product ${idOrSlug}:`, error);
     throw new Error(error.message);
   }
 
   return data ? parseProduct(data) : null;
 }
+
 
 /**
  * Create a new product.
