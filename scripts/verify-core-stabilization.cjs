@@ -177,25 +177,18 @@ async function runStabilizationTestSuite() {
         id: sample.id,
         title: sample.title,
         name: sample.name,
-        slug: sample.slug,
         price: sample.price,
         category: sample.category,
         image_url: sample.image_url ? 'Present' : 'None',
-        is_featured: sample.is_featured,
-        is_customizable: sample.is_customizable,
       });
 
       // Test detail page with UUID
       const detailUuidRes = await fetch(`${BASE_URL}/product/${sample.id}`);
       console.log(`✔ GET /product/${sample.id} (UUID route) status: ${detailUuidRes.status}`);
 
-      // Test detail page with slug
-      const detailSlugRes = await fetch(`${BASE_URL}/product/${sample.slug}`);
-      console.log(`✔ GET /product/${sample.slug} (Slug route) status: ${detailSlugRes.status}`);
-
-      if (prodRes.status === 200 && (detailUuidRes.status === 200 || detailSlugRes.status === 200)) {
+      if (prodRes.status === 200 && detailUuidRes.status === 200) {
         results.test4_products = true;
-        console.log('✅ TEST 4 PASSED: Products listing, fields & detail routing verified\n');
+        console.log('✅ TEST 4 PASSED: Products listing, fields & UUID detail routing verified\n');
       }
     }
 

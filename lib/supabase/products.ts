@@ -9,7 +9,6 @@ function parseProduct(product: any): Product {
   if (!product) return product;
 
   const name = product.name || product.title || "Untitled Creation";
-  const slug = product.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const imageUrl = product.image_url || (Array.isArray(product.images) && product.images[0]) || "";
 
   return {
@@ -19,7 +18,6 @@ function parseProduct(product: any): Product {
     price: Number(product.price || 0),
     category: product.category || "Handbags",
     image_url: imageUrl,
-    slug,
     created_at: product.created_at,
     updated_at: product.updated_at,
     title: name,
@@ -64,40 +62,25 @@ export async function getActiveProducts(): Promise<Product[]> {
 }
 
 /**
- * Fetch a single product by its ID or slug.
+ * Fetch a single product by its UUID ID.
  */
-export async function getProduct(idOrSlug: string): Promise<Product | null> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+export async function getProduct(id: string): Promise<Product | null> {
+  if (!id) return null;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (!isUuid) return null;
 
-  const query = supabase.from("products").select("*");
-  const { data, error } = isUuid
-    ? await query.eq("id", idOrSlug).maybeSingle()
-    : await query.eq("slug", idOrSlug).maybeSingle();
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
   if (error) {
-    console.error(`Error fetching product ${idOrSlug}:`, error);
+    console.error(`Error fetching product ${id}:`, error);
     throw new Error(error.message);
   }
 
   return data ? parseProduct(data) : null;
-}
-
-
-/**
- * Helper to safely generate a unique slug to prevent collisions.
- */
-async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "product";
-  const { data: existing } = await supabase
-    .from("products")
-    .select("id")
-    .eq("slug", baseSlug)
-    .maybeSingle();
-
-  if (!existing) {
-    return baseSlug;
-  }
-  return `${baseSlug}-${Date.now().toString().slice(-6)}`;
 }
 
 /**
@@ -111,11 +94,9 @@ export async function createProduct(
     price: number;
     category: string;
     image_url: string;
-    slug?: string;
   } & Record<string, unknown>
 ): Promise<Product> {
   const name = (product.name || product.title || "").toString().trim();
-  const slug = product.slug || (await generateUniqueSlug(name));
   const price = Number(product.price || 0);
   const description = (product.description || "").toString().trim();
   const category = (product.category || "Handbags").toString().trim();
@@ -123,7 +104,6 @@ export async function createProduct(
 
   const dbPayload = {
     name,
-    slug,
     description,
     price,
     category,

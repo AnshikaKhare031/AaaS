@@ -68,7 +68,7 @@ export default function FeaturedCreations() {
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                 className="group cursor-pointer"
               >
-                <Link href={`/product/${product.slug || product.id}`} className="block space-y-5">
+                <Link href={`/product/${product.id}`} className="block space-y-5">
                   {/* Image Box - Image First */}
                   <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border-custom bg-background shadow-xs transition-shadow duration-500 group-hover:shadow-lg">
                     <Image

@@ -14,7 +14,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const productName = product.name || product.title || "Handcrafted Creation";
-  const productHref = `/product/${product.slug || product.id}`;
+  const productHref = `/product/${product.id}`;
 
   return (
     <Link

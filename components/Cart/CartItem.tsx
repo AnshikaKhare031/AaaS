@@ -44,7 +44,7 @@ export default function CartItem({ item }: CartItemProps) {
       <div className="flex-grow flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full text-center sm:text-left">
         <div className="space-y-1">
           <Link
-            href={`/product/${product.slug || product.id}`}
+            href={`/product/${product.id}`}
             className="font-serif text-base sm:text-lg font-medium text-[#25382E] hover:text-[#EC8D99] transition-colors line-clamp-2 leading-tight block"
           >
             {productName}

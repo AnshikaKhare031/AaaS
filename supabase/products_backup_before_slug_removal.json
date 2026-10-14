@@ -1,0 +1,62 @@
+[
+  {
+    "id": "7a53b690-e0de-42f9-9cf0-72149c4bfcaa",
+    "name": "Potli Bag",
+    "slug": "potli-bag",
+    "description": "cjkdjkdd",
+    "price": 999,
+    "is_active": true,
+    "created_at": "2026-09-19T22:02:12.532+00:00",
+    "updated_at": "2026-09-19T22:02:12.532+00:00",
+    "category": "Handbags",
+    "image_url": "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp",
+    "images": [
+      "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp"
+    ]
+  },
+  {
+    "id": "b02ec738-a99e-4c02-9cca-21bc1b8f8740",
+    "name": "Tote Bag",
+    "slug": "tote-bag",
+    "description": "asdhasjhskaj",
+    "price": 1499,
+    "is_active": true,
+    "created_at": "2026-10-13T17:49:25.273027+00:00",
+    "updated_at": "2026-10-13T17:49:25.273027+00:00",
+    "category": "Handbags",
+    "image_url": "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791913760388_product1.png",
+    "images": [
+      "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791913760388_product1.png"
+    ]
+  },
+  {
+    "id": "f20f80cf-73be-493a-9b7e-b59ccf1ee473",
+    "name": "Morpankh keychain",
+    "slug": "morpankh-keychain",
+    "description": "ndjkwidjwkdjkqndhjewbfhewhef",
+    "price": 199,
+    "is_active": true,
+    "created_at": "2026-10-14T08:39:58.437057+00:00",
+    "updated_at": "2026-10-14T08:39:58.437057+00:00",
+    "category": "Keychains",
+    "image_url": "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791967178009_product4.png",
+    "images": [
+      "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791967178009_product4.png"
+    ]
+  },
+  {
+    "id": "99e7dbc4-0b8c-4cb2-bed7-741303a7821e",
+    "name": "Marigold claw clip",
+    "slug": "marigold-claw-clip",
+    "description": "gegfjhjkdjkwjl",
+    "price": 199,
+    "is_active": true,
+    "created_at": "2026-10-14T08:41:25.007389+00:00",
+    "updated_at": "2026-10-14T08:41:25.007389+00:00",
+    "category": "Accessories",
+    "image_url": "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791967277343_product8.png",
+    "images": [
+      "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1791967277343_product8.png"
+    ]
+  }
+]

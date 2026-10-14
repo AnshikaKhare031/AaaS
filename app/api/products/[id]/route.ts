@@ -88,9 +88,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/product/${id}`);
-    if (updatedProduct.slug) {
-      revalidatePath(`/product/${updatedProduct.slug}`);
-    }
     revalidatePath(getCategoryPath(updatedProduct.category));
     if (oldProduct && oldProduct.category !== updatedProduct.category) {
       revalidatePath(getCategoryPath(oldProduct.category));
@@ -133,9 +130,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/product/${id}`);
-    if (product?.slug) {
-      revalidatePath(`/product/${product.slug}`);
-    }
     if (product) {
       revalidatePath(getCategoryPath(product.category));
     }

@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     ? product.description.substring(0, 160)
     : `Buy ${productName} from ${siteConfig.brandName}. Premium handmade crochet and artisan lifestyle collection, thoughtfully crafted in India.`;
 
-  const pageUrl = getCanonicalUrl(`/product/${product.slug || product.id}`);
+  const pageUrl = getCanonicalUrl(`/product/${product.id}`);
 
   return {
     title: productName,
@@ -103,7 +103,7 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
   const breadcrumbsSchema = generateBreadcrumbSchema([
     { name: "Home", item: siteConfig.url },
     { name: canonicalCategory, item: `${siteConfig.url}${categoryPath}` },
-    { name: productName, item: `${siteConfig.url}/product/${product.slug || product.id}` },
+    { name: productName, item: `${siteConfig.url}/product/${product.id}` },
   ]);
 
   return (

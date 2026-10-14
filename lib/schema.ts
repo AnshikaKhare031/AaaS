@@ -21,7 +21,7 @@ export function generateProductSchema(product: Product) {
     },
     "offers": {
       "@type": "Offer" as const,
-      "url": `${siteConfig.url}/product/${product.slug || product.id}`,
+      "url": `${siteConfig.url}/product/${product.id}`,
       "priceCurrency": "INR",
       "price": product.price,
       "availability": "https://schema.org/InStock" as const,

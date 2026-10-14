@@ -7,7 +7,6 @@ export interface Product {
   price: number;
   category: ProductCategory | string;
   image_url: string;
-  slug?: string;
   created_at?: string;
   updated_at?: string;
   // Backward-compatible properties preserved for data-layer passthrough
