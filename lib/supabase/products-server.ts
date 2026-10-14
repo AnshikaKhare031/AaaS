@@ -7,39 +7,45 @@ import { Product } from "@/types/product";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseProduct(product: any): Product {
   if (!product) return product;
-  let specifications = product.specifications;
-  if (typeof specifications === "string") {
-    try {
-      specifications = JSON.parse(specifications);
-    } catch {
-      specifications = [];
-    }
-  }
 
   const name = product.name || product.title || "Untitled Creation";
   const slug = product.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  const is_featured = typeof product.is_featured === "boolean" ? product.is_featured : !!product.featured;
-  const is_customizable = typeof product.is_customizable === "boolean" ? product.is_customizable : !!product.customizable;
-  const stock = typeof product.stock_quantity === "number" ? product.stock_quantity : (product.inventory_count ?? 10);
   const imageUrl = product.image_url || (Array.isArray(product.images) && product.images[0]) || "";
 
   return {
-    ...product,
+    id: product.id,
     name,
-    title: name,
-    slug,
+    description: product.description || "",
+    price: Number(product.price || 0),
     category: product.category || "Handbags",
     image_url: imageUrl,
+    slug,
+    created_at: product.created_at,
+    updated_at: product.updated_at,
+    title: name,
     images: Array.isArray(product.images) && product.images.length > 0 ? product.images : (imageUrl ? [imageUrl] : []),
-    featured: is_featured,
-    is_featured,
-    customizable: is_customizable,
-    is_customizable,
-    stock_quantity: stock,
-    inventory_count: stock,
     is_active: product.is_active !== false,
-    specifications: Array.isArray(specifications) ? specifications : [],
   };
+}
+
+/**
+ * Helper to safely generate a unique slug to prevent collisions.
+ */
+async function generateUniqueSlug(
+  supabase: ReturnType<typeof createServerSupabaseClient>,
+  name: string
+): Promise<string> {
+  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "product";
+  const { data: existing } = await supabase
+    .from("products")
+    .select("id")
+    .eq("slug", baseSlug)
+    .maybeSingle();
+
+  if (!existing) {
+    return baseSlug;
+  }
+  return `${baseSlug}-${Date.now().toString().slice(-6)}`;
 }
 
 /**
@@ -100,41 +106,35 @@ export async function getProductServer(idOrSlug: string): Promise<Product | null
 }
 
 /**
- * Create a new product on the server with real database column mappings.
+ * Create a new product on the server with minimum viable attributes:
+ * Name, Description, Price, Category, and Image.
  */
 export async function createProductServer(
-  product: Partial<Product> & Record<string, unknown>
+  product: {
+    name: string;
+    description: string;
+    price: number;
+    category: string;
+    image_url: string;
+    slug?: string;
+  } & Record<string, unknown>
 ): Promise<Product> {
   const supabase = createServerSupabaseClient();
-  const name = (product.name || product.title || "Untitled Creation").toString().trim();
-  const slug = (product.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")) || `product-${Date.now()}`;
+  const name = (product.name || "").toString().trim();
+  const slug = product.slug || (await generateUniqueSlug(supabase, name));
   const price = Number(product.price || 0);
-  const is_featured = Boolean(product.is_featured ?? product.featured ?? false);
-  const is_customizable = Boolean(product.is_customizable ?? product.customizable ?? false);
-  const is_active = product.is_active !== false;
-  const stock = Number(product.stock_quantity ?? product.inventory_count ?? 10);
-  const low_stock_threshold = Number(product.low_stock_threshold ?? 3);
-  const imageUrl = (product.image_url || (Array.isArray(product.images) ? product.images[0] : "") || "").toString().trim();
-  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : (imageUrl ? [imageUrl] : []);
+  const description = (product.description || "").toString().trim();
+  const category = (product.category || "Handbags").toString().trim();
+  const imageUrl = (product.image_url || "").toString().trim();
 
   const dbPayload = {
     name,
     slug,
-    description: (product.description || "").toString(),
+    description,
     price,
-    sale_price: product.sale_price !== undefined && product.sale_price !== null ? Number(product.sale_price) : null,
-    category: (product.category || "Handbags").toString(),
+    category,
     image_url: imageUrl,
-    images,
-    is_active,
-    is_featured,
-    is_bestseller: Boolean(product.is_bestseller ?? false),
-    is_new: Boolean(product.is_new ?? false),
-    is_customizable,
-    stock_quantity: stock,
-    inventory_count: stock,
-    low_stock_threshold,
-    specifications: Array.isArray(product.specifications) ? product.specifications : [],
+    images: [imageUrl],
   };
 
   const { data, error } = await supabase
@@ -152,50 +152,39 @@ export async function createProductServer(
 }
 
 /**
- * Update an existing product by ID on the server with real database column mappings.
+ * Update an existing product by ID on the server preserving unedited fields.
  */
 export async function updateProductServer(
   id: string,
-  product: Partial<Product> & Record<string, unknown>
+  product: {
+    name?: string;
+    description?: string;
+    price?: number;
+    category?: string;
+    image_url?: string;
+  } & Record<string, unknown>
 ): Promise<Product> {
   const supabase = createServerSupabaseClient();
   const dbPayload: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
 
-  if (product.title !== undefined || product.name !== undefined) {
-    const name = (product.name || product.title || "").toString().trim();
-    dbPayload.name = name;
+  if (product.name !== undefined || (product as Record<string, unknown>).title !== undefined) {
+    dbPayload.name = (product.name || (product as Record<string, unknown>).title || "").toString().trim();
   }
-  if (product.slug !== undefined) dbPayload.slug = product.slug;
-  if (product.description !== undefined) dbPayload.description = product.description;
-  if (product.price !== undefined) dbPayload.price = Number(product.price);
-  if (product.sale_price !== undefined) dbPayload.sale_price = product.sale_price !== null ? Number(product.sale_price) : null;
-  if (product.category !== undefined) dbPayload.category = product.category;
+  if (product.description !== undefined) {
+    dbPayload.description = product.description.toString().trim();
+  }
+  if (product.price !== undefined) {
+    dbPayload.price = Number(product.price);
+  }
+  if (product.category !== undefined) {
+    dbPayload.category = product.category.toString().trim();
+  }
   if (product.image_url !== undefined) {
-    dbPayload.image_url = product.image_url;
-    if (!product.images && product.image_url) {
-      dbPayload.images = [product.image_url];
-    }
-  }
-  if (product.images !== undefined) dbPayload.images = product.images;
-  if (product.featured !== undefined || product.is_featured !== undefined) {
-    dbPayload.is_featured = Boolean(product.is_featured ?? product.featured);
-  }
-  if (product.customizable !== undefined || product.is_customizable !== undefined) {
-    dbPayload.is_customizable = Boolean(product.is_customizable ?? product.customizable);
-  }
-  if (product.is_active !== undefined) dbPayload.is_active = Boolean(product.is_active);
-  if (product.stock_quantity !== undefined || product.inventory_count !== undefined) {
-    const stock = Number(product.stock_quantity ?? product.inventory_count);
-    dbPayload.stock_quantity = stock;
-    dbPayload.inventory_count = stock;
-  }
-  if (product.low_stock_threshold !== undefined) {
-    dbPayload.low_stock_threshold = Number(product.low_stock_threshold);
-  }
-  if (product.specifications !== undefined) {
-    dbPayload.specifications = Array.isArray(product.specifications) ? product.specifications : [];
+    const img = product.image_url.toString().trim();
+    dbPayload.image_url = img;
+    dbPayload.images = [img];
   }
 
   const { data, error } = await supabase

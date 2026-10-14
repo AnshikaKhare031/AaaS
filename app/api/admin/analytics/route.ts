@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/utils/auth";
 import { getOrdersServer } from "@/lib/supabase/orders-server";
 import { getProductsServer } from "@/lib/supabase/products-server";
+import { getCanonicalCategoryName, getCategorySlug } from "@/lib/constants/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +101,7 @@ export async function GET() {
         
         if (!productSales[prodId]) {
           productSales[prodId] = {
-            name: prod.title,
+            name: prod.name || prod.title || "Untitled Creation",
             quantity: 0,
             revenue: 0,
             category: prod.category || ""
@@ -118,11 +119,9 @@ export async function GET() {
 
     // 2. Category Performance
     const categorySales: Record<string, number> = {
-      mdf: 0,
-      pouch: 0,
-      magnet: 0,
-      rakhis: 0,
-      crochet: 0
+      handbags: 0,
+      keychains: 0,
+      accessories: 0
     };
 
     let totalPaidItemRevenue = 0;
@@ -132,29 +131,21 @@ export async function GET() {
         const prod = item.product;
         if (!prod) continue;
         
-        const category = prod.category || "unknown";
+        const rawCategory = prod.category || "handbags";
+        const categorySlug = getCategorySlug(rawCategory);
+        const resolvedCategory = categorySales[categorySlug] !== undefined ? categorySlug : "accessories";
         const quantity = item.quantity || 0;
         const price = prod.price || 0;
         const revenue = price * quantity;
         
-        if (categorySales[category] === undefined) {
-          categorySales[category] = 0;
-        }
-        
-        categorySales[category] += revenue;
+        categorySales[resolvedCategory] += revenue;
         totalPaidItemRevenue += revenue;
       }
     }
 
     const categoryPerformance = Object.entries(categorySales).map(([cat, rev]) => {
       const percentage = totalPaidItemRevenue > 0 ? Math.round((rev / totalPaidItemRevenue) * 100) : 0;
-      
-      let label = cat;
-      if (cat === "mdf") label = "MDF Boards";
-      else if (cat === "pouch") label = "Pouches";
-      else if (cat === "magnet") label = "Magnets";
-      else if (cat === "rakhis") label = "Rakhis";
-      else if (cat === "crochet") label = "Crochet";
+      const label = getCanonicalCategoryName(cat) || cat;
       
       return {
         category: label,
@@ -245,7 +236,7 @@ export async function GET() {
     // Initialize stats map with catalog products
     for (const p of products) {
       productStats[p.id] = {
-        name: p.title,
+        name: p.name || p.title || "Untitled Creation",
         orders: 0,
         revenue: 0,
         lastPurchased: null
@@ -260,7 +251,7 @@ export async function GET() {
         
         if (!productStats[prodId]) {
           productStats[prodId] = {
-            name: prod.title,
+            name: prod.name || prod.title || "Untitled Creation",
             orders: 0,
             revenue: 0,
             lastPurchased: null

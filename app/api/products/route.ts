@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/utils/auth";
 import { getProductsServer, createProductServer } from "@/lib/supabase/products-server";
 import { revalidatePath } from "next/cache";
-import { getCategoryPath } from "@/lib/constants/categories";
+import { getCategoryPath, getCanonicalCategoryName } from "@/lib/constants/categories";
 
 export async function GET() {
   try {
@@ -22,27 +22,47 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, description, price, category, image_url, featured, customizable, specifications } = body;
+    const resolvedName = (body.name || body.title || "").toString().trim();
+    const description = (body.description || "").toString().trim();
+    const numericPrice = Number(body.price);
+    const canonicalCategory = getCanonicalCategoryName(body.category || "");
+    const imageUrl = (body.image_url || (Array.isArray(body.images) ? body.images[0] : "") || "").toString().trim();
 
-    if (!title || !description || price === undefined || !category || !image_url) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!resolvedName) {
+      return NextResponse.json({ error: "Product name is required" }, { status: 400 });
+    }
+
+    if (!description) {
+      return NextResponse.json({ error: "Product description is required" }, { status: 400 });
+    }
+
+    if (isNaN(numericPrice) || numericPrice <= 0) {
+      return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
+    }
+
+    if (!canonicalCategory) {
+      return NextResponse.json(
+        { error: "Category must be one of: Handbags, Keychains, Accessories" },
+        { status: 400 }
+      );
+    }
+
+    if (!imageUrl) {
+      return NextResponse.json({ error: "Product image is required" }, { status: 400 });
     }
 
     const newProduct = await createProductServer({
-      title,
+      name: resolvedName,
       description,
-      price: Number(price),
-      category,
-      image_url,
-      featured: !!featured,
-      customizable: !!customizable,
-      specifications,
+      price: numericPrice,
+      category: canonicalCategory,
+      image_url: imageUrl,
     });
 
     // Invalidate caches to ensure storefront is immediately updated
     revalidatePath("/");
     revalidatePath("/products");
-    revalidatePath(getCategoryPath(category));
+    revalidatePath(getCategoryPath(canonicalCategory));
     revalidatePath("/admin/products");
 
     return NextResponse.json(newProduct, { status: 201 });

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { id } = await params;
   const product = await getProductServer(id);
 
-  if (!product) {
+  if (!product || product.is_active === false) {
     return {
       title: "Product Not Found",
     };
@@ -78,12 +78,11 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
   const { id } = await params;
   const product = await getProductServer(id);
 
-  if (!product) {
+  if (!product || product.is_active === false) {
     notFound();
   }
 
   const productName = product.name || product.title || "Handcrafted Creation";
-  const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
   const canonicalCategory = getCanonicalCategoryName(product.category) || product.category || "Handmade";
   const categorySlug = getCategorySlug(product.category);
   const categoryPath = categorySlug === "products" ? "/products" : `/category/${categorySlug}`;
@@ -99,21 +98,6 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
     )
     .slice(0, 3);
 
-  const getCareInstructions = (category: string) => {
-    const canonical = (getCanonicalCategoryName(category) || category).toLowerCase();
-    switch (canonical) {
-      case "handbags":
-        return "Gentle spot clean with a soft damp cloth. If washing is necessary, immerse gently in cold water with mild liquid detergent. Do not twist or wring. Dry flat on a clean towel in the shade to preserve artisan stitches and shape.";
-      case "keychains":
-        return "Gently wipe with a soft dry microfiber cloth. Keep metal keyrings protected from excess moisture to prevent tarnishing.";
-      case "accessories":
-        return "Hand-wash gently in cold water with mild detergent. Lay flat to dry away from direct heat or harsh sunlight. Handle delicate crochet accents with gentle care.";
-      default:
-        return "Handle with care as an original handcrafted creation. Clean with a soft dry cloth and store in a cool, dry place.";
-    }
-  };
-
-  const careInstructions = getCareInstructions(product.category);
   const productSchema = generateProductSchema(product);
 
   const breadcrumbsSchema = generateBreadcrumbSchema([
@@ -175,51 +159,11 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Customization Note Box */}
-            {isCustomizable && (
-              <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-5 flex items-start gap-3.5 order-3 lg:order-2 shadow-2xs">
-                <Sparkles className="text-[#F5C842] shrink-0 mt-0.5" size={18} />
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.18em] font-medium text-[#25382E]">Customizable Piece</p>
-                  <p className="text-[#5C745F] text-xs sm:text-sm font-light leading-relaxed">
-                    This creation is handcrafted to order. You can request tailored color palettes, custom sizes, or personalized details by reaching out via WhatsApp or our atelier team.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Story & Details */}
-            <div className="order-4 lg:order-3">
+            <div className="order-3">
               <CollapsibleSection title="Artisan Story & Details">
-                <p className="text-[#5C745F] text-sm sm:text-base font-light leading-relaxed">
+                <p className="text-[#5C745F] text-sm sm:text-base font-light leading-relaxed whitespace-pre-line">
                   {product.description}
-                </p>
-              </CollapsibleSection>
-            </div>
-
-            {/* Specifications */}
-            {product.specifications && product.specifications.length > 0 && (
-              <div className="order-5 lg:order-4 pt-1 lg:pt-0">
-                <CollapsibleSection title="Specifications">
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-[#5C745F] font-light">
-                    {product.specifications.map((spec, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99] shrink-0" />
-                        <span>
-                          <strong className="font-medium text-[#25382E]">{spec.label}:</strong> {spec.value}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </CollapsibleSection>
-              </div>
-            )}
-
-            {/* Care Instructions */}
-            <div className="order-6 lg:order-5 pt-1 lg:pt-0">
-              <CollapsibleSection title="Care Instructions">
-                <p className="text-[#5C745F] text-sm sm:text-base font-light leading-relaxed">
-                  {careInstructions}
                 </p>
               </CollapsibleSection>
             </div>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/utils/auth";
 import { updateProductServer, deleteProductServer, getProductServer, deleteImageServer } from "@/lib/supabase/products-server";
 import { revalidatePath } from "next/cache";
-import { getCategoryPath } from "@/lib/constants/categories";
+import { getCategoryPath, getCanonicalCategoryName } from "@/lib/constants/categories";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -18,14 +18,65 @@ export async function PUT(request: Request, { params }: RouteParams) {
     id = (await params).id;
     const body = await request.json();
 
+    const sanitizedUpdate: {
+      name?: string;
+      description?: string;
+      price?: number;
+      category?: string;
+      image_url?: string;
+    } = {};
+
+    if (body.name !== undefined || body.title !== undefined) {
+      const name = (body.name || body.title || "").toString().trim();
+      if (!name) {
+        return NextResponse.json({ error: "Product name cannot be empty" }, { status: 400 });
+      }
+      sanitizedUpdate.name = name;
+    }
+
+    if (body.description !== undefined) {
+      const description = body.description.toString().trim();
+      if (!description) {
+        return NextResponse.json({ error: "Product description cannot be empty" }, { status: 400 });
+      }
+      sanitizedUpdate.description = description;
+    }
+
+    if (body.price !== undefined) {
+      const priceNum = Number(body.price);
+      if (isNaN(priceNum) || priceNum <= 0) {
+        return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
+      }
+      sanitizedUpdate.price = priceNum;
+    }
+
+    if (body.category !== undefined) {
+      const canonical = getCanonicalCategoryName(body.category);
+      if (!canonical) {
+        return NextResponse.json(
+          { error: "Category must be one of: Handbags, Keychains, Accessories" },
+          { status: 400 }
+        );
+      }
+      sanitizedUpdate.category = canonical;
+    }
+
+    if (body.image_url !== undefined) {
+      const img = body.image_url.toString().trim();
+      if (!img) {
+        return NextResponse.json({ error: "Image URL cannot be empty" }, { status: 400 });
+      }
+      sanitizedUpdate.image_url = img;
+    }
+
     // Fetch existing product to get old image url
     const oldProduct = await getProductServer(id);
 
     // Update product
-    const updatedProduct = await updateProductServer(id, body);
+    const updatedProduct = await updateProductServer(id, sanitizedUpdate);
 
     // If update succeeded and image changed, delete old image from storage
-    if (oldProduct && body.image_url && oldProduct.image_url !== body.image_url) {
+    if (oldProduct && sanitizedUpdate.image_url && oldProduct.image_url !== sanitizedUpdate.image_url) {
       try {
         await deleteImageServer(oldProduct.image_url);
       } catch (err) {

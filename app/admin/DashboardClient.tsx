@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/types/product";
-import { ShoppingBag, Box, Clipboard, Compass, Plus, Gift, BarChart3 } from "lucide-react";
+import { ShoppingBag, Box, Compass, Plus, Gift, BarChart3 } from "lucide-react";
+import { matchesCategory, getCanonicalCategoryName } from "@/lib/constants/categories";
 
 interface DashboardClientProps {
   products: Product[];
@@ -14,77 +15,39 @@ export default function DashboardClient({ products }: DashboardClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const totalProducts = products.length;
-  const mdfCount = products.filter((p) => p.category === "mdf").length;
-  const pouchCount = products.filter((p) => p.category === "pouch").length;
-  const magnetCount = products.filter((p) => p.category === "magnet").length;
-  const rakhiCount = products.filter((p) => p.category === "rakhis").length;
-  const crochetCount = products.filter((p) => p.category === "crochet").length;
+  const handbagsCount = products.filter((p) => matchesCategory(p.category, "handbags")).length;
+  const keychainsCount = products.filter((p) => matchesCategory(p.category, "keychains")).length;
+  const accessoriesCount = products.filter((p) => matchesCategory(p.category, "accessories")).length;
 
   const filteredProducts =
     selectedCategory === "all"
       ? products
-      : products.filter((product) => product.category === selectedCategory);
+      : products.filter((product) => matchesCategory(product.category, selectedCategory));
 
   const stats = [
     {
       id: "all",
-      title: "Total Products",
+      title: "Total Creations",
       value: totalProducts,
       icon: Box,
-      color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-      activeBorder: "border-blue-500",
-      activeBg: "bg-blue-500/[0.04]",
-      activeRing: "focus:ring-blue-500/40",
     },
     {
-      id: "mdf",
-      title: "MDF Board Arts",
-      value: mdfCount,
-      icon: Compass,
-      color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-      activeBorder: "border-amber-500",
-      activeBg: "bg-amber-500/[0.04]",
-      activeRing: "focus:ring-amber-500/40",
-    },
-    {
-      id: "pouch",
-      title: "Hand-painted Pouches",
-      value: pouchCount,
+      id: "handbags",
+      title: "Handbags",
+      value: handbagsCount,
       icon: ShoppingBag,
-      color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-      activeBorder: "border-purple-500",
-      activeBg: "bg-purple-500/[0.04]",
-      activeRing: "focus:ring-purple-500/40",
     },
     {
-      id: "magnet",
-      title: "Fridge Magnets",
-      value: magnetCount,
-      icon: Clipboard,
-      color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-      activeBorder: "border-rose-500",
-      activeBg: "bg-rose-500/[0.04]",
-      activeRing: "focus:ring-rose-500/40",
-    },
-    {
-      id: "rakhis",
-      title: "Handmade Rakhis",
-      value: rakhiCount,
+      id: "keychains",
+      title: "Keychains",
+      value: keychainsCount,
       icon: Gift,
-      color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      activeBorder: "border-emerald-500",
-      activeBg: "bg-emerald-500/[0.04]",
-      activeRing: "focus:ring-emerald-500/40",
     },
     {
-      id: "crochet",
-      title: "Crochet",
-      value: crochetCount,
-      icon: Gift,
-      color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-      activeBorder: "border-indigo-500",
-      activeBg: "bg-indigo-500/[0.04]",
-      activeRing: "focus:ring-indigo-500/40",
+      id: "accessories",
+      title: "Accessories",
+      value: accessoriesCount,
+      icon: Compass,
     },
   ];
 
@@ -118,7 +81,7 @@ export default function DashboardClient({ products }: DashboardClientProps) {
       </div>
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 md:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
           const isActive = selectedCategory === stat.id;
@@ -159,17 +122,7 @@ export default function DashboardClient({ products }: DashboardClientProps) {
             <h2 className="font-serif text-xl font-normal text-[#25382E]">
               {selectedCategory === "all"
                 ? "Recent Creations"
-                : `Recent Creations: ${
-                    selectedCategory === "crochet"
-                      ? "Handmade Crochet"
-                      : selectedCategory === "mdf"
-                      ? "MDF Crafts"
-                      : selectedCategory === "pouch"
-                      ? "Handmade Pouches"
-                      : selectedCategory === "rakhis"
-                      ? "Artisan Rakhis"
-                      : "Crochet Magnets"
-                  }`}
+                : `Recent Creations: ${getCanonicalCategoryName(selectedCategory) || selectedCategory}`}
             </h2>
             <p className="text-xs text-[#5C745F] font-sans mt-0.5">
               Showing {filteredProducts.length} of {totalProducts} {totalProducts === 1 ? "creation" : "creations"}
@@ -197,8 +150,6 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                     <th className="py-3.5 px-6">Product</th>
                     <th className="py-3.5 px-6">Category</th>
                     <th className="py-3.5 px-6">Price</th>
-                    <th className="py-3.5 px-6 text-center">Featured</th>
-                    <th className="py-3.5 px-6 text-center">Customizable</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5DACB] text-xs font-sans text-[#5C745F]">
@@ -209,57 +160,25 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                         <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                           <Image
                             src={product.image_url}
-                            alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
+                            alt={product.name || product.title || "Product creation"}
                             fill
                             className="object-cover"
                             sizes="44px"
                           />
                         </div>
                         <span className="font-serif font-medium text-sm text-[#25382E] hover:text-[#EC8D99] transition-colors">
-                          <Link href={`/admin/products`}>{product.title}</Link>
+                          <Link href={`/admin/products`}>{product.name || product.title}</Link>
                         </span>
                       </td>
                       {/* Category */}
                       <td className="py-3.5 px-6">
                         <span className="capitalize text-[10px] font-medium px-2.5 py-1 rounded-full bg-[#F6C4C2]/50 text-[#25382E]">
-                          {product.category === "crochet"
-                            ? "Crochet"
-                            : product.category === "mdf"
-                            ? "MDF Art"
-                            : product.category === "pouch"
-                            ? "Pouch"
-                            : product.category === "rakhis"
-                            ? "Rakhi"
-                            : "Magnet"}
+                          {getCanonicalCategoryName(product.category) || product.category}
                         </span>
                       </td>
                       {/* Price */}
                       <td className="py-3.5 px-6 font-medium text-[#25382E] text-sm">
                         ₹{product.price.toLocaleString("en-IN")}
-                      </td>
-                      {/* Featured */}
-                      <td className="py-3.5 px-6 text-center">
-                        {product.featured ? (
-                          <span className="inline-block text-[9px] uppercase tracking-wider bg-[#F5C842]/20 text-[#25382E] font-medium px-2.5 py-0.5 rounded-full font-sans">
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="inline-block text-[9px] uppercase tracking-wider text-[#5C745F]/50 font-sans">
-                            No
-                          </span>
-                        )}
-                      </td>
-                      {/* Customizable */}
-                      <td className="py-3.5 px-6 text-center">
-                        {product.customizable ? (
-                          <span className="inline-block text-[9px] uppercase tracking-wider bg-[#405F4C]/15 text-[#405F4C] font-medium px-2.5 py-0.5 rounded-full font-sans">
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="inline-block text-[9px] uppercase tracking-wider text-[#5C745F]/50 font-sans">
-                            No
-                          </span>
-                        )}
                       </td>
                     </tr>
                   ))}
@@ -274,7 +193,7 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                   <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                     <Image
                       src={product.image_url}
-                      alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
+                      alt={product.name || product.title || "Product creation"}
                       fill
                       className="object-cover"
                       sizes="56px"
@@ -282,17 +201,12 @@ export default function DashboardClient({ products }: DashboardClientProps) {
                   </div>
                   <div className="flex-grow min-w-0 space-y-1">
                     <span className="font-serif font-medium block truncate text-sm text-[#25382E]">
-                      <Link href="/admin/products">{product.title}</Link>
+                      <Link href="/admin/products">{product.name || product.title}</Link>
                     </span>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="capitalize text-[9px] font-medium px-2 py-0.5 rounded-full bg-[#F6C4C2]/50 text-[#25382E]">
-                        {product.category}
+                        {getCanonicalCategoryName(product.category) || product.category}
                       </span>
-                      {product.featured && (
-                        <span className="inline-block text-[9px] uppercase tracking-wider bg-[#F5C842]/20 text-[#25382E] font-medium px-1.5 py-0.5 rounded-full">
-                          Featured
-                        </span>
-                      )}
                     </div>
                     <div className="font-medium text-[#25382E] text-xs">
                       ₹{product.price.toLocaleString("en-IN")}

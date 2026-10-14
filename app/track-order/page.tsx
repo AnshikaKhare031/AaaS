@@ -286,14 +286,14 @@ export default function TrackOrderPage() {
                         <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                           <Image
                             src={item.product.image_url}
-                            alt={item.product.title}
+                            alt={item.product.name || item.product.title || "Product"}
                             fill
                             className="object-cover"
                             sizes="56px"
                           />
                         </div>
                         <div className="space-y-1">
-                          <h4 className="font-serif text-sm font-medium text-[#25382E] line-clamp-1">{item.product.title}</h4>
+                          <h4 className="font-serif text-sm font-medium text-[#25382E] line-clamp-1">{item.product.name || item.product.title}</h4>
                           <p className="text-[11px] text-[#5C745F] font-light">Qty: {item.quantity} × ₹{item.product.price.toLocaleString("en-IN")}</p>
                         </div>
                       </div>

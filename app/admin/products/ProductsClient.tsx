@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types/product";
 import { useToast } from "@/components/admin/Toast";
-import { Plus, Edit2, Trash2, Check, AlertTriangle, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit2, Trash2, AlertTriangle, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCanonicalCategoryName } from "@/lib/constants/categories";
 
 interface ProductsClientProps {
   initialProducts: Product[];
@@ -106,8 +107,6 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                   <th className="py-4 px-6">Creation Info</th>
                   <th className="py-4 px-6">Category</th>
                   <th className="py-4 px-6">Price</th>
-                  <th className="py-4 px-6 text-center">Featured</th>
-                  <th className="py-4 px-6 text-center">Customizable</th>
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
@@ -130,14 +129,14 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shrink-0">
                         <Image
                           src={product.image_url}
-                          alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
+                          alt={product.name || product.title || "Product creation"}
                           fill
                           className="object-cover"
                           sizes="48px"
                         />
                       </div>
                       <div className="flex flex-col space-y-0.5">
-                        <span className="font-serif font-medium text-sm text-[#25382E] block line-clamp-1">{product.title}</span>
+                        <span className="font-serif font-medium text-sm text-[#25382E] block line-clamp-1">{product.name || product.title}</span>
                         <span className="text-[10px] text-[#5C745F]/60 font-mono">ID: {product.id}</span>
                       </div>
                     </td>
@@ -145,41 +144,13 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                     {/* Category */}
                     <td className="py-4 px-6">
                       <span className="capitalize text-[10px] font-medium px-2.5 py-1 rounded-full bg-[#F8F2E7] border border-[#E5DACB] text-[#25382E]">
-                        {product.category === "crochet" ? "Crochet" : product.category === "mdf" ? "MDF Art" : product.category === "pouch" ? "Pouch" : product.category === "rakhis" ? "Rakhi" : "Magnet"}
+                        {getCanonicalCategoryName(product.category) || product.category}
                       </span>
                     </td>
                     
                     {/* Price */}
                     <td className="py-4 px-6 font-medium text-sm text-[#25382E]">
                       ₹{product.price.toLocaleString("en-IN")}
-                    </td>
-                    
-                    {/* Featured badge */}
-                    <td className="py-4 px-6 text-center">
-                      {product.featured ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider bg-[#F5C842]/20 text-[#25382E] font-medium px-2.5 py-1 rounded-full border border-[#F5C842]/40">
-                          <Check size={10} className="text-[#25382E]" />
-                          <span>Featured</span>
-                        </span>
-                      ) : (
-                        <span className="inline-block text-[9px] uppercase tracking-wider text-[#5C745F]/50 font-sans">
-                          Standard
-                        </span>
-                      )}
-                    </td>
-                    
-                    {/* Customizable badge */}
-                    <td className="py-4 px-6 text-center">
-                      {product.customizable ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider bg-[#405F4C]/15 text-[#405F4C] font-medium px-2.5 py-1 rounded-full border border-[#405F4C]/25">
-                          <Check size={10} />
-                          <span>Customizable</span>
-                        </span>
-                      ) : (
-                        <span className="inline-block text-[9px] uppercase tracking-wider text-[#5C745F]/50 font-sans">
-                          Fixed
-                        </span>
-                      )}
                     </td>
 
                     {/* Actions */}
@@ -226,7 +197,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shrink-0">
                   <Image
                     src={product.image_url}
-                    alt={product.title || (product as unknown as { name?: string }).name || "Product creation"}
+                    alt={product.name || product.title || "Product creation"}
                     fill
                     className="object-cover"
                     sizes="64px"
@@ -234,17 +205,11 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 </div>
                 {/* Product info */}
                 <div className="flex-grow min-w-0 space-y-1">
-                  <span className="font-serif font-medium text-[#25382E] block truncate text-base">{product.title}</span>
+                  <span className="font-serif font-medium text-[#25382E] block truncate text-base">{product.name || product.title}</span>
                   <div className="flex flex-wrap items-center gap-1.5 font-sans">
                     <span className="capitalize text-[9px] font-medium px-2 py-0.5 rounded-full bg-[#F8F2E7] border border-[#E5DACB] text-[#25382E]">
-                      {product.category}
+                      {getCanonicalCategoryName(product.category) || product.category}
                     </span>
-                    {product.featured && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider bg-[#F5C842]/20 text-[#25382E] font-medium px-1.5 py-0.5 rounded-full border border-[#F5C842]/30">
-                        <Check size={8} />
-                        <span>Featured</span>
-                      </span>
-                    )}
                   </div>
                   <div className="flex items-center justify-between pt-1">
                     <span className="font-medium text-[#25382E] text-xs font-sans">
@@ -300,7 +265,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 <div className="space-y-1.5">
                   <h3 className="font-serif text-2xl font-normal text-[#25382E]">Delete Creation?</h3>
                   <p className="text-[#5C745F] text-xs font-light leading-relaxed">
-                    Are you sure you want to delete <span className="font-medium text-[#25382E]">&quot;{productToDelete.title}&quot;</span>?
+                    Are you sure you want to delete <span className="font-medium text-[#25382E]">&quot;{productToDelete.name || productToDelete.title}&quot;</span>?
                     This will permanently remove the piece from the atelier catalog and delete its photograph from storage.
                   </p>
                 </div>

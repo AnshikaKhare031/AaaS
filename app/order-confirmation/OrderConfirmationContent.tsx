@@ -242,7 +242,7 @@ export default function OrderConfirmationContent({ orderNumber }: OrderConfirmat
                           <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
                             <Image
                               src={item.product.image_url}
-                              alt={item.product.title}
+                              alt={item.product.name || item.product.title || "Product"}
                               fill
                               className="object-cover"
                               sizes="(max-width: 640px) 64px, 80px"
@@ -250,7 +250,7 @@ export default function OrderConfirmationContent({ orderNumber }: OrderConfirmat
                           </div>
                         )}
                         <div className="space-y-1 min-w-0">
-                          <h4 className="font-serif font-medium text-sm sm:text-base text-[#25382E] truncate">{item.product.title}</h4>
+                          <h4 className="font-serif font-medium text-sm sm:text-base text-[#25382E] truncate">{item.product.name || item.product.title}</h4>
                           <p className="text-[11px] text-[#EC8D99] font-medium uppercase tracking-wider">
                             {item.product.category === "crochet"
                               ? "Handmade Crochet"

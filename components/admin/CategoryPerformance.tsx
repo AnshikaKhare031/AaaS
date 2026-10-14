@@ -15,6 +15,12 @@ interface CategoryPerformanceProps {
 export default function CategoryPerformance({ categories }: CategoryPerformanceProps) {
   const getBarColor = (name: string) => {
     switch (name) {
+      case "Handbags":
+        return "bg-[#25382E]";
+      case "Keychains":
+        return "bg-[#EC8D99]";
+      case "Accessories":
+        return "bg-[#5C745F]";
       case "Crochet":
         return "bg-[#25382E]";
       case "MDF Boards":

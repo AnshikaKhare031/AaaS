@@ -14,9 +14,6 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const productName = product.name || product.title || "Handcrafted Creation";
-  const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
-  const stock = product.stock_quantity ?? product.inventory_count ?? 1;
-  const inStock = stock > 0;
   const productHref = `/product/${product.slug || product.id}`;
 
   return (
@@ -33,13 +30,6 @@ export default function ProductCard({ product }: ProductCardProps) {
       >
         {/* Product Image Frame */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F8F2E7]">
-          {/* Customization Badge */}
-          {isCustomizable && (
-            <span className="absolute top-2.5 left-2.5 md:top-3 md:left-3 z-10 text-[9px] uppercase tracking-[0.2em] bg-[#FFFAF1]/90 backdrop-blur-xs text-[#5C745F] border border-[#E5DACB] font-medium font-sans px-2.5 py-0.5 rounded-full shadow-2xs">
-              Customizable
-            </span>
-          )}
-
           <Image
             src={product.image_url}
             alt={productName}
@@ -60,13 +50,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Meta Details */}
         <div className="p-3.5 sm:p-5 flex flex-col flex-grow justify-between space-y-3 font-sans">
           <div className="space-y-1.5">
-            {/* Category / Stock label */}
-            <div className="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-[#5C745F]">
-              <span className="font-medium truncate max-w-[65%]">
+            {/* Category */}
+            <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-[#5C745F]">
+              <span className="font-medium truncate">
                 {product.category || "Handmade"}
-              </span>
-              <span className={`font-medium ${inStock ? "text-[#405F4C]" : "text-[#C96A6A]"}`}>
-                {inStock ? "In Stock" : "Sold Out"}
               </span>
             </div>
 

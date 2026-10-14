@@ -15,11 +15,7 @@ export default function FeaturedCreations() {
   useEffect(() => {
     getProducts()
       .then((products) => {
-        setFeatured(
-          products
-            .filter((p) => (p.is_featured ?? p.featured) && p.is_active !== false)
-            .slice(0, 6)
-        );
+        setFeatured(products.filter((p) => p.is_active !== false).slice(0, 6));
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -63,7 +59,6 @@ export default function FeaturedCreations() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
           {featured.map((product, idx) => {
             const productName = product.name || product.title || "Featured Piece";
-            const isCustomizable = Boolean(product.is_customizable ?? product.customizable);
             return (
               <motion.div
                 key={product.id}
@@ -83,12 +78,6 @@ export default function FeaturedCreations() {
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
-                    {/* Subtle Badge */}
-                    {isCustomizable && (
-                      <span className="absolute top-4 left-4 z-10 text-[9px] uppercase tracking-widest bg-accent-secondary/90 text-white font-medium px-2.5 py-1 rounded-xs">
-                        Customizable
-                      </span>
-                    )}
                     {/* Hover Overlay Arrow */}
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-xs p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
                       <ArrowUpRight size={16} className="text-accent" />

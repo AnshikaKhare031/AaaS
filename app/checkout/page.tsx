@@ -1032,7 +1032,7 @@ function CheckoutContent() {
                       <div className="relative aspect-[3/4] w-12 overflow-hidden border border-[#DDD0C1] bg-[#FBF8F4] shrink-0">
                         <Image
                           src={item.product.image_url}
-                          alt={item.product.title}
+                          alt={item.product.name || item.product.title || "Product"}
                           fill
                           className="object-cover"
                           sizes="48px"
@@ -1040,7 +1040,7 @@ function CheckoutContent() {
                       </div>
                       <div className="flex-grow min-w-0">
                         <h4 className="font-serif text-sm font-medium text-[#4A382D] truncate">
-                          {item.product.title}
+                          {item.product.name || item.product.title}
                         </h4>
                         <p className="text-xs text-[#7A6656] font-sans">
                           Qty: {item.quantity} × ₹{item.product.price.toLocaleString("en-IN")}

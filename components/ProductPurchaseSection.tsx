@@ -89,10 +89,10 @@ export default function ProductPurchaseSection({ product }: ProductPurchaseSecti
 
       {/* Ask on WhatsApp Secondary Button */}
       <a
-        href={getProductWhatsAppLink(product.title)}
+        href={getProductWhatsAppLink(product.name || product.title || "")}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Ask about "${product.title}" on WhatsApp`}
+        aria-label={`Ask about "${product.name || product.title || "this piece"}" on WhatsApp`}
         className="w-full group flex items-center justify-center gap-2.5 py-3.5 md:py-4 rounded-full border border-[#25382E] text-[#25382E] hover:bg-[#25382E] hover:text-[#FFFAF1] font-medium uppercase tracking-[0.16em] text-xs transition-all duration-300 shadow-none cursor-pointer text-center bg-transparent active:translate-y-0"
       >
         <MessageCircle size={15} className="text-[#5C745F] group-hover:text-[#FFFAF1] transition-colors" />

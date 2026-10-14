@@ -7,38 +7,24 @@ import { Product } from "@/types/product";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseProduct(product: any): Product {
   if (!product) return product;
-  let specifications = product.specifications;
-  if (typeof specifications === "string") {
-    try {
-      specifications = JSON.parse(specifications);
-    } catch {
-      specifications = [];
-    }
-  }
 
   const name = product.name || product.title || "Untitled Creation";
   const slug = product.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  const is_featured = typeof product.is_featured === "boolean" ? product.is_featured : !!product.featured;
-  const is_customizable = typeof product.is_customizable === "boolean" ? product.is_customizable : !!product.customizable;
-  const stock = typeof product.stock_quantity === "number" ? product.stock_quantity : (product.inventory_count ?? 10);
   const imageUrl = product.image_url || (Array.isArray(product.images) && product.images[0]) || "";
 
   return {
-    ...product,
+    id: product.id,
     name,
-    title: name,
-    slug,
+    description: product.description || "",
+    price: Number(product.price || 0),
     category: product.category || "Handbags",
     image_url: imageUrl,
+    slug,
+    created_at: product.created_at,
+    updated_at: product.updated_at,
+    title: name,
     images: Array.isArray(product.images) && product.images.length > 0 ? product.images : (imageUrl ? [imageUrl] : []),
-    featured: is_featured,
-    is_featured,
-    customizable: is_customizable,
-    is_customizable,
-    stock_quantity: stock,
-    inventory_count: stock,
     is_active: product.is_active !== false,
-    specifications: Array.isArray(specifications) ? specifications : [],
   };
 }
 
@@ -98,14 +84,56 @@ export async function getProduct(idOrSlug: string): Promise<Product | null> {
 
 
 /**
+ * Helper to safely generate a unique slug to prevent collisions.
+ */
+async function generateUniqueSlug(name: string): Promise<string> {
+  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "product";
+  const { data: existing } = await supabase
+    .from("products")
+    .select("id")
+    .eq("slug", baseSlug)
+    .maybeSingle();
+
+  if (!existing) {
+    return baseSlug;
+  }
+  return `${baseSlug}-${Date.now().toString().slice(-6)}`;
+}
+
+/**
  * Create a new product.
  */
 export async function createProduct(
-  product: Omit<Product, "id" | "created_at" | "updated_at">
+  product: {
+    name?: string;
+    title?: string;
+    description: string;
+    price: number;
+    category: string;
+    image_url: string;
+    slug?: string;
+  } & Record<string, unknown>
 ): Promise<Product> {
+  const name = (product.name || product.title || "").toString().trim();
+  const slug = product.slug || (await generateUniqueSlug(name));
+  const price = Number(product.price || 0);
+  const description = (product.description || "").toString().trim();
+  const category = (product.category || "Handbags").toString().trim();
+  const imageUrl = (product.image_url || (Array.isArray(product.images) ? product.images[0] : "") || "").toString().trim();
+
+  const dbPayload = {
+    name,
+    slug,
+    description,
+    price,
+    category,
+    image_url: imageUrl,
+    images: [imageUrl],
+  };
+
   const { data, error } = await supabase
     .from("products")
-    .insert([product])
+    .insert([dbPayload])
     .select()
     .single();
 
@@ -122,11 +150,40 @@ export async function createProduct(
  */
 export async function updateProduct(
   id: string,
-  product: Partial<Omit<Product, "id" | "created_at" | "updated_at">>
+  product: {
+    name?: string;
+    title?: string;
+    description?: string;
+    price?: number;
+    category?: string;
+    image_url?: string;
+  } & Record<string, unknown>
 ): Promise<Product> {
+  const dbPayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (product.title !== undefined || product.name !== undefined) {
+    dbPayload.name = (product.name || product.title || "").toString().trim();
+  }
+  if (product.description !== undefined) {
+    dbPayload.description = product.description.toString().trim();
+  }
+  if (product.price !== undefined) {
+    dbPayload.price = Number(product.price);
+  }
+  if (product.category !== undefined) {
+    dbPayload.category = product.category.toString().trim();
+  }
+  if (product.image_url !== undefined) {
+    const img = product.image_url.toString().trim();
+    dbPayload.image_url = img;
+    dbPayload.images = [img];
+  }
+
   const { data, error } = await supabase
     .from("products")
-    .update(product)
+    .update(dbPayload)
     .eq("id", id)
     .select()
     .single();
