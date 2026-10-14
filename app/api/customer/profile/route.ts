@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, ensureCustomerProfile, CustomerProfileRow } from "@/lib/supabase/server";
 import { getCustomerSession } from "@/lib/auth/customer-session-server";
 
 export async function GET() {
@@ -20,9 +20,19 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const profile = data
+    let profileData: CustomerProfileRow | null = data;
+    if (!profileData) {
+      // Self-heal: ensure profile row exists for verified active session
+      profileData = await ensureCustomerProfile(
+        session.user.id,
+        session.user.email,
+        session.user.fullName
+      );
+    }
+
+    const profile = profileData
       ? {
-          ...data,
+          ...profileData,
           avatar_url: session.user.avatarUrl ?? null,
         }
       : null;

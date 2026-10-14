@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { ensureCustomerProfile } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -43,8 +44,21 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       if (!exchangeError) {
+        if (exchangeData?.user) {
+          const userMeta = exchangeData.user.user_metadata;
+          const fullName =
+            (userMeta?.full_name as string | undefined) ??
+            (userMeta?.name as string | undefined) ??
+            exchangeData.user.email?.split("@")[0] ??
+            null;
+          try {
+            await ensureCustomerProfile(exchangeData.user.id, exchangeData.user.email, fullName);
+          } catch (profileErr) {
+            console.error("Auth callback ensureCustomerProfile error:", profileErr);
+          }
+        }
         return response;
       }
       console.error("Auth callback code exchange error:", exchangeError);

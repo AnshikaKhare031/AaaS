@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerUserClient } from "@/lib/supabase/server";
+import { createServerUserClient, ensureCustomerProfile } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatAddressRow(row: any) {
@@ -102,6 +102,13 @@ export async function POST(request: Request) {
         console.error("Reset default addresses error:", resetError);
       }
     }
+
+    // Ensure profile row exists for verified session before insert to satisfy addresses_user_id_fkey
+    await ensureCustomerProfile(
+      user.id,
+      user.email,
+      fullName || (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string)
+    );
 
     const { data, error } = await supabase
       .from("addresses")

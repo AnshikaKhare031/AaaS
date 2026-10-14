@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, ensureCustomerProfile } from "@/lib/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getCustomerSession } from "@/lib/auth/customer-session-server";
 import { getProductsServer } from "@/lib/supabase/products-server";
@@ -127,6 +127,13 @@ export async function POST(req: NextRequest) {
 
     // Create the server-side Supabase client using Service Role key
     const supabase = createServerSupabaseClient();
+
+    // Ensure profile row exists for verified session before insert to satisfy orders_user_id_fkey
+    await ensureCustomerProfile(
+      customerSession.user.id,
+      customerSession.user.email,
+      customer.fullName || customerSession.user.fullName
+    );
 
     // Insert order into Supabase with retry logic for unique constraint violations
     let insertedOrder = null;
