@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, ensureCustomerProfile } from "@/lib/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getCustomerSession } from "@/lib/auth/customer-session-server";
-import { getProductsServer } from "@/lib/supabase/products-server";
+import { getActiveProductsServer } from "@/lib/supabase/products-server";
 import { calculateShipping } from "@/lib/shipping";
 
 // Helper to generate a sequential order number
@@ -104,13 +104,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const catalogProducts = await getProductsServer();
+    const catalogProducts = await getActiveProductsServer();
     const productById = new Map(catalogProducts.map((product) => [product.id, product]));
 
     const verifiedItems: { product: (typeof catalogProducts)[number]; quantity: number }[] = [];
     for (const { productId, quantity } of requestedItems) {
       const product = productById.get(productId as string);
-      if (!product) {
+      if (!product || product.is_active === false) {
         return NextResponse.json(
           { success: false, error: "One or more items in the cart are no longer available." },
           { status: 400 }
