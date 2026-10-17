@@ -8,7 +8,7 @@ import { reconcileOrderPayment } from "@/lib/payment/reconcile";
  * 1. Checks pending orders older than 30 minutes.
  * 2. Cross-checks Razorpay API for orders with razorpay_order_id.
  *    - If paid on Razorpay: auto-reconciles order to 'paid'.
- *    - If unpaid on Razorpay or missing gateway order: marks 'expired'.
+ *    - If unpaid on Razorpay or missing gateway order: marks 'failed'.
  *    - If Razorpay API call fails: leaves as 'pending' for next retry.
  * 3. Never permanently deletes orders (preserves full auditability & late reconciliation).
  */
@@ -54,11 +54,12 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
 
     if (fetchError) {
       const err = fetchError as { message?: string; code?: string; details?: string; hint?: string };
-      console.error("[Order Expiration Sweep] Supabase error:", {
-        message: err?.message,
-        code: err?.code,
-        details: err?.details,
-        hint: err?.hint,
+      console.error("[Order Expiration Sweep] Supabase fetch error:", {
+        message: err?.message || (err as unknown as Error)?.message || "Database fetch failed",
+        code: err?.code || "UNKNOWN",
+        details: err?.details || null,
+        hint: err?.hint || null,
+        raw: err,
       });
       return;
     }
@@ -76,18 +77,21 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
         const { error: expireError } = await supabase
           .from("orders")
           .update({
-            payment_status: "expired",
+            payment_status: "failed",
             updated_at: new Date().toISOString(),
           })
           .eq("id", order.id)
           .eq("payment_status", "pending");
 
         if (expireError) {
+          const errCode = expireError.code || "UNKNOWN";
+          const errMsg = expireError.message || (expireError as unknown as Error).message || "Database update failed";
           console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, {
-            message: expireError?.message,
-            code: expireError?.code,
-            details: expireError?.details,
-            hint: expireError?.hint,
+            message: errMsg,
+            code: errCode,
+            details: expireError.details || null,
+            hint: expireError.hint || null,
+            raw: expireError,
           });
         }
         continue;
@@ -146,18 +150,21 @@ export async function expirePendingOrders(supabase: SupabaseClient): Promise<voi
           const { error: expireError } = await supabase
             .from("orders")
             .update({
-              payment_status: "expired",
+              payment_status: "failed",
               updated_at: new Date().toISOString(),
             })
             .eq("id", order.id)
             .eq("payment_status", "pending");
 
           if (expireError) {
+            const errCode = expireError.code || "UNKNOWN";
+            const errMsg = expireError.message || (expireError as unknown as Error).message || "Database update failed";
             console.error(`[Order Expiration Sweep] Error expiring order ${order.order_number}:`, {
-              message: expireError?.message,
-              code: expireError?.code,
-              details: expireError?.details,
-              hint: expireError?.hint,
+              message: errMsg,
+              code: errCode,
+              details: expireError.details || null,
+              hint: expireError.hint || null,
+              raw: expireError,
             });
           }
         }

@@ -70,12 +70,12 @@ export default function FeaturedCreations() {
               >
                 <Link href={`/product/${product.id}`} className="block space-y-5">
                   {/* Image Box - Image First */}
-                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-border-custom bg-background shadow-xs transition-shadow duration-500 group-hover:shadow-lg">
+                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shadow-xs transition-shadow duration-500 group-hover:shadow-lg flex items-center justify-center p-3 sm:p-4">
                     <Image
                       src={product.image_url}
                       alt={productName}
                       fill
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-104"
+                      className="object-contain p-2 sm:p-3 transition-transform duration-700 ease-out group-hover:scale-104"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
                     {/* Hover Overlay Arrow */}

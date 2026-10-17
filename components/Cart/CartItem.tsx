@@ -30,12 +30,12 @@ export default function CartItem({ item }: CartItemProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 py-5 border-b border-[#E5DACB]/60 last:border-b-0">
       {/* Product Image */}
-      <div className="relative aspect-[3/4] w-24 sm:w-20 md:w-24 overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0">
+      <div className="relative aspect-[3/4] w-24 sm:w-20 md:w-24 overflow-hidden border border-[#E5DACB] bg-[#FFFAF1] shrink-0 flex items-center justify-center p-1">
         <Image
           src={product.image_url}
           alt={productName}
           fill
-          className="object-cover"
+          className="object-contain p-1"
           sizes="(max-width: 640px) 96px, (max-width: 768px) 80px, 96px"
         />
       </div>

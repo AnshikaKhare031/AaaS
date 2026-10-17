@@ -92,17 +92,9 @@ export default function Navbar() {
             <span className="text-[#F5C842]">✦</span>
             <span>Complimentary domestic delivery on orders over ₹999</span>
           </div>
-          <div className="hidden sm:flex items-center gap-3.5 text-[#F6C4C2]/90 text-[10px]">
-            <span>100% Artisan Made</span>
+          <div className="hidden sm:flex items-center gap-2 text-[#F6C4C2]/90 text-[10px]">
             <span className="text-[#F5C842]">✦</span>
-            <a
-              href="https://wa.me/917668251162?text=Hello%20AaaS%20Atelier,%20I%20would%20like%20to%20inquire%20about%20a%20handcrafted%20order."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#FFFAF1] transition-colors underline-offset-2 hover:underline"
-            >
-              Atelier Direct: +91 76682 51162
-            </a>
+            <span>100% Artisan Made</span>
           </div>
         </div>
       </div>

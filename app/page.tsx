@@ -1,7 +1,4 @@
-"use client";
-
 import React from "react";
-import { motion } from "framer-motion";
 import Hero from "@/components/Hero";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import AboutSection from "@/components/AboutSection";
@@ -9,36 +6,43 @@ import CategoryCard from "@/components/CategoryCard";
 import WhyHandmade from "@/components/WhyHandmade";
 import HowItWorks from "@/components/HowItWorks";
 import CTASection from "@/components/CTASection";
+import { getActiveProductsServer } from "@/lib/supabase/products-server";
+import { AAAS_CATEGORIES, matchesCategory } from "@/lib/constants/categories";
 
-export default function Home() {
-  const categories = [
-    {
-      title: "Handbags",
-      description: "Artisan-stitched crochet handbags, heirloom potlis, and everyday totes crafted with luxury yarn.",
-      imageSrc: "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp",
-      href: "/category/handbags",
-    },
-    {
-      title: "Keychains",
-      description: "Delicate handcrafted floral, animal, and amigurumi charm keychains.",
-      href: "/category/keychains",
-    },
-    {
-      title: "Accessories",
-      description: "Exquisite handmade lifestyle accents, pouches, and wearable crochet accessories.",
-      href: "/category/accessories",
-    },
-  ];
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const activeProducts = await getActiveProductsServer();
+
+  // Match real active products to their own canonical categories
+  const categories = AAAS_CATEGORIES.map((cat, idx) => {
+    const matchingProducts = activeProducts.filter(
+      (p) => matchesCategory(p.category, cat.name) && Boolean(p.image_url && p.image_url.trim().length > 0)
+    );
+    const representativeProduct = matchingProducts[0] || null;
+
+    return {
+      slug: cat.slug,
+      title: cat.name,
+      description: cat.description,
+      imageSrc: representativeProduct?.image_url,
+      imageAlt: representativeProduct
+        ? `${representativeProduct.name || representativeProduct.title || cat.name} - ${cat.name}`
+        : `${cat.name} Collection`,
+      href: `/category/${cat.slug}`,
+      index: idx,
+    };
+  });
 
   return (
     <div className="relative bg-[#F8F2E7]">
-      {/* 1. Hero Section */}
-      <Hero />
+      {/* 1. Hero Section - Database-Driven Carousel */}
+      <Hero initialProducts={activeProducts} />
 
       {/* 2. Marquee Ticker Band from Figma */}
       <MarqueeBanner />
 
-      {/* 3. Curated Collections Section */}
+      {/* 3. Curated Collections Section - Database-Driven Category Cards */}
       <section id="categories" className="py-20 md:py-28 bg-[#F8F2E7] scroll-mt-20 border-b border-[#E5DACB]/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           
@@ -61,17 +65,9 @@ export default function Home() {
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {categories.map((category, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-              >
-                <CategoryCard {...category} />
-              </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
+            {categories.map((category) => (
+              <CategoryCard key={category.slug} {...category} />
             ))}
           </div>
 

@@ -29,13 +29,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         className="flex flex-col bg-[#FFFAF1] rounded-2xl border border-[#E5DACB] overflow-hidden shadow-none hover:border-[#EC8D99] hover:shadow-[0_8px_24px_rgba(37,56,46,0.06)] transition-all duration-300 cursor-pointer h-full"
       >
         {/* Product Image Frame */}
-        <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F8F2E7]">
+        <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F8F2E7] p-2.5 sm:p-3 flex items-center justify-center">
           <Image
             src={product.image_url}
             alt={productName}
             fill
             onLoad={() => setImgLoaded(true)}
-            className={`object-cover transition-transform duration-700 ease-out group-hover:scale-104 ${
+            className={`object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-104 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"

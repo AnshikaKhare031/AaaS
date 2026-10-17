@@ -4,62 +4,51 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Product } from "@/types/product";
+import { getActiveProducts } from "@/lib/supabase/products";
 
-export default function Hero() {
+interface HeroProps {
+  initialProducts?: Product[];
+}
+
+export default function Hero({ initialProducts }: HeroProps) {
+  const [products, setProducts] = useState<Product[]>(() => {
+    return (initialProducts || []).filter(
+      (p) => p.is_active !== false && Boolean(p.image_url && p.image_url.trim().length > 0)
+    );
+  });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  const collections = [
-    {
-      id: 0,
-      src: "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp",
-      alt: "AaaS Handcrafted Crochet Handbag",
-      label: "Artisan Crochet Handbag",
-      category: "Handbags",
-      price: "₹1,450",
-      href: "/category/handbags",
-      priority: true,
-    },
-    {
-      id: 1,
-      src: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783101679840_ChatGPT_Image_Jul_3__2026__02_05_32_AM.png",
-      alt: "Handmade Lifestyle Accessory",
-      label: "Quilted Cotton Accent",
-      category: "Accessories",
-      price: "₹650",
-      href: "/category/accessories",
-      priority: false,
-    },
-    {
-      id: 2,
-      src: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783101937753_ChatGPT_Image_Jul_3__2026__11_35_05_PM.png",
-      alt: "Handmade Charm Keychain",
-      label: "Artisan Charm Keychain",
-      category: "Keychains",
-      price: "₹299",
-      href: "/category/keychains",
-      priority: false,
-    },
-    {
-      id: 3,
-      src: "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/dac8dd78-product7.webp",
-      alt: "Handmade Heirloom Potli",
-      label: "Heirloom Potli Bag",
-      category: "Handbags",
-      price: "₹1,850",
-      href: "/category/handbags",
-      priority: false,
-    },
-  ];
-
+  // Fallback client-side fetch if initialProducts was not provided or empty
   useEffect(() => {
-    if (isHovered) return;
+    if (products.length > 0) return;
+
+    getActiveProducts()
+      .then((fetched) => {
+        const valid = (fetched || []).filter(
+          (p) => p.is_active !== false && Boolean(p.image_url && p.image_url.trim().length > 0)
+        );
+        if (valid.length > 0) {
+          setProducts(valid);
+        }
+      })
+      .catch((err) => {
+        console.error("Hero: error loading active products:", err);
+      });
+  }, [products.length]);
+
+  // Rotate slides automatically if there are multiple products
+  useEffect(() => {
+    if (isHovered || products.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % collections.length);
+      setActiveIndex((prev) => (prev + 1) % products.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [isHovered, collections.length]);
+  }, [isHovered, products.length]);
+
+  const activeProduct = products[activeIndex] || products[0] || null;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -189,45 +178,60 @@ export default function Hero() {
 
             {/* Arched Picture Window */}
             <div className="relative rounded-t-[220px] rounded-b-2xl border-2 border-[#E5DACB] bg-[#FFFAF1] p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(37,56,46,0.08)]">
-              {/* Inner Arched Image */}
-              <div className="relative aspect-[4/5] w-full rounded-t-[200px] rounded-b-xl overflow-hidden bg-[#F8F2E7]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeIndex}
-                    initial={{ opacity: 0, scale: 1.03 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.65, ease: "easeInOut" }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={collections[activeIndex].src}
-                      alt={collections[activeIndex].alt}
-                      fill
-                      className="object-cover"
-                      priority={collections[activeIndex].priority}
-                      sizes="(max-width: 768px) 90vw, 45vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#25382E]/40 via-transparent to-transparent pointer-events-none" />
-                  </motion.div>
-                </AnimatePresence>
+              {/* Inner Arched Image Area */}
+              <div className="relative aspect-[4/5] w-full rounded-t-[200px] rounded-b-xl overflow-hidden bg-[#F8F2E7] flex items-center justify-center">
+                {activeProduct ? (
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeProduct.id}
+                      initial={{ opacity: 0, scale: 1.02 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.65, ease: "easeInOut" }}
+                      className="relative w-full h-full flex items-center justify-center"
+                    >
+                      <Image
+                        src={activeProduct.image_url}
+                        alt={activeProduct.name || activeProduct.title || "Handcrafted Product"}
+                        fill
+                        className="object-contain object-center w-full h-full p-2.5 sm:p-4 transition-all duration-500"
+                        priority={activeIndex === 0}
+                        sizes="(max-width: 768px) 90vw, 45vw"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 select-none">
+                    <div className="w-14 h-14 rounded-full bg-[#F6C4C2]/50 text-[#25382E] flex items-center justify-center">
+                      <Sparkles size={24} className="text-[#25382E]" />
+                    </div>
+                    <p className="font-serif text-xl sm:text-2xl text-[#25382E] font-medium">
+                      Handcrafted Atelier
+                    </p>
+                    <p className="text-xs text-[#5C745F] font-sans font-light max-w-xs leading-relaxed">
+                      Thoughtfully made heirloom pieces crafted by hand. New additions arriving soon.
+                    </p>
+                  </div>
+                )}
 
-                {/* Top Slide Navigation Indicators */}
-                <div className="absolute top-5 right-5 z-20 flex gap-1.5 bg-[#FFFAF1]/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E5DACB]/70">
-                  {collections.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      aria-label={`Go to slide ${i + 1}`}
-                      className={`transition-all duration-300 rounded-full cursor-pointer ${
-                        activeIndex === i
-                          ? "w-4 h-1.5 bg-[#25382E]"
-                          : "w-1.5 h-1.5 bg-[#E5DACB] hover:bg-[#5C745F]"
-                      }`}
-                    />
-                  ))}
-                </div>
+                {/* Top Slide Navigation Indicators - only if multiple products */}
+                {products.length > 1 && (
+                  <div className="absolute top-5 right-5 z-20 flex gap-1.5 bg-[#FFFAF1]/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E5DACB]/70">
+                    {products.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setActiveIndex(i)}
+                        aria-label={`Go to slide ${i + 1}`}
+                        className={`transition-all duration-300 rounded-full cursor-pointer ${
+                          activeIndex === i
+                            ? "w-4 h-1.5 bg-[#25382E]"
+                            : "w-1.5 h-1.5 bg-[#E5DACB] hover:bg-[#5C745F]"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Floating Blush Pink Circular Seal (Bottom Left) */}
@@ -246,33 +250,35 @@ export default function Hero() {
                 </span>
               </motion.div>
 
-              {/* Floating Product Price Tag (Bottom Right) */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="absolute -right-2 sm:-right-4 bottom-5 z-30 bg-[#FFFAF1]/95 backdrop-blur-md border border-[#E5DACB] rounded-2xl py-2.5 px-3.5 sm:px-4 shadow-[0_12px_32px_rgba(37,56,46,0.12)] flex items-center gap-3"
-              >
-                <div className="w-2 h-2 rounded-full bg-[#EC8D99] shrink-0 animate-pulse" />
-                <div className="text-left">
-                  <p className="text-[9px] uppercase tracking-[0.16em] text-[#5C745F] font-medium font-sans">
-                    {collections[activeIndex].category}
-                  </p>
-                  <p className="font-serif text-xs sm:text-sm text-[#25382E] font-medium leading-tight line-clamp-1">
-                    {collections[activeIndex].label}
-                  </p>
-                  <p className="font-sans text-xs text-[#25382E] font-semibold mt-0.5">
-                    {collections[activeIndex].price}
-                  </p>
-                </div>
-                <Link
-                  href={collections[activeIndex].href}
-                  className="w-7 h-7 rounded-full bg-[#F6C4C2]/60 hover:bg-[#25382E] text-[#25382E] hover:text-[#FFFAF1] flex items-center justify-center transition-colors shrink-0 ml-1"
-                  aria-label={`View ${collections[activeIndex].label}`}
+              {/* Floating Product Price Tag (Bottom Right) - only if active product exists */}
+              {activeProduct && (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="absolute -right-2 sm:-right-4 bottom-5 z-30 bg-[#FFFAF1]/95 backdrop-blur-md border border-[#E5DACB] rounded-2xl py-2.5 px-3.5 sm:px-4 shadow-[0_12px_32px_rgba(37,56,46,0.12)] flex items-center gap-3 max-w-[240px] sm:max-w-[280px]"
                 >
-                  <ArrowRight size={13} />
-                </Link>
-              </motion.div>
+                  <div className="w-2 h-2 rounded-full bg-[#EC8D99] shrink-0 animate-pulse" />
+                  <div className="text-left min-w-0">
+                    <p className="text-[9px] uppercase tracking-[0.16em] text-[#5C745F] font-medium font-sans">
+                      {activeProduct.category || "Handmade"}
+                    </p>
+                    <p className="font-serif text-xs sm:text-sm text-[#25382E] font-medium leading-tight truncate">
+                      {activeProduct.name || activeProduct.title || "Handcrafted Creation"}
+                    </p>
+                    <p className="font-sans text-xs text-[#25382E] font-semibold mt-0.5">
+                      ₹{activeProduct.price.toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/product/${activeProduct.id}`}
+                    className="w-7 h-7 rounded-full bg-[#F6C4C2]/60 hover:bg-[#25382E] text-[#25382E] hover:text-[#FFFAF1] flex items-center justify-center transition-colors shrink-0 ml-1"
+                    aria-label={`View ${activeProduct.name || activeProduct.title || "Product"}`}
+                  >
+                    <ArrowRight size={13} />
+                  </Link>
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
