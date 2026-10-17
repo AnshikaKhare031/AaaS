@@ -188,13 +188,13 @@ export default function Hero({ initialProducts }: HeroProps) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.65, ease: "easeInOut" }}
-                      className="relative w-full h-full flex items-center justify-center"
+                      className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-t-[200px] rounded-b-xl"
                     >
                       <Image
                         src={activeProduct.image_url}
                         alt={activeProduct.name || activeProduct.title || "Handcrafted Product"}
                         fill
-                        className="object-contain object-center w-full h-full p-2.5 sm:p-4 transition-all duration-500"
+                        className="w-full h-full object-cover object-center transition-all duration-500"
                         priority={activeIndex === 0}
                         sizes="(max-width: 768px) 90vw, 45vw"
                       />

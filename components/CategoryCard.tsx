@@ -35,18 +35,18 @@ export default function CategoryCard({
         href={href}
         className="group flex flex-col justify-between h-full bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-3.5 sm:p-5 hover:border-[#EC8D99]/80 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(37,56,46,0.08)] hover:-translate-y-0.5 active:translate-y-0"
       >
-        {/* Prominent Image Frame with Warm Cream Background */}
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-[#E5DACB]/60 bg-[#F8F2E7] flex items-center justify-center shrink-0">
+        {/* Square Image Frame */}
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl shrink-0">
           {imageSrc ? (
             <Image
               src={imageSrc}
               alt={imageAlt || `${title} Collection`}
               fill
-              className="object-contain object-center w-full h-full p-2.5 sm:p-3.5 transition-transform duration-700 ease-out group-hover:scale-104"
+              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-104"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center p-6 text-center space-y-2.5 select-none">
+            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center space-y-2.5 select-none bg-[#F8F2E7]">
               <div className="w-14 h-14 rounded-full bg-[#F6C4C2]/50 text-[#25382E] flex items-center justify-center">
                 <Sparkles size={24} className="text-[#25382E]" />
               </div>
