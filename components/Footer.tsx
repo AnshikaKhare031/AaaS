@@ -86,7 +86,7 @@ export default function Footer() {
                 className="flex items-center space-x-2.5 hover:text-[#EC8D99] transition-colors duration-200 group"
               >
                 <Instagram size={15} className="text-[#FFFAF1] group-hover:text-[#EC8D99] group-hover:scale-110 transition-transform" />
-                <span>Instagram Atelier</span>
+                <span>{contactConfig.instagramHandle}</span>
               </a>
             </li>
             <li>

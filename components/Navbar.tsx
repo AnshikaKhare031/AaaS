@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, UserRound, LogOut, CircleUserRound, Loader2, Sparkles } from "lucide-react";
@@ -48,7 +47,6 @@ export default function Navbar() {
   if (pathname?.startsWith("/admin")) return null;
 
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email ?? "Customer";
-  const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture ?? null;
   const initials = displayName
     .split(" ")
     .filter(Boolean)
@@ -144,18 +142,7 @@ export default function Navbar() {
                 aria-expanded={profileOpen}
               >
                 <span className="w-8 h-8 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs shrink-0 font-sans">
-                  {avatarUrl ? (
-                    <Image
-                      src={avatarUrl}
-                      alt={displayName}
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <span>{initials}</span>
-                  )}
+                  <span>{initials}</span>
                 </span>
                 <ChevronDown
                   size={13}
@@ -244,18 +231,7 @@ export default function Navbar() {
               className="w-9 h-9 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs border border-[#E5DACB]"
               aria-label="Open profile"
             >
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={36}
-                  height={36}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span>{initials}</span>
-              )}
+              <span>{initials}</span>
             </button>
           ) : !isLoading ? (
             <Link
@@ -310,18 +286,7 @@ export default function Navbar() {
                 <>
                   <div className="flex items-center gap-3 px-1 py-1">
                     <span className="w-10 h-10 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs shrink-0">
-                      {avatarUrl ? (
-                        <Image
-                          src={avatarUrl}
-                          alt={displayName}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <span>{initials}</span>
-                      )}
+                      <span>{initials}</span>
                     </span>
                     <div className="min-w-0 font-sans">
                       <p className="font-serif text-base text-[#25382E] truncate font-medium">{displayName}</p>

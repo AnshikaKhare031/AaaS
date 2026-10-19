@@ -19,11 +19,6 @@ export async function getCustomerSession(): Promise<CustomerSessionPayload | nul
       user.email?.split("@")[0] ??
       null;
 
-    const avatarUrl =
-      (user.user_metadata?.avatar_url as string | undefined) ??
-      (user.user_metadata?.picture as string | undefined) ??
-      null;
-
     return {
       accessToken: "",
       refreshToken: "",
@@ -32,7 +27,7 @@ export async function getCustomerSession(): Promise<CustomerSessionPayload | nul
         id: user.id,
         email: user.email ?? null,
         fullName,
-        avatarUrl,
+        avatarUrl: null,
         createdAt: user.created_at ?? null,
       },
     };

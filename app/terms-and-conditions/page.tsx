@@ -2,6 +2,7 @@ import React from "react";
 import PolicyLayout from "@/components/Policy/PolicyLayout";
 import { getCanonicalUrl, siteConfig } from "@/lib/seo";
 import { generateBreadcrumbSchema } from "@/lib/schema";
+import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -101,7 +102,7 @@ export default function TermsAndConditionsPage() {
             If you need clarification regarding any part of these Terms and Conditions, please contact us:
           </p>
           <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> craftymindstudios@gmail.com</p>
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
             <p><strong>Address:</strong> AaaS Atelier, India</p>
           </div>
         </div>

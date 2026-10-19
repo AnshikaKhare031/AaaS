@@ -48,8 +48,8 @@ export default function CTASection() {
     },
     {
       icon: Instagram,
-      title: "Instagram Atelier",
-      label: contactConfig.instagramHandle,
+      title: contactConfig.instagramHandle,
+      label: "Instagram",
       description: "Discover new crochet drops, behind-the-scenes stitching, and studio glimpses.",
       href: contactConfig.instagramUrl,
       btnText: "Follow Journey",

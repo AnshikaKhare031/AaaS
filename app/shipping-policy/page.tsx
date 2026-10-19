@@ -3,6 +3,7 @@ import PolicyLayout from "@/components/Policy/PolicyLayout";
 import { SHIPPING_FREE_THRESHOLD, SHIPPING_FLAT_CHARGE } from "@/lib/shipping";
 import { getCanonicalUrl, siteConfig } from "@/lib/seo";
 import { generateBreadcrumbSchema } from "@/lib/schema";
+import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -112,8 +113,8 @@ export default function ShippingPolicyPage() {
             For any concerns regarding dispatch schedules or address corrections, please reach out:
           </p>
           <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> craftymindstudios@gmail.com</p>
-            <p><strong>Instagram:</strong> @craftymindstudio</p>
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
+            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EC8D99]">{contactConfig.instagramHandle}</a></p>
           </div>
         </div>
 

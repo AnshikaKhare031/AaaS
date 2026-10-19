@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, Lock, Mail, Upload, UserRound, MapPin, Plus, Trash2, Edit3, Check } from "lucide-react";
+import { Loader2, Lock, Mail, UserRound, MapPin, Plus, Trash2, Edit3, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
@@ -11,7 +10,7 @@ interface ProfileResponse {
   id: string;
   full_name: string | null;
   email: string | null;
-  avatar_url: string | null;
+  avatar_url?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -50,7 +49,6 @@ function ProfileContent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -153,39 +151,6 @@ function ProfileContent() {
       setMessage(error instanceof Error ? error.message : "Unable to update name.");
     } finally {
       setIsSavingName(false);
-    }
-  };
-
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setMessage(null);
-    setIsUploadingAvatar(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("avatar", file);
-
-      const response = await fetch("/api/auth/avatar", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Unable to upload avatar.");
-      }
-
-      setCurrentProfile(data.profile);
-      setMessage("Profile picture updated successfully.");
-      await refreshProfile();
-      event.target.value = "";
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to upload avatar.");
-    } finally {
-      setIsUploadingAvatar(false);
     }
   };
 
@@ -362,15 +327,7 @@ function ProfileContent() {
 
   const displayName = currentProfile?.full_name || user?.email?.split("@")[0] || "Customer";
   const email = currentProfile?.email || user?.email || "";
-  const avatarUrl = currentProfile?.avatar_url || null;
   const createdAt = currentProfile?.created_at || null;
-
-  const initials = displayName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part: string) => part[0]?.toUpperCase())
-    .join("");
 
   return (
     <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen text-[#25382E]">
@@ -396,26 +353,10 @@ function ProfileContent() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_12px_rgba(37,56,46,0.03)] p-6 space-y-5">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-[#F8F2E7] flex items-center justify-center text-[#25382E] font-serif font-medium text-xl shrink-0 border border-[#E5DACB]">
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt={displayName}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <span>{initials}</span>
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-[0.2em] text-[#5C745F] font-sans">Patron</p>
-                <h2 className="font-serif text-xl text-[#25382E] truncate font-normal">{displayName}</h2>
-                <p className="text-xs text-[#5C745F] truncate font-sans">{email}</p>
-              </div>
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#5C745F] font-sans">Patron Account</p>
+              <h2 className="font-serif text-2xl text-[#25382E] truncate font-normal">{displayName}</h2>
+              <p className="text-xs text-[#5C745F] truncate font-sans">{email}</p>
             </div>
 
             <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 space-y-2.5 text-xs text-[#5C745F] font-sans">
@@ -429,14 +370,6 @@ function ProfileContent() {
                   Member since {createdAt ? new Date(createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long" }) : "recently"}
                 </span>
               </div>
-            </div>
-
-            <div className="space-y-3 pb-2 font-sans">
-              <label className="flex items-center justify-center gap-2 w-full py-3 rounded-full border border-[#E5DACB] text-[11px] font-medium tracking-[0.15em] uppercase text-[#25382E] hover:bg-[#F8F2E7] cursor-pointer transition-colors">
-                {isUploadingAvatar ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                <span>{isUploadingAvatar ? "Uploading..." : "Update Portrait"}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-              </label>
             </div>
 
             {/* Sidebar Navigation */}

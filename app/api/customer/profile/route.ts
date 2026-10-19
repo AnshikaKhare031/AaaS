@@ -30,14 +30,7 @@ export async function GET() {
       );
     }
 
-    const profile = profileData
-      ? {
-          ...profileData,
-          avatar_url: session.user.avatarUrl ?? null,
-        }
-      : null;
-
-    return NextResponse.json({ success: true, profile });
+    return NextResponse.json({ success: true, profile: profileData });
   } catch (error) {
     console.error("Load profile error:", error);
     return NextResponse.json({ success: false, error: "Unable to load profile." }, { status: 500 });
@@ -77,12 +70,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const profile = {
-      ...data,
-      avatar_url: session.user.avatarUrl ?? null,
-    };
-
-    return NextResponse.json({ success: true, profile });
+    return NextResponse.json({ success: true, profile: data });
   } catch (error) {
     console.error("Update profile error:", error);
     return NextResponse.json({ success: false, error: "Unable to update profile." }, { status: 500 });

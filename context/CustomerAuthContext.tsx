@@ -8,7 +8,7 @@ export interface CustomerProfileState {
   id: string;
   full_name: string | null;
   email: string | null;
-  avatar_url: string | null;
+  avatar_url?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -73,10 +73,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
           activeSession.user.email ??
           null,
         email: activeSession.user.email ?? null,
-        avatar_url:
-          (activeSession.user.user_metadata?.avatar_url as string | undefined) ??
-          (activeSession.user.user_metadata?.picture as string | undefined) ??
-          null,
         created_at: activeSession.user.created_at ?? null,
         updated_at: null,
       });

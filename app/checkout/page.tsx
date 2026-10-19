@@ -44,10 +44,11 @@ interface RazorpaySuccessResponse {
 interface RazorpayWindow extends Window {
   Razorpay?: new (options: Record<string, unknown>) => {
     open: () => void;
+    close?: () => void;
     on: (
       event: string,
       callback: (response: {
-        error: {
+        error?: {
           code?: string;
           description?: string;
           source?: string;
@@ -441,6 +442,9 @@ function CheckoutContent() {
       const { razorpayOrderId, key, amountInPaise, currency } = paymentData;
 
       // 5. Load Razorpay Checkout Popup
+      let paymentOutcome: "idle" | "failed" | "success" | "verifying" | "verification_failed" = "idle";
+      let rzpInstance: { open: () => void; close?: () => void } | null = null;
+
       const options: Record<string, unknown> = {
         key: key,
         amount: amountInPaise,
@@ -450,7 +454,7 @@ function CheckoutContent() {
         order_id: razorpayOrderId,
         handler: async function (response: RazorpaySuccessResponse) {
           console.log("Razorpay payment success response:", response);
-          
+          paymentOutcome = "verifying";
           setIsSubmitting(true);
           setSubmitError(null);
           
@@ -474,6 +478,7 @@ function CheckoutContent() {
               throw new Error(verifyData.error || "Payment verification failed.");
             }
 
+            paymentOutcome = "success";
             // Clear the local cart
             clearCart();
 
@@ -484,10 +489,11 @@ function CheckoutContent() {
             });
             router.push(`/order-confirmation?order=${orderNumber}`);
           } catch (err) {
+            paymentOutcome = "verification_failed";
             console.error("Payment verification failure:", err);
             setSubmitError(
-              "Your payment could not be verified automatically.\n\n" +
-              "If the amount has been deducted, please contact our support team with your Order Number and Payment ID so we can assist you."
+              "Your payment was received but could not be verified automatically.\n\n" +
+              `If the amount was deducted from your account, please contact our support team with your Order Number (${orderNumber}) and Payment ID (${response.razorpay_payment_id}) so we can assist you.`
             );
           } finally {
             setIsSubmitting(false);
@@ -503,35 +509,33 @@ function CheckoutContent() {
         },
         modal: {
           ondismiss: async function () {
-            console.log("Razorpay payment checkout window closed by user.");
-            setIsSubmitting(false);
-            setSubmitError("Payment was cancelled. Your order has not been completed.");
-            
-            // Mark order as failed in database
-            if (orderId) {
-              try {
-                await fetch("/api/orders", {
-                  method: "PATCH",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    orderId: orderId,
-                    payment_status: "failed",
-                  }),
-                });
-              } catch (err) {
-                console.error("Failed to update status on dismiss:", err);
-              }
+            console.log("Razorpay payment checkout window closed by user. Lifecycle state:", paymentOutcome);
+
+            // If payment succeeded or is verifying, do not alter state
+            if (paymentOutcome === "success" || paymentOutcome === "verifying") {
+              return;
             }
+
+            setIsSubmitting(false);
+
+            // If a payment failure was already captured, keep that message intact
+            if (paymentOutcome === "failed") {
+              return;
+            }
+
+            // User dismissed before completing or failing payment (cancellation)
+            // Preserve the order in its current safe pending state and avoid duplicate orders on retry.
+            paymentOutcome = "idle";
+            setSubmitError("Payment checkout was cancelled. Your order has not been placed yet. You can retry payment when you are ready.");
           }
         }
       };
 
       const rzp = new (window as unknown as RazorpayWindow).Razorpay!(options);
+      rzpInstance = rzp;
       
       rzp.on("payment.failed", async function (response: {
-        error: {
+        error?: {
           code?: string;
           description?: string;
           source?: string;
@@ -540,27 +544,62 @@ function CheckoutContent() {
           metadata?: Record<string, unknown>;
         };
       }) {
-        console.error("Razorpay payment failure response:", response.error);
-        setIsSubmitting(false);
-        setSubmitError(
-          `Payment Failed: ${response.error.description || "The payment could not be processed."} (Error Code: ${response.error.code || "unknown"})`
-        );
-        
-        // Mark order as failed in database
-        if (orderId) {
-          try {
-            await fetch("/api/orders", {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                orderId: orderId,
-                payment_status: "failed",
-              }),
-            });
-          } catch (err) {
-            console.error("Failed to update status on payment failure:", err);
+        try {
+          paymentOutcome = "failed";
+          const error = response?.error;
+          console.warn("Razorpay payment failure response:", error ?? response);
+          setIsSubmitting(false);
+
+          const rawDescription = error?.description?.trim();
+          const failureMessage = rawDescription
+            ? `Payment failed: ${rawDescription}. Your order has not been marked as paid. Please try again.`
+            : "Payment failed. Your order has not been marked as paid. Please try again.";
+
+          setSubmitError(failureMessage);
+          
+          // Mark order as failed in database
+          if (orderId) {
+            try {
+              await fetch("/api/orders", {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  orderId: orderId,
+                  payment_status: "failed",
+                }),
+              });
+            } catch (err) {
+              console.warn("Failed to update status on payment failure:", err);
+            }
+          }
+
+          // Close the Razorpay checkout modal when failure is reported and SDK permits it
+          const closeRzp = () => {
+            if (typeof rzpInstance?.close === "function") {
+              try {
+                rzpInstance.close();
+              } catch (closeErr) {
+                console.warn("Could not programmatically close Razorpay modal:", closeErr);
+              }
+            }
+          };
+
+          closeRzp();
+          setTimeout(closeRzp, 100);
+
+        } catch (unexpectedErr) {
+          paymentOutcome = "failed";
+          setIsSubmitting(false);
+          setSubmitError("Payment failed. Your order has not been marked as paid. Please try again.");
+          console.error("Unexpected error in payment.failed handler:", unexpectedErr);
+          if (typeof rzpInstance?.close === "function") {
+            try {
+              rzpInstance.close();
+            } catch {
+              // Ignore failure to close
+            }
           }
         }
       });
