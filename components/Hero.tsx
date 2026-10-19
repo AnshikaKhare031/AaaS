@@ -90,16 +90,6 @@ export default function Hero({ initialProducts }: HeroProps) {
           animate="visible"
           className="lg:col-span-6 flex flex-col justify-center text-left"
         >
-          {/* Eyebrow Pill */}
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 border border-[#E5DACB] bg-[#FFFAF1] px-3.5 py-1.5 rounded-full w-fit mb-6 shadow-2xs"
-          >
-            <span className="text-[#F5C842] text-xs">✦</span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.24em] text-[#5C745F] font-sans">
-              HANDMADE CROCHET STUDIO • NEW COLLECTION
-            </span>
-          </motion.div>
 
           {/* Editorial Headline with Bright Pink Accent */}
           <motion.h1
@@ -136,14 +126,6 @@ export default function Hero({ initialProducts }: HeroProps) {
                 className="group-hover:translate-x-1 transition-transform duration-300 text-[#EC8D99]"
               />
             </Link>
-
-            {/* Secondary CTA */}
-            <Link
-              href="/custom-order"
-              className="px-7 py-3.5 sm:px-8 sm:py-4 border border-[#25382E] bg-transparent hover:bg-[#25382E] hover:text-[#FFFAF1] text-[#25382E] rounded-full font-sans font-medium uppercase tracking-[0.16em] text-xs transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <span>CUSTOM COMMISSIONS</span>
-            </Link>
           </motion.div>
 
           {/* Subtle Trust Indicators */}
@@ -158,10 +140,6 @@ export default function Hero({ initialProducts }: HeroProps) {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99]" />
               <span className="tracking-wide">Natural Organic Yarn</span>
-            </div>
-            <div className="flex items-center gap-2 hidden sm:flex">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F5C842]" />
-              <span className="tracking-wide">Bespoke Orders</span>
             </div>
           </motion.div>
         </motion.div>
@@ -214,71 +192,7 @@ export default function Hero({ initialProducts }: HeroProps) {
                   </div>
                 )}
 
-                {/* Top Slide Navigation Indicators - only if multiple products */}
-                {products.length > 1 && (
-                  <div className="absolute top-5 right-5 z-20 flex gap-1.5 bg-[#FFFAF1]/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E5DACB]/70">
-                    {products.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setActiveIndex(i)}
-                        aria-label={`Go to slide ${i + 1}`}
-                        className={`transition-all duration-300 rounded-full cursor-pointer ${
-                          activeIndex === i
-                            ? "w-4 h-1.5 bg-[#25382E]"
-                            : "w-1.5 h-1.5 bg-[#E5DACB] hover:bg-[#5C745F]"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
-
-              {/* Floating Blush Pink Circular Seal (Bottom Left) */}
-              <motion.div
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.3 }}
-                className="absolute -left-3 sm:-left-6 bottom-8 z-30 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#F6C4C2] text-[#25382E] border-4 border-[#FFFAF1] shadow-[0_12px_28px_rgba(37,56,46,0.14)] flex flex-col items-center justify-center p-2 text-center select-none"
-              >
-                <span className="text-[#F5C842] text-xs">✦</span>
-                <span className="text-[9px] sm:text-[10px] font-sans font-semibold uppercase tracking-[0.18em] leading-tight text-[#25382E]">
-                  Slow Made
-                </span>
-                <span className="text-[8px] font-sans text-[#25382E]/80 tracking-widest mt-0.5">
-                  100% ARTISAN
-                </span>
-              </motion.div>
-
-              {/* Floating Product Price Tag (Bottom Right) - only if active product exists */}
-              {activeProduct && (
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="absolute -right-2 sm:-right-4 bottom-5 z-30 bg-[#FFFAF1]/95 backdrop-blur-md border border-[#E5DACB] rounded-2xl py-2.5 px-3.5 sm:px-4 shadow-[0_12px_32px_rgba(37,56,46,0.12)] flex items-center gap-3 max-w-[240px] sm:max-w-[280px]"
-                >
-                  <div className="w-2 h-2 rounded-full bg-[#EC8D99] shrink-0 animate-pulse" />
-                  <div className="text-left min-w-0">
-                    <p className="text-[9px] uppercase tracking-[0.16em] text-[#5C745F] font-medium font-sans">
-                      {activeProduct.category || "Handmade"}
-                    </p>
-                    <p className="font-serif text-xs sm:text-sm text-[#25382E] font-medium leading-tight truncate">
-                      {activeProduct.name || activeProduct.title || "Handcrafted Creation"}
-                    </p>
-                    <p className="font-sans text-xs text-[#25382E] font-semibold mt-0.5">
-                      ₹{activeProduct.price.toLocaleString("en-IN")}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/product/${activeProduct.id}`}
-                    className="w-7 h-7 rounded-full bg-[#F6C4C2]/60 hover:bg-[#25382E] text-[#25382E] hover:text-[#FFFAF1] flex items-center justify-center transition-colors shrink-0 ml-1"
-                    aria-label={`View ${activeProduct.name || activeProduct.title || "Product"}`}
-                  >
-                    <ArrowRight size={13} />
-                  </Link>
-                </motion.div>
-              )}
             </div>
           </div>
         </div>

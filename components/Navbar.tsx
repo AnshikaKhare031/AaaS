@@ -81,23 +81,6 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top Announcement Bar from Figma */}
-      <div
-        className={`bg-[#25382E] text-[#FFFAF1] transition-all duration-300 overflow-hidden border-b border-[#405F4C]/40 ${
-          scrolled ? "max-h-0 py-0 opacity-0 pointer-events-none" : "max-h-12 py-2 px-4 sm:px-6 md:px-12 opacity-100"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-sans font-medium">
-          <div className="flex items-center gap-2">
-            <span className="text-[#F5C842]">✦</span>
-            <span>Complimentary domestic delivery on orders over ₹999</span>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 text-[#F6C4C2]/90 text-[10px]">
-            <span className="text-[#F5C842]">✦</span>
-            <span>100% Artisan Made</span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Navbar */}
       <div

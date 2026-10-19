@@ -74,8 +74,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. About AaaS Atelier */}
-      <AboutSection />
+      {/* 4. About AAAS Atelier */}
+      <AboutSection initialProducts={activeProducts} />
 
       {/* 5. Why Choose Handmade */}
       <WhyHandmade />
@@ -83,7 +83,7 @@ export default async function Home() {
       {/* 6. How Ordering Works */}
       <HowItWorks />
 
-      {/* 7. Custom Order & Contact Call-to-Action */}
+      {/* 7. Atelier Contact Call-to-Action */}
       <CTASection />
     </div>
   );

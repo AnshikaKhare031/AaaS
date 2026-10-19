@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Sliders, ShieldCheck, Gift } from "lucide-react";
+import { Sparkles, Palette, ShieldCheck, Gift } from "lucide-react";
 
 const features = [
   {
@@ -11,9 +11,9 @@ const features = [
     description: "Every item is stitched, painted, and shaped individually by hand. No two pieces are ever identical.",
   },
   {
-    icon: Sliders,
-    title: "Bespoke & Customizable",
-    description: "Personalize yarn shades, dimensions, custom motifs, or initial plaques to make it genuinely yours.",
+    icon: Palette,
+    title: "Unique & Limited",
+    description: "Crafted in small batches with distinctive stitches and colorways to ensure your piece is truly one of a kind.",
   },
   {
     icon: ShieldCheck,

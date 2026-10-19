@@ -126,7 +126,7 @@ function LoginContent() {
             <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">Patron Account</span>
             <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">Welcome back.</h1>
             <p className="text-sm sm:text-base text-[#5C745F] leading-relaxed max-w-lg font-sans font-light">
-              Sign in to manage your bespoke orders, saved delivery addresses, and personal atelier selections.
+              Sign in to manage your orders, saved delivery addresses, and personal atelier selections.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#5C745F] font-sans">

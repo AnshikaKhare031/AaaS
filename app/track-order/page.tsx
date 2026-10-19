@@ -142,7 +142,7 @@ export default function TrackOrderPage() {
             <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">Patron Authentication</span>
             <h2 className="font-serif text-3xl text-[#25382E] font-light">Sign In Required</h2>
             <p className="text-[#5C745F] text-xs font-sans font-light leading-relaxed">
-              Please sign into your patron account to view and follow the progress of your bespoke commission.
+              Please sign into your patron account to view and follow the progress of your order.
             </p>
           </div>
           <Link
@@ -336,7 +336,7 @@ export default function TrackOrderPage() {
 
             {/* Help / Contact Section */}
             <div className="text-center space-y-4 p-8 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl">
-              <p className="text-xs text-[#5C745F] font-sans">Need assistance with your commission or delivery milestones?</p>
+              <p className="text-xs text-[#5C745F] font-sans">Need assistance with your order or delivery milestones?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center font-sans">
                 <button
                   onClick={handleTrackAnother}
@@ -414,7 +414,7 @@ export default function TrackOrderPage() {
                 {loading ? (
                   <>
                     <span className="animate-spin h-3.5 w-3.5 border-2 border-[#FFFAF1] border-t-transparent rounded-full" />
-                    <span>Locating Commission...</span>
+                    <span>Locating Order...</span>
                   </>
                 ) : (
                   <>

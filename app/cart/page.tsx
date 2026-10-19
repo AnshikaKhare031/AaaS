@@ -33,7 +33,7 @@ export default function CartPage() {
               Your cart is waiting for something handmade.
             </h1>
             <p className="text-[#5C745F] text-xs sm:text-sm font-light leading-relaxed">
-              Explore our boutique collections of handcrafted crochet handbags, delicate charm keychains, and bespoke lifestyle accessories.
+              Explore our boutique collections of handcrafted crochet handbags, delicate charm keychains, and artisan lifestyle accessories.
             </p>
           </div>
           <div className="pt-2 space-y-4">

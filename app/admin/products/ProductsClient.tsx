@@ -86,7 +86,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
           </div>
           <h3 className="font-serif text-2xl text-[#25382E] font-normal">No creations yet.</h3>
           <p className="text-[#5C745F] text-xs font-sans font-light mt-2 mb-8 leading-relaxed">
-            Get started by adding your first handmade crochet piece, custom heirloom knit, or bespoke accessory.
+            Get started by adding your first handmade crochet piece, heirloom knit, or artisan accessory.
           </p>
           <Link
             href="/admin/products/new"

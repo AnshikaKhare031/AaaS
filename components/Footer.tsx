@@ -56,11 +56,6 @@ export default function Footer() {
                 Accessories
               </Link>
             </li>
-            <li>
-              <Link href="/custom-order" className="text-[#F6C4C2] hover:text-[#EC8D99] transition-colors duration-200">
-                Custom Orders &rarr;
-              </Link>
-            </li>
           </ul>
         </div>
 

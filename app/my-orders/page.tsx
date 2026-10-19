@@ -74,7 +74,7 @@ export default function MyOrdersPage() {
             <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">My Orders</h1>
           </div>
           <p className="text-sm sm:text-base text-[#5C745F] max-w-2xl font-sans font-light leading-relaxed">
-            Every bespoke and ready-to-dispatch order tied to your patron account.
+            Every order tied to your patron account.
           </p>
         </div>
 

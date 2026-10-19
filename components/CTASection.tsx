@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Instagram, Mail, ArrowRight, Check } from "lucide-react";
-import Link from "next/link";
+import { Instagram, Mail, Check } from "lucide-react";
 import { contactConfig, getWhatsAppLink } from "@/lib/contact";
 
 function WhatsAppIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
@@ -42,8 +41,8 @@ export default function CTASection() {
       icon: WhatsAppIcon,
       title: "WhatsApp Direct",
       label: contactConfig.whatsAppDisplay,
-      description: "Chat directly with our artisan for custom orders, sizing, gifting, and inquiries.",
-      href: getWhatsAppLink("Hi AaaS! I have a question about custom crochet orders."),
+      description: "Chat directly with our artisan on WhatsApp for orders, questions, and sizing inquiries.",
+      href: getWhatsAppLink("Hi AaaS! I have a question about your crochet creations."),
       btnText: "Start Conversation",
       ariaLabel: `Contact AaaS on WhatsApp at ${contactConfig.whatsAppDisplay}`,
     },
@@ -60,8 +59,8 @@ export default function CTASection() {
       icon: Mail,
       title: "Studio Mailbox",
       label: contactConfig.supportEmail,
-      description: "Send inquiries for custom commissions, corporate gifting, or detailed queries.",
-      href: `mailto:${contactConfig.supportEmail}?subject=AaaS%20Custom%20Crochet%20Inquiry`,
+      description: "Send inquiries for collections, corporate gifting, or detailed queries.",
+      href: `mailto:${contactConfig.supportEmail}?subject=AaaS%20Atelier%20Inquiry`,
       btnText: "Send Email",
       ariaLabel: `Send email to AaaS at ${contactConfig.supportEmail}`,
     },
@@ -122,7 +121,7 @@ export default function CTASection() {
           </div>
         </motion.div>
 
-        {/* Bespoke Commissions Heading */}
+        {/* Contact Atelier Heading */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -133,27 +132,17 @@ export default function CTASection() {
           <div className="inline-flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#F5C842]" />
             <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F] font-sans">
-              Bespoke Commissions
+              Direct Atelier Contact
             </span>
           </div>
           
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-[#25382E] leading-[1.12]">
-            SOMETHING SPECIAL IN MIND?
+            CONNECT WITH OUR ATELIER
           </h2>
           
           <p className="text-[#5C745F] text-sm sm:text-base max-w-xl leading-relaxed font-sans font-light">
-            Tell us what you&apos;re imagining, and we&apos;ll bring it to life, one stitch at a time.
+            Have questions about our collections, sizing, or caring for your handmade pieces? We are always happy to chat directly.
           </p>
-
-          <div className="pt-2">
-            <Link
-              href="/custom-order"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs uppercase tracking-[0.16em] font-sans font-medium transition-all shadow-xs hover:shadow-md"
-            >
-              <span>Submit Custom Request</span>
-              <ArrowRight size={13} className="text-[#EC8D99]" />
-            </Link>
-          </div>
         </motion.div>
 
         {/* Contact Cards Grid */}

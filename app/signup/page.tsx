@@ -155,7 +155,7 @@ function SignupContent() {
             <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">New Patron</span>
             <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">Join the AaaS Atelier.</h1>
             <p className="text-sm sm:text-base text-[#5C745F] leading-relaxed max-w-lg font-sans font-light">
-              Create an account to save your delivery addresses, track custom crochet commissions, and enjoy an effortless checkout.
+              Create an account to save your delivery addresses, track your orders, and enjoy an effortless checkout.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#5C745F] font-sans">

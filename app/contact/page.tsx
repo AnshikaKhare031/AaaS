@@ -69,7 +69,7 @@ export default function ContactPage() {
                     WhatsApp Atelier
                   </h3>
                   <p className="text-xs text-[#5C745F] leading-relaxed font-sans">
-                    Fastest response for order status, custom inquiries, and questions.
+                    Fastest response for order status, inquiries, and questions.
                   </p>
                   <p className="text-xs font-medium text-[#25382E] pt-1 font-sans">
                     {contactConfig.whatsAppDisplay}

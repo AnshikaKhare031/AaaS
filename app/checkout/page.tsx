@@ -1161,7 +1161,7 @@ function CheckoutContent() {
 
             {/* Need Help WhatsApp block */}
             <div className="bg-[#FFFAF1] border border-[#E5DACB] p-5 shadow-xs text-center space-y-1.5 animate-fadeIn">
-              <span className="text-xs text-[#5C745F] font-sans block">Need assistance with your bespoke order?</span>
+              <span className="text-xs text-[#5C745F] font-sans block">Need assistance with your order?</span>
               <a
                 href={getWhatsAppLink()}
                 target="_blank"

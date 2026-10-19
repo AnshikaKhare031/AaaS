@@ -802,7 +802,7 @@ function ProfileContent() {
                         <div className="space-y-1 max-w-sm mx-auto">
                           <h4 className="font-serif text-lg font-normal text-[#25382E]">No Saved Addresses</h4>
                           <p className="text-xs text-[#5C745F] leading-relaxed font-light">
-                            You have not saved any delivery destinations yet. Save one to facilitate seamless future commissions.
+                            You have not saved any delivery destinations yet. Save one to facilitate seamless future orders.
                           </p>
                         </div>
                         <button

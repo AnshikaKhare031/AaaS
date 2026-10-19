@@ -48,7 +48,7 @@ export default function ProductsPage() {
             All Handcrafted Creations
           </h1>
           <p className="text-[#5C745F] font-light leading-relaxed text-sm sm:text-base">
-            Every creation is patiently made by hand, one stitch and knot at a time. Browse our complete catalog of heirloom crochet bags, charm keychains, and bespoke lifestyle accents.
+            Every creation is patiently made by hand, one stitch and knot at a time. Browse our complete catalog of heirloom crochet bags, charm keychains, and artisan lifestyle accents.
           </p>
         </div>
 

@@ -12,13 +12,13 @@ const steps = [
   },
   {
     icon: Heart,
-    title: "Select or Personalize",
-    description: "Choose your favorite piece or specify tailored yarn shades and personal custom inscriptions.",
+    title: "Select Your Piece",
+    description: "Choose your favorite handcrafted piece from our boutique collections of artisan creations.",
   },
   {
     icon: MessageSquare,
-    title: "Direct Artisan Contact",
-    description: "Reach out effortlessly through our online checkout, WhatsApp, or email with custom requests.",
+    title: "Direct Artisan Support",
+    description: "Reach out effortlessly through WhatsApp or email for any questions, styling, or sizing guidance.",
   },
   {
     icon: PackageCheck,
