@@ -300,11 +300,37 @@ export async function PATCH(req: NextRequest) {
 
 
     const supabase = createServerSupabaseClient();
+
+    // Check existing order status to prevent late failure or retry updates from overwriting a verified 'paid' status
+    const { data: existingOrder } = await supabase
+      .from("orders")
+      .select("id, order_number, payment_status")
+      .eq("id", orderId)
+      .eq("user_id", customerSession.user.id)
+      .maybeSingle();
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { success: false, error: "Order not found." },
+        { status: 404 }
+      );
+    }
+
+    if (existingOrder.payment_status === "paid") {
+      // Never overwrite a verified paid status with pending/failed/expired
+      return NextResponse.json({
+        success: true,
+        order: existingOrder,
+        message: "Order is already paid; payment status transition ignored.",
+      });
+    }
+
     const { data: updatedOrder, error: updateError } = await supabase
       .from("orders")
       .update(updateFields)
       .eq("id", orderId)
       .eq("user_id", customerSession.user.id)
+      .neq("payment_status", "paid")
       .select("id, order_number, payment_status")
       .maybeSingle();
 
