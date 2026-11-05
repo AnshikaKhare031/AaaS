@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <PolicyLayout title="Privacy Policy" lastUpdated={lastUpdatedDate}>
-      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#5C745F]">
+      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#3B241C]/85">
         
         <p>
           At AaaS, we respect your privacy and are committed to protecting the personal data you share with us. This policy describes how we collect, use, and safeguard your information when you browse our catalog, use the shopping cart, and place orders.
@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 1 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             1. Information We Collect
           </h3>
           <p>
@@ -54,7 +54,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 2 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             2. How We Use Your Information
           </h3>
           <p>
@@ -69,7 +69,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 3 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             3. Secure Payment Processing
           </h3>
           <p>
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 4 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             4. Cart Persistence & Analytics
           </h3>
           <p>
@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 5 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             5. Your Rights & Data Protection
           </h3>
           <p>
@@ -102,15 +102,15 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 6 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             6. Contact for Privacy Concerns
           </h3>
           <p>
             For any queries or concerns regarding this Privacy Policy, please reach out to us at:
           </p>
-          <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
-            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EC8D99]">{contactConfig.instagramHandle}</a></p>
+          <div className="bg-[#F8EEE2] p-4 rounded-xl border border-[#D9C4B0] mt-2 space-y-1 font-sans text-sm">
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.supportEmail}</a></p>
+            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.instagramHandle}</a></p>
           </div>
         </div>
 

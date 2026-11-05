@@ -48,21 +48,21 @@ export default function HowItWorks() {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-[#F8F2E7] relative overflow-hidden border-b border-[#E5DACB]/70">
+    <section className="py-20 md:py-32 bg-[#F8EEE2] relative overflow-hidden border-b border-[#D9C4B0]/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative z-10">
         
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-14 md:mb-20 space-y-3">
           <div className="inline-flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99]" />
-            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F] font-sans">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#541B1B]" />
+            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B] font-sans">
               The Artisan Process
             </span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#25382E]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#541B1B]">
             How Ordering Works
           </h2>
-          <p className="text-[#5C745F] font-sans font-light leading-relaxed text-sm sm:text-base">
+          <p className="text-[#3B241C] font-sans font-light leading-relaxed text-sm sm:text-base opacity-85">
             Every creation is crafted with intention. Here is how your handmade piece comes to life.
           </p>
         </div>
@@ -76,7 +76,7 @@ export default function HowItWorks() {
           className="relative grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-8"
         >
           {/* Horizontal line for desktop timeline */}
-          <div className="absolute top-[28px] left-[14%] right-[14%] h-px bg-[#E5DACB] hidden md:block z-0" aria-hidden="true" />
+          <div className="absolute top-[28px] left-[14%] right-[14%] h-px bg-[#D9C4B0] hidden md:block z-0" aria-hidden="true" />
 
           {steps.map((step, idx) => {
             const Icon = step.icon;
@@ -87,21 +87,21 @@ export default function HowItWorks() {
                 className="flex flex-col items-center text-center space-y-4 relative z-10 group"
               >
                 {/* Step Icon Node */}
-                <div className="w-14 h-14 rounded-full bg-[#FFFAF1] border border-[#E5DACB] flex items-center justify-center text-[#25382E] shadow-xs group-hover:border-[#EC8D99] group-hover:text-[#EC8D99] transition-all duration-300 transform group-hover:scale-105">
+                <div className="w-14 h-14 rounded-full bg-[#FFF9F2] border border-[#D9C4B0] flex items-center justify-center text-[#541B1B] shadow-xs group-hover:border-[#541B1B] group-hover:text-[#722F37] transition-all duration-300 transform group-hover:scale-105">
                   <Icon size={19} />
                 </div>
 
                 {/* Step Number Badge */}
-                <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-[#25382E] bg-[#F6C4C2]/60 px-3 py-0.5 rounded-full font-sans">
+                <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-[#541B1B] bg-[#EBCDB8]/60 px-3 py-0.5 rounded-full font-sans">
                   Step 0{idx + 1}
                 </span>
 
                 {/* Step Content */}
                 <div className="space-y-1.5 max-w-xs">
-                  <h3 className="font-serif text-lg font-medium text-[#25382E]">
+                  <h3 className="font-serif text-lg font-medium text-[#541B1B]">
                     {step.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-[#5C745F] font-sans font-light leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#3B241C] font-sans font-light leading-relaxed opacity-80">
                     {step.description}
                   </p>
                 </div>

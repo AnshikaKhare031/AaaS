@@ -74,10 +74,10 @@ export default function Hero({ initialProducts }: HeroProps) {
   };
 
   return (
-    <section className="relative min-h-[88vh] lg:min-h-[92vh] flex items-center pt-28 md:pt-36 pb-14 md:pb-20 overflow-hidden bg-[#F8F2E7]">
+    <section className="relative min-h-[88vh] lg:min-h-[92vh] flex items-center pt-28 md:pt-36 pb-14 md:pb-20 overflow-hidden bg-[#F8EEE2]">
       {/* Subtle organic texture grid */}
       <div
-        className="absolute inset-0 bg-[radial-gradient(#E5DACB_1px,transparent_1px)] [background-size:28px_28px] opacity-45 pointer-events-none"
+        className="absolute inset-0 bg-[radial-gradient(#D9C4B0_1px,transparent_1px)] [background-size:28px_28px] opacity-45 pointer-events-none"
         aria-hidden="true"
       />
 
@@ -91,13 +91,13 @@ export default function Hero({ initialProducts }: HeroProps) {
           className="lg:col-span-6 flex flex-col justify-center text-left"
         >
 
-          {/* Editorial Headline with Bright Pink Accent */}
+          {/* Editorial Headline with Wine/Burgundy Luxury */}
           <motion.h1
             variants={itemVariants}
-            className="font-serif text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-[#25382E] leading-[1.08] mb-6"
+            className="font-serif text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-[#541B1B] leading-[1.08] mb-6"
           >
             Soft things for <br />
-            <span className="italic font-normal text-[#EC8D99]">
+            <span className="italic font-normal text-[#722F37]">
               bold hearts.
             </span>
           </motion.h1>
@@ -105,7 +105,7 @@ export default function Hero({ initialProducts }: HeroProps) {
           {/* Supporting Text */}
           <motion.p
             variants={itemVariants}
-            className="text-[#5C745F] text-base sm:text-lg max-w-lg leading-relaxed mb-8 sm:mb-10 font-sans font-light"
+            className="text-[#3B241C] text-base sm:text-lg max-w-lg leading-relaxed mb-8 sm:mb-10 font-sans font-light opacity-90"
           >
             Thoughtfully designed and patiently crocheted by hand in our intimate atelier. Heirloom pieces crafted from natural organic cotton and pure wool fibers.
           </motion.p>
@@ -118,12 +118,12 @@ export default function Hero({ initialProducts }: HeroProps) {
             {/* Primary CTA */}
             <Link
               href="#categories"
-              className="group px-7 py-3.5 sm:px-8 sm:py-4 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] rounded-full font-sans font-medium uppercase tracking-[0.16em] text-xs flex items-center gap-2.5 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+              className="group px-7 py-3.5 sm:px-8 sm:py-4 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] rounded-full font-sans font-medium uppercase tracking-[0.16em] text-xs flex items-center gap-2.5 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
             >
               <span>SHOP THE COLLECTION</span>
               <ArrowRight
                 size={14}
-                className="group-hover:translate-x-1 transition-transform duration-300 text-[#EC8D99]"
+                className="group-hover:translate-x-1 transition-transform duration-300 text-[#B58A58]"
               />
             </Link>
           </motion.div>
@@ -131,14 +131,14 @@ export default function Hero({ initialProducts }: HeroProps) {
           {/* Subtle Trust Indicators */}
           <motion.div
             variants={itemVariants}
-            className="mt-10 pt-6 border-t border-[#E5DACB]/60 flex items-center gap-6 sm:gap-8 text-xs font-sans text-[#5C745F]"
+            className="mt-10 pt-6 border-t border-[#D9C4B0]/60 flex items-center gap-6 sm:gap-8 text-xs font-sans text-[#8B454B]"
           >
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#5C745F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#541B1B]" />
               <span className="tracking-wide">100% Handcrafted</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B58A58]" />
               <span className="tracking-wide">Natural Organic Yarn</span>
             </div>
           </motion.div>
@@ -151,13 +151,13 @@ export default function Hero({ initialProducts }: HeroProps) {
           className="lg:col-span-6 relative w-full flex items-center justify-center mt-6 lg:mt-0"
         >
           <div className="relative w-full max-w-[420px] sm:max-w-[460px]">
-            {/* Blush Pink soft decorative glow */}
-            <div className="absolute -inset-2 rounded-t-[230px] rounded-b-3xl bg-[#F6C4C2]/50 -z-10 blur-xs" />
+            {/* Blush Beige soft decorative glow */}
+            <div className="absolute -inset-2 rounded-t-[230px] rounded-b-3xl bg-[#EBCDB8]/50 -z-10 blur-xs" />
 
             {/* Arched Picture Window */}
-            <div className="relative rounded-t-[220px] rounded-b-2xl border-2 border-[#E5DACB] bg-[#FFFAF1] p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(37,56,46,0.08)]">
+            <div className="relative rounded-t-[220px] rounded-b-2xl border-2 border-[#D9C4B0] bg-[#FFF9F2] p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(84,27,27,0.08)]">
               {/* Inner Arched Image Area */}
-              <div className="relative aspect-[4/5] w-full rounded-t-[200px] rounded-b-xl overflow-hidden bg-[#F8F2E7] flex items-center justify-center">
+              <div className="relative aspect-[4/5] w-full rounded-t-[200px] rounded-b-xl overflow-hidden bg-[#F8EEE2] flex items-center justify-center">
                 {activeProduct ? (
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -180,13 +180,13 @@ export default function Hero({ initialProducts }: HeroProps) {
                   </AnimatePresence>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 select-none">
-                    <div className="w-14 h-14 rounded-full bg-[#F6C4C2]/50 text-[#25382E] flex items-center justify-center">
-                      <Sparkles size={24} className="text-[#25382E]" />
+                    <div className="w-14 h-14 rounded-full bg-[#EBCDB8]/50 text-[#541B1B] flex items-center justify-center">
+                      <Sparkles size={24} className="text-[#B58A58]" />
                     </div>
-                    <p className="font-serif text-xl sm:text-2xl text-[#25382E] font-medium">
+                    <p className="font-serif text-xl sm:text-2xl text-[#541B1B] font-medium">
                       Handcrafted Atelier
                     </p>
-                    <p className="text-xs text-[#5C745F] font-sans font-light max-w-xs leading-relaxed">
+                    <p className="text-xs text-[#8B454B] font-sans font-light max-w-xs leading-relaxed">
                       Thoughtfully made heirloom pieces crafted by hand. New additions arriving soon.
                     </p>
                   </div>

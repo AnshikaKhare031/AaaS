@@ -60,7 +60,7 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
   };
 
   return (
-    <section id="about" className="py-16 md:py-24 bg-[#405F4C] text-[#FFFAF1] overflow-hidden border-t border-b border-[#25382E]">
+    <section id="about" className="py-16 md:py-24 bg-[#541B1B] text-[#FFF9F2] overflow-hidden border-t border-b border-[#3B1018]">
       <div className="max-w-6xl mx-auto px-6 md:px-10 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         
         {/* Left Column: Editorial Story */}
@@ -72,15 +72,15 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
           className="lg:col-span-6 flex flex-col justify-center space-y-5"
         >
           {/* Main Editorial Headline */}
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#FFFAF1] leading-[1.12]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#FFF9F2] leading-[1.12]">
             A LITTLE LOVE, <br />
-            <span className="italic font-normal text-[#F6C4C2]">
+            <span className="italic font-normal text-[#EBCDB8]">
               WOVEN INTO EVERY STITCH.
             </span>
           </h2>
           
-          <div className="space-y-3.5 text-[#FFFAF1]/85 font-sans font-light leading-relaxed text-sm sm:text-[15px]">
-            <p className="font-serif text-base sm:text-lg text-[#F6C4C2] italic font-normal leading-relaxed">
+          <div className="space-y-3.5 text-[#FFF9F2]/90 font-sans font-light leading-relaxed text-sm sm:text-[15px]">
+            <p className="font-serif text-base sm:text-lg text-[#EBCDB8] italic font-normal leading-relaxed">
               &ldquo;As a homemaker and mother, crochet has always been my quiet space of joy—a thread connecting patience, care, and creativity.&rdquo;
             </p>
             <p>
@@ -96,20 +96,20 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
               Through AAAS, I am so grateful to share these handmade crochet creations with you. When you carry one of our pieces, you hold a tangible reflection of that time, care, and love.
             </p>
             <div className="pt-1">
-              <p className="font-serif text-base text-[#F6C4C2] italic font-medium">With love & gratitude,</p>
-              <p className="text-xs uppercase tracking-[0.2em] text-[#FFFAF1]/70 font-sans mt-0.5">The Founder & Mother Behind AAAS</p>
+              <p className="font-serif text-base text-[#B58A58] italic font-medium">With love & gratitude,</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#EBCDB8]/80 font-sans mt-0.5">The Founder & Mother Behind AAAS</p>
             </div>
           </div>
 
           {/* Key metrics / highlights */}
-          <div className="pt-5 grid grid-cols-2 gap-6 border-t border-[#F6C4C2]/30">
+          <div className="pt-5 grid grid-cols-2 gap-6 border-t border-[#EBCDB8]/30">
             <div>
-              <span className="font-serif text-2xl sm:text-3xl font-light text-[#FFFAF1]">100%</span>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#F6C4C2] font-sans mt-0.5">Handmade Crochet</p>
+              <span className="font-serif text-2xl sm:text-3xl font-light text-[#FFF9F2]">100%</span>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#EBCDB8] font-sans mt-0.5">Handmade Crochet</p>
             </div>
             <div>
-              <span className="font-serif text-2xl sm:text-3xl font-light text-[#F5C842]">Heartfelt</span>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#F6C4C2] font-sans mt-0.5">In Every Stitch</p>
+              <span className="font-serif text-2xl sm:text-3xl font-light text-[#B58A58]">Heartfelt</span>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#EBCDB8] font-sans mt-0.5">In Every Stitch</p>
             </div>
           </div>
         </motion.div>
@@ -122,7 +122,7 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
           variants={imageVariants}
           className="lg:col-span-6 relative"
         >
-          <div className="relative h-[340px] sm:h-[420px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_16px_48px_rgba(37,56,46,0.25)] border border-[#F6C4C2]/30 bg-[#25382E] group">
+          <div className="relative h-[340px] sm:h-[420px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_16px_48px_rgba(59,16,24,0.35)] border border-[#EBCDB8]/30 bg-[#3B1018] group">
             {imageUrl ? (
               <>
                 <Image
@@ -134,15 +134,15 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
                   unoptimized
                 />
                 {/* Subtle soft vignette */}
-                <div className="absolute inset-0 bg-radial from-transparent to-[#25382E]/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-radial from-transparent to-[#3B1018]/40 pointer-events-none" />
               </>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center space-y-4">
-                <span className="text-[#F5C842] text-3xl">✦</span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-light text-[#FFFAF1]">
+                <span className="text-[#B58A58] text-3xl">✦</span>
+                <h3 className="font-serif text-2xl sm:text-3xl font-light text-[#FFF9F2]">
                   AAAS Crochet Atelier
                 </h3>
-                <p className="text-xs text-[#FFFAF1]/70 font-sans font-light max-w-xs leading-relaxed">
+                <p className="text-xs text-[#FFF9F2]/70 font-sans font-light max-w-xs leading-relaxed">
                   Every heirloom crochet handbag is patiently shaped by hand with patience, care, and love.
                 </p>
               </div>
@@ -150,8 +150,8 @@ export default function AboutSection({ initialProducts }: AboutSectionProps) {
           </div>
           
           {/* Minimal botanical accent frame */}
-          <div className="absolute -bottom-4 -left-4 w-24 h-24 border-b border-l border-[#F6C4C2]/50 rounded-bl-3xl pointer-events-none hidden sm:block" />
-          <div className="absolute -top-4 -right-4 w-24 h-24 border-t border-r border-[#F5C842]/50 rounded-tr-3xl pointer-events-none hidden sm:block" />
+          <div className="absolute -bottom-4 -left-4 w-24 h-24 border-b border-l border-[#EBCDB8]/50 rounded-bl-3xl pointer-events-none hidden sm:block" />
+          <div className="absolute -top-4 -right-4 w-24 h-24 border-t border-r border-[#B58A58]/50 rounded-tr-3xl pointer-events-none hidden sm:block" />
         </motion.div>
 
       </div>

@@ -330,14 +330,14 @@ function ProfileContent() {
   const createdAt = currentProfile?.created_at || null;
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen text-[#25382E]">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen text-[#3B241C]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 space-y-8">
         <div className="space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">Patron Dashboard</span>
-          <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">
+          <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#B58A58] font-sans">Patron Dashboard</span>
+          <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#541B1B] font-light">
             {activeTab === "addresses" ? "Saved Addresses" : "Manage Your Account"}
           </h1>
-          <p className="text-sm sm:text-base text-[#5C745F] max-w-2xl font-sans font-light leading-relaxed">
+          <p className="text-sm sm:text-base text-[#3B241C]/80 max-w-2xl font-sans font-light leading-relaxed">
             {activeTab === "addresses"
               ? "Manage your delivery locations to simplify checkout."
               : "Update your profile name, personal details, and atelier credentials."}
@@ -345,27 +345,27 @@ function ProfileContent() {
         </div>
 
         {message && (
-          <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] px-4 py-3 text-xs text-[#25382E] shadow-xs font-sans">
+          <div className="rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] px-4 py-3 text-xs text-[#541B1B] shadow-xs font-sans">
             {message}
           </div>
         )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Sidebar */}
-          <div className="lg:col-span-1 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_12px_rgba(37,56,46,0.03)] p-6 space-y-5">
+          <div className="lg:col-span-1 bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-xs p-6 space-y-5">
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#5C745F] font-sans">Patron Account</p>
-              <h2 className="font-serif text-2xl text-[#25382E] truncate font-normal">{displayName}</h2>
-              <p className="text-xs text-[#5C745F] truncate font-sans">{email}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#8B454B] font-sans">Patron Account</p>
+              <h2 className="font-serif text-2xl text-[#541B1B] truncate font-normal">{displayName}</h2>
+              <p className="text-xs text-[#3B241C]/70 truncate font-sans">{email}</p>
             </div>
 
-            <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 space-y-2.5 text-xs text-[#5C745F] font-sans">
+            <div className="rounded-xl border border-[#D9C4B0] bg-[#F8EEE2]/60 p-4 space-y-2.5 text-xs text-[#3B241C] font-sans">
               <div className="flex items-center gap-2">
-                <Mail size={14} className="text-[#EC8D99]" />
+                <Mail size={14} className="text-[#8B454B]" />
                 <span className="truncate">{email}</span>
               </div>
               <div className="flex items-center gap-2">
-                <UserRound size={14} className="text-[#EC8D99]" />
+                <UserRound size={14} className="text-[#8B454B]" />
                 <span>
                   Member since {createdAt ? new Date(createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long" }) : "recently"}
                 </span>
@@ -373,14 +373,14 @@ function ProfileContent() {
             </div>
 
             {/* Sidebar Navigation */}
-            <div className="border-t border-[#E5DACB] pt-4 space-y-2 font-sans">
+            <div className="border-t border-[#D9C4B0] pt-4 space-y-2 font-sans">
               <button
                 type="button"
                 onClick={() => router.push("/profile")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs uppercase tracking-[0.15em] font-medium transition-all cursor-pointer ${
                   activeTab !== "addresses"
-                    ? "bg-[#25382E] text-[#FFFAF1]"
-                    : "text-[#5C745F] hover:bg-[#F8F2E7] hover:text-[#25382E]"
+                    ? "bg-[#541B1B] text-[#FFF9F2]"
+                    : "text-[#3B241C] hover:bg-[#F8EEE2] hover:text-[#541B1B]"
                 }`}
               >
                 <UserRound size={14} />
@@ -391,8 +391,8 @@ function ProfileContent() {
                 onClick={() => router.push("/profile?saved=addresses")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs uppercase tracking-[0.15em] font-medium transition-all cursor-pointer ${
                   activeTab === "addresses"
-                    ? "bg-[#25382E] text-[#FFFAF1]"
-                    : "text-[#5C745F] hover:bg-[#F8F2E7] hover:text-[#25382E]"
+                    ? "bg-[#541B1B] text-[#FFF9F2]"
+                    : "text-[#3B241C] hover:bg-[#F8EEE2] hover:text-[#541B1B]"
                 }`}
               >
                 <MapPin size={14} />
@@ -405,24 +405,24 @@ function ProfileContent() {
           <div className="lg:col-span-2 space-y-6">
             {activeTab === "profile" && (
               <>
-                <form onSubmit={handleNameSave} className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_12px_rgba(37,56,46,0.03)] p-6 md:p-8 space-y-5">
-                  <div className="space-y-1 border-b border-[#E5DACB] pb-3">
-                    <h3 className="font-serif text-2xl text-[#25382E] font-normal">Update Name</h3>
-                    <p className="text-xs text-[#5C745F] font-sans">Keep your patron name current on your account and order receipts.</p>
+                <form onSubmit={handleNameSave} className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-xs p-6 md:p-8 space-y-5">
+                  <div className="space-y-1 border-b border-[#D9C4B0] pb-3">
+                    <h3 className="font-serif text-2xl text-[#541B1B] font-normal">Update Name</h3>
+                    <p className="text-xs text-[#3B241C]/70 font-sans">Keep your patron name current on your account and order receipts.</p>
                   </div>
 
                   <div className="space-y-1.5 font-sans">
-                    <label htmlFor="profile-name" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                    <label htmlFor="profile-name" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                       Full Name
                     </label>
                     <div className="relative">
-                      <UserRound size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                      <UserRound size={16} className="absolute left-4 top-3.5 text-[#8B454B]/60" />
                       <input
                         id="profile-name"
                         type="text"
                         value={fullName}
                         onChange={(event) => setFullName(event.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all font-sans"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all font-sans"
                         placeholder="Your full name"
                         required
                       />
@@ -432,49 +432,49 @@ function ProfileContent() {
                   <button
                     type="submit"
                     disabled={isSavingName}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-xs hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
                   >
                     {isSavingName ? <Loader2 size={14} className="animate-spin" /> : null}
                     <span>{isSavingName ? "Saving..." : "Save Name"}</span>
                   </button>
                 </form>
 
-                <form onSubmit={handlePasswordUpdate} className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_12px_rgba(37,56,46,0.03)] p-6 md:p-8 space-y-5">
-                  <div className="space-y-1 border-b border-[#E5DACB] pb-3">
-                    <h3 className="font-serif text-2xl text-[#25382E] font-normal">Change Password</h3>
-                    <p className="text-xs text-[#5C745F] font-sans">Update credentials for your patron account.</p>
+                <form onSubmit={handlePasswordUpdate} className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-xs p-6 md:p-8 space-y-5">
+                  <div className="space-y-1 border-b border-[#D9C4B0] pb-3">
+                    <h3 className="font-serif text-2xl text-[#541B1B] font-normal">Change Password</h3>
+                    <p className="text-xs text-[#3B241C]/70 font-sans">Update credentials for your patron account.</p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4 font-sans">
                     <div className="space-y-1.5">
-                      <label htmlFor="new-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                      <label htmlFor="new-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                         New Password
                       </label>
                       <div className="relative">
-                        <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                        <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/60" />
                         <input
                           id="new-password"
                           type="password"
                           value={newPassword}
                           onChange={(event) => setNewPassword(event.target.value)}
-                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                           placeholder="At least 8 characters"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label htmlFor="confirm-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                      <label htmlFor="confirm-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                         Confirm Password
                       </label>
                       <div className="relative">
-                        <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                        <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/60" />
                         <input
                           id="confirm-password"
                           type="password"
                           value={confirmPassword}
                           onChange={(event) => setConfirmPassword(event.target.value)}
-                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                           placeholder="Repeat password"
                         />
                       </div>
@@ -484,7 +484,7 @@ function ProfileContent() {
                   <button
                     type="submit"
                     disabled={isUpdatingPassword}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-xs hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
                   >
                     {isUpdatingPassword ? <Loader2 size={14} className="animate-spin" /> : null}
                     <span>{isUpdatingPassword ? "Updating..." : "Update Password"}</span>
@@ -497,12 +497,12 @@ function ProfileContent() {
               <div className="space-y-6">
                 {showAddressForm ? (
                   /* Address Form */
-                  <form onSubmit={handleAddressSubmit} className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_12px_rgba(37,56,46,0.03)] p-6 md:p-8 space-y-6 animate-fadeIn font-sans">
-                    <div className="space-y-1 border-b border-[#E5DACB] pb-3">
-                      <h3 className="font-serif text-2xl text-[#25382E] font-normal">
+                  <form onSubmit={handleAddressSubmit} className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-xs p-6 md:p-8 space-y-6 animate-fadeIn font-sans">
+                    <div className="space-y-1 border-b border-[#D9C4B0] pb-3">
+                      <h3 className="font-serif text-2xl text-[#541B1B] font-normal">
                         {editingAddressId ? "Edit Saved Address" : "Add Saved Address"}
                       </h3>
-                      <p className="text-xs text-[#5C745F]">
+                      <p className="text-xs text-[#3B241C]/70">
                         Enter precise delivery details to save this address for rapid checkout.
                       </p>
                     </div>
@@ -510,7 +510,7 @@ function ProfileContent() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {/* Full Name */}
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           Full Name *
                         </label>
                         <input
@@ -518,16 +518,16 @@ function ProfileContent() {
                           value={addressForm.fullName}
                           onChange={(e) => setAddressForm({ ...addressForm, fullName: e.target.value })}
                           placeholder="Recipient full name"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.fullName ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.fullName ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.fullName && <p className="text-[11px] text-[#EC8D99]">{addressErrors.fullName}</p>}
+                        {addressErrors.fullName && <p className="text-[11px] text-[#A83232]">{addressErrors.fullName}</p>}
                       </div>
 
                       {/* Phone */}
                       <div className="space-y-1.5">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           Phone Number *
                         </label>
                         <input
@@ -535,16 +535,16 @@ function ProfileContent() {
                           value={addressForm.phone}
                           onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
                           placeholder="10-digit mobile number"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.phone ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.phone ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.phone && <p className="text-[11px] text-[#EC8D99]">{addressErrors.phone}</p>}
+                        {addressErrors.phone && <p className="text-[11px] text-[#A83232]">{addressErrors.phone}</p>}
                       </div>
 
                       {/* PIN Code */}
                       <div className="space-y-1.5">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           PIN Code *
                         </label>
                         <input
@@ -553,16 +553,16 @@ function ProfileContent() {
                           value={addressForm.pinCode}
                           onChange={(e) => setAddressForm({ ...addressForm, pinCode: e.target.value })}
                           placeholder="6-digit PIN code"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.pinCode ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.pinCode ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.pinCode && <p className="text-[11px] text-[#EC8D99]">{addressErrors.pinCode}</p>}
+                        {addressErrors.pinCode && <p className="text-[11px] text-[#A83232]">{addressErrors.pinCode}</p>}
                       </div>
 
                       {/* House/Flat */}
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           Flat, House No., Building, Apartment *
                         </label>
                         <input
@@ -570,16 +570,16 @@ function ProfileContent() {
                           value={addressForm.houseFlat}
                           onChange={(e) => setAddressForm({ ...addressForm, houseFlat: e.target.value })}
                           placeholder="e.g. Apt 4B, Sunflower Apartments"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.houseFlat ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.houseFlat ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.houseFlat && <p className="text-[11px] text-[#EC8D99]">{addressErrors.houseFlat}</p>}
+                        {addressErrors.houseFlat && <p className="text-[11px] text-[#A83232]">{addressErrors.houseFlat}</p>}
                       </div>
 
                       {/* Street */}
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           Area, Street, Sector, Village *
                         </label>
                         <input
@@ -587,30 +587,30 @@ function ProfileContent() {
                           value={addressForm.street}
                           onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
                           placeholder="e.g. 5th Main, Sector 7, HSR Layout"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.street ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.street ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.street && <p className="text-[11px] text-[#EC8D99]">{addressErrors.street}</p>}
+                        {addressErrors.street && <p className="text-[11px] text-[#A83232]">{addressErrors.street}</p>}
                       </div>
 
                       {/* Landmark */}
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
-                          Landmark <span className="text-[10px] text-[#5C745F]/50 lowercase font-normal">(Optional)</span>
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
+                          Landmark <span className="text-[10px] text-[#3B241C]/50 lowercase font-normal">(Optional)</span>
                         </label>
                         <input
                           type="text"
                           value={addressForm.landmark}
                           onChange={(e) => setAddressForm({ ...addressForm, landmark: e.target.value })}
                           placeholder="e.g. Near HDFC Bank ATM"
-                          className="w-full px-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                          className="w-full px-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                         />
                       </div>
 
                       {/* City */}
                       <div className="space-y-1.5">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           Town / City *
                         </label>
                         <input
@@ -618,23 +618,23 @@ function ProfileContent() {
                           value={addressForm.city}
                           onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
                           placeholder="Enter city"
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.city ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#3B241C]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.city ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         />
-                        {addressErrors.city && <p className="text-[11px] text-[#EC8D99]">{addressErrors.city}</p>}
+                        {addressErrors.city && <p className="text-[11px] text-[#A83232]">{addressErrors.city}</p>}
                       </div>
 
                       {/* State */}
                       <div className="space-y-1.5">
-                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+                        <label className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                           State *
                         </label>
                         <select
                           value={addressForm.state}
                           onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFFAF1] text-sm text-[#25382E] focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all ${
-                            addressErrors.state ? "border-[#EC8D99]" : "border-[#E5DACB]"
+                          className={`w-full px-4 py-3 rounded-xl border bg-[#FFF9F2] text-sm text-[#3B241C] focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all ${
+                            addressErrors.state ? "border-[#A83232]" : "border-[#D9C4B0]"
                           }`}
                         >
                           <option value="">Select State</option>
@@ -642,28 +642,28 @@ function ProfileContent() {
                             <option key={st} value={st}>{st}</option>
                           ))}
                         </select>
-                        {addressErrors.state && <p className="text-[11px] text-[#EC8D99]">{addressErrors.state}</p>}
+                        {addressErrors.state && <p className="text-[11px] text-[#A83232]">{addressErrors.state}</p>}
                       </div>
 
                       {/* Default address checkbox */}
                       <div className="md:col-span-2 pt-2 flex items-center">
-                        <label className="relative flex items-center gap-2.5 cursor-pointer text-sm text-[#25382E] select-none">
+                        <label className="relative flex items-center gap-2.5 cursor-pointer text-sm text-[#3B241C] select-none">
                           <input
                             type="checkbox"
                             checked={addressForm.isDefault}
                             onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
-                            className="w-4 h-4 accent-[#25382E] border-[#E5DACB] rounded-sm cursor-pointer"
+                            className="w-4 h-4 accent-[#541B1B] border-[#D9C4B0] rounded-sm cursor-pointer"
                           />
                           <span className="font-light">Set as default delivery address</span>
                         </label>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 pt-3 border-t border-[#E5DACB]">
+                    <div className="flex flex-wrap gap-3 pt-3 border-t border-[#D9C4B0]">
                       <button
                         type="submit"
                         disabled={isAddressSubmitting}
-                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
+                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-xs hover:shadow-md transition-all disabled:opacity-75 cursor-pointer font-sans"
                       >
                         {isAddressSubmitting ? <Loader2 size={14} className="animate-spin" /> : null}
                         <span>{isAddressSubmitting ? "Saving..." : "Save Address"}</span>
@@ -674,7 +674,7 @@ function ProfileContent() {
                           setShowAddressForm(false);
                           setEditingAddressId(null);
                         }}
-                        className="inline-flex items-center justify-center px-6 py-3.5 border border-[#E5DACB] hover:bg-[#F8F2E7] text-[#5C745F] text-xs font-medium tracking-[0.15em] uppercase rounded-full transition-colors cursor-pointer font-sans"
+                        className="inline-flex items-center justify-center px-6 py-3.5 border border-[#D9C4B0] hover:bg-[#F8EEE2] text-[#3B241C] text-xs font-medium tracking-[0.15em] uppercase rounded-full transition-colors cursor-pointer font-sans"
                       >
                         Cancel
                       </button>
@@ -683,10 +683,10 @@ function ProfileContent() {
                 ) : (
                   /* Addresses list view */
                   <div className="space-y-6">
-                    <div className="flex justify-between items-center bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-5 md:p-6 shadow-[0_2px_12px_rgba(37,56,46,0.03)]">
+                    <div className="flex justify-between items-center bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl p-5 md:p-6 shadow-xs">
                       <div className="space-y-1">
-                        <h3 className="font-serif text-xl md:text-2xl text-[#25382E] font-normal">Delivery Addresses</h3>
-                        <p className="text-xs text-[#5C745F] font-sans">
+                        <h3 className="font-serif text-xl md:text-2xl text-[#541B1B] font-normal">Delivery Addresses</h3>
+                        <p className="text-xs text-[#3B241C]/70 font-sans">
                           Locations where your handmade knitwear can be dispatched.
                         </p>
                       </div>
@@ -708,7 +708,7 @@ function ProfileContent() {
                           setAddressErrors({});
                           setShowAddressForm(true);
                         }}
-                        className="inline-flex items-center gap-1.5 px-5 py-3 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] font-medium rounded-full text-xs uppercase tracking-[0.15em] shadow-sm hover:shadow-md transition-all cursor-pointer font-sans"
+                        className="inline-flex items-center gap-1.5 px-5 py-3 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] font-medium rounded-full text-xs uppercase tracking-[0.15em] shadow-xs hover:shadow-md transition-all cursor-pointer font-sans"
                       >
                         <Plus size={13} />
                         <span>Add Location</span>
@@ -719,22 +719,22 @@ function ProfileContent() {
                       /* Address Loader */
                       <div className="grid md:grid-cols-2 gap-4">
                         {[1, 2].map((i) => (
-                          <div key={i} className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-6 h-48 animate-pulse space-y-4">
-                            <div className="h-4 w-1/3 bg-[#E5DACB]/50 rounded" />
-                            <div className="h-3 w-3/4 bg-[#E5DACB]/50 rounded" />
-                            <div className="h-3 w-1/2 bg-[#E5DACB]/50 rounded" />
+                          <div key={i} className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl p-6 h-48 animate-pulse space-y-4">
+                            <div className="h-4 w-1/3 bg-[#D9C4B0]/50 rounded" />
+                            <div className="h-3 w-3/4 bg-[#D9C4B0]/50 rounded" />
+                            <div className="h-3 w-1/2 bg-[#D9C4B0]/50 rounded" />
                           </div>
                         ))}
                       </div>
                     ) : addresses.length === 0 ? (
                       /* Address Empty State */
-                      <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-8 md:p-12 text-center shadow-[0_2px_12px_rgba(37,56,46,0.03)] space-y-5 font-sans">
-                        <div className="w-14 h-14 bg-[#F8F2E7] text-[#25382E] rounded-full flex items-center justify-center mx-auto">
+                      <div className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl p-8 md:p-12 text-center shadow-xs space-y-5 font-sans">
+                        <div className="w-14 h-14 bg-[#F8EEE2] text-[#541B1B] rounded-full flex items-center justify-center mx-auto">
                           <MapPin size={24} />
                         </div>
                         <div className="space-y-1 max-w-sm mx-auto">
-                          <h4 className="font-serif text-lg font-normal text-[#25382E]">No Saved Addresses</h4>
-                          <p className="text-xs text-[#5C745F] leading-relaxed font-light">
+                          <h4 className="font-serif text-lg font-normal text-[#541B1B]">No Saved Addresses</h4>
+                          <p className="text-xs text-[#3B241C]/70 leading-relaxed font-light">
                             You have not saved any delivery destinations yet. Save one to facilitate seamless future orders.
                           </p>
                         </div>
@@ -756,7 +756,7 @@ function ProfileContent() {
                             setAddressErrors({});
                             setShowAddressForm(true);
                           }}
-                          className="inline-flex items-center gap-1.5 px-6 py-3.5 border border-[#25382E] text-[#25382E] hover:bg-[#F8F2E7] font-medium rounded-full text-xs uppercase tracking-[0.15em] transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-6 py-3.5 border border-[#541B1B] text-[#541B1B] hover:bg-[#F8EEE2] font-medium rounded-full text-xs uppercase tracking-[0.15em] transition-colors cursor-pointer"
                         >
                           <Plus size={13} />
                           <span>Add Your First Address</span>
@@ -768,38 +768,38 @@ function ProfileContent() {
                         {addresses.map((addr) => (
                           <div
                             key={addr.id}
-                            className={`bg-[#FFFAF1] border rounded-2xl p-6 shadow-xs flex flex-col justify-between transition-all duration-300 ${
-                              addr.is_default ? "border-[#25382E] ring-1 ring-[#25382E]" : "border-[#E5DACB] hover:border-[#EC8D99]"
+                            className={`bg-[#FFF9F2] border rounded-2xl p-6 shadow-xs flex flex-col justify-between transition-all duration-300 ${
+                              addr.is_default ? "border-[#541B1B] ring-1 ring-[#541B1B]" : "border-[#D9C4B0] hover:border-[#8B454B]"
                             }`}
                           >
                             <div className="space-y-3">
                               <div className="flex justify-between items-start gap-2">
-                                <h4 className="font-serif text-base font-medium text-[#25382E] truncate">
+                                <h4 className="font-serif text-base font-medium text-[#541B1B] truncate">
                                   {addr.full_name}
                                 </h4>
                                 {addr.is_default && (
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.15em] uppercase px-2.5 py-0.5 rounded-full bg-[#25382E] text-[#FFFAF1]">
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-medium tracking-[0.15em] uppercase px-2.5 py-0.5 rounded-full bg-[#541B1B] text-[#FFF9F2]">
                                     <Check size={9} /> Default
                                   </span>
                                 )}
                               </div>
 
-                              <div className="text-xs text-[#5C745F] space-y-1 font-light leading-relaxed">
-                                <p className="font-medium text-[#25382E]">{addr.house_flat}, {addr.street}</p>
-                                {addr.landmark && <p className="italic text-[#5C745F]/70">Landmark: {addr.landmark}</p>}
+                              <div className="text-xs text-[#3B241C] space-y-1 font-light leading-relaxed">
+                                <p className="font-medium text-[#541B1B]">{addr.house_flat}, {addr.street}</p>
+                                {addr.landmark && <p className="italic text-[#3B241C]/60">Landmark: {addr.landmark}</p>}
                                 <p>{addr.city}, {addr.state} - {addr.pin_code}</p>
-                                <p className="pt-1.5 flex items-center gap-1 font-normal text-[#25382E]">
-                                  <span className="font-medium text-[#5C745F] text-[10px] uppercase tracking-wider">Phone:</span> {addr.phone}
+                                <p className="pt-1.5 flex items-center gap-1 font-normal text-[#3B241C]">
+                                  <span className="font-medium text-[#8B454B] text-[10px] uppercase tracking-wider">Phone:</span> {addr.phone}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between gap-3 border-t border-[#E5DACB] pt-4 mt-5">
+                            <div className="flex items-center justify-between gap-3 border-t border-[#D9C4B0] pt-4 mt-5">
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
                                   onClick={() => handleEditAddress(addr)}
-                                  className="p-2 hover:bg-[#F8F2E7] text-[#5C745F] hover:text-[#25382E] rounded-lg transition-colors cursor-pointer"
+                                  className="p-2 hover:bg-[#F8EEE2] text-[#3B241C] hover:text-[#541B1B] rounded-lg transition-colors cursor-pointer"
                                   title="Edit Address"
                                 >
                                   <Edit3 size={14} />
@@ -807,7 +807,7 @@ function ProfileContent() {
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteAddress(addr.id)}
-                                  className="p-2 hover:bg-[#EC8D99]/20 text-[#5C745F] hover:text-[#25382E] rounded-lg transition-colors cursor-pointer"
+                                  className="p-2 hover:bg-[#A83232]/10 text-[#3B241C] hover:text-[#A83232] rounded-lg transition-colors cursor-pointer"
                                   title="Delete Address"
                                 >
                                   <Trash2 size={14} />
@@ -818,7 +818,7 @@ function ProfileContent() {
                                 <button
                                   type="button"
                                   onClick={() => handleSetDefaultAddress(addr.id)}
-                                  className="text-[10px] uppercase tracking-[0.15em] font-medium text-[#EC8D99] hover:text-[#25382E] transition-colors cursor-pointer"
+                                  className="text-[10px] uppercase tracking-[0.15em] font-medium text-[#8B454B] hover:text-[#541B1B] transition-colors cursor-pointer"
                                 >
                                   Set Default
                                 </button>
@@ -843,10 +843,10 @@ export default function ProfilePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center pt-24 bg-background">
+        <div className="min-h-screen flex items-center justify-center pt-24 bg-[#F8EEE2]">
           <div className="animate-pulse space-y-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-border-custom/50 mx-auto" />
-            <div className="h-4 w-32 bg-border-custom/50 rounded mx-auto" />
+            <div className="w-12 h-12 rounded-full bg-[#D9C4B0]/50 mx-auto" />
+            <div className="h-4 w-32 bg-[#D9C4B0]/50 rounded mx-auto" />
           </div>
         </div>
       }

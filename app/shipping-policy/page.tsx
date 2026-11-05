@@ -32,7 +32,7 @@ export default function ShippingPolicyPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <PolicyLayout title="Shipping Policy" lastUpdated={lastUpdatedDate}>
-      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#5C745F]">
+      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#3B241C]/85">
         
         <p>
           Thank you for choosing AaaS! Because our crochet creations are handmade and customized, they require dedicated artisanal preparation and protective packaging to arrive safely at your doorstep. Below is our shipping workflow and terms.
@@ -40,7 +40,7 @@ export default function ShippingPolicyPage() {
 
         {/* Section 1 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             1. Domestic Shipping within India
           </h3>
           <p>
@@ -53,7 +53,7 @@ export default function ShippingPolicyPage() {
 
         {/* Section 2 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             2. Crafting & Processing Time
           </h3>
           <p>
@@ -67,7 +67,7 @@ export default function ShippingPolicyPage() {
 
         {/* Section 3 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             3. Delivery Timelines
           </h3>
           <p>
@@ -79,24 +79,24 @@ export default function ShippingPolicyPage() {
           <p>
             This estimate includes order processing, quality checks, packaging, and transit time.
           </p>
-          <p className="mt-2 text-[#5C745F]/80 italic text-xs">
+          <p className="mt-2 text-[#3B241C]/70 italic text-xs">
             *Please note: Delivery timelines are estimates. Delays due to public holidays, adverse weather, or regional courier issues are beyond our direct control.
           </p>
         </div>
 
         {/* Section 4 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             4. Order Tracking
           </h3>
           <p>
-            As soon as your package is dispatched, we send you a confirmation message with the shipment details and courier tracking information. You can track your shipment status in real time using our public <a href="/track-order" className="text-[#25382E] hover:text-[#EC8D99] underline font-semibold">Track Order</a> page by entering your Order Number and Email Address.
+            As soon as your package is dispatched, we send you a confirmation message with the shipment details and courier tracking information. You can track your shipment status in real time using our public <a href="/track-order" className="text-[#541B1B] hover:text-[#722F37] underline font-semibold">Track Order</a> page by entering your Order Number and Email Address.
           </p>
         </div>
 
         {/* Section 5 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             5. Delivery Address Accuracy
           </h3>
           <p>
@@ -106,15 +106,15 @@ export default function ShippingPolicyPage() {
 
         {/* Section 6 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             6. Shipping Queries
           </h3>
           <p>
             For any concerns regarding dispatch schedules or address corrections, please reach out:
           </p>
-          <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
-            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EC8D99]">{contactConfig.instagramHandle}</a></p>
+          <div className="bg-[#F8EEE2] p-4 rounded-xl border border-[#D9C4B0] mt-2 space-y-1 font-sans text-sm">
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.supportEmail}</a></p>
+            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.instagramHandle}</a></p>
           </div>
         </div>
 

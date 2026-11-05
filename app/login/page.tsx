@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 function LoginContent() {
-
   const searchParams = useSearchParams();
   const { syncSession } = useCustomerAuth();
   const [email, setEmail] = useState("");
@@ -83,7 +82,6 @@ function LoginContent() {
       }
 
       if (data?.url) {
-        // Quick pre-flight check so users don't get thrown onto a raw Supabase 400 error page if the provider is disabled in Supabase dashboard
         try {
           const testRes = await fetch(data.url, {
             method: "GET",
@@ -102,7 +100,7 @@ function LoginContent() {
             }
           }
         } catch {
-          // If pre-flight fetch fails (e.g. network restriction), proceed with normal navigation
+          // If pre-flight fetch fails, proceed with navigation
         }
 
         window.location.assign(data.url);
@@ -115,77 +113,77 @@ function LoginContent() {
   };
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen text-[#25382E]">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen text-[#3B241C]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 max-w-xl">
-          <Link href="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] transition-colors font-sans">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#8B454B] hover:text-[#541B1B] transition-colors font-sans">
             <ArrowLeft size={12} />
             Back to Boutique
           </Link>
           <div className="space-y-3">
-            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">Patron Account</span>
-            <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">Welcome back.</h1>
-            <p className="text-sm sm:text-base text-[#5C745F] leading-relaxed max-w-lg font-sans font-light">
+            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#8B454B] font-sans">Patron Account</span>
+            <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#541B1B] font-light">Welcome back.</h1>
+            <p className="text-sm sm:text-base text-[#3B241C] leading-relaxed max-w-lg font-sans font-light opacity-85">
               Sign in to manage your orders, saved delivery addresses, and personal atelier selections.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#5C745F] font-sans">
-            <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 shadow-xs">
-              <p className="font-medium text-[#25382E] mb-1 font-serif text-sm">Order Archive</p>
-              <p className="font-light leading-relaxed">Track progress and view past artisan creations.</p>
+          <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#8B454B] font-sans">
+            <div className="rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] p-4 shadow-xs">
+              <p className="font-medium text-[#541B1B] mb-1 font-serif text-sm">Order Archive</p>
+              <p className="font-light leading-relaxed text-[#3B241C]/80">Track progress and view past artisan creations.</p>
             </div>
-            <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 shadow-xs">
-              <p className="font-medium text-[#25382E] mb-1 font-serif text-sm">One-Touch Google</p>
-              <p className="font-light leading-relaxed">Effortless sign in with your verified profile.</p>
+            <div className="rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] p-4 shadow-xs">
+              <p className="font-medium text-[#541B1B] mb-1 font-serif text-sm">One-Touch Google</p>
+              <p className="font-light leading-relaxed text-[#3B241C]/80">Effortless sign in with your verified profile.</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_16px_rgba(37,56,46,0.03)] p-6 sm:p-8 md:p-10">
+        <div className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-[0_2px_16px_rgba(84,27,27,0.03)] p-6 sm:p-8 md:p-10">
           <div className="space-y-2 mb-8">
-            <h2 className="font-serif text-3xl text-[#25382E] font-light">Sign In</h2>
-            <p className="text-xs text-[#5C745F] font-sans">Access your AaaS account.</p>
+            <h2 className="font-serif text-3xl text-[#541B1B] font-light">Sign In</h2>
+            <p className="text-xs text-[#8B454B] font-sans">Access your AaaS account.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="login-email" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="login-email" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Mail size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="login-email"
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="login-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="login-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="login-password"
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             {message && (
-              <div className="rounded-xl border border-[#EC8D99]/40 bg-[#EC8D99]/10 px-4 py-3 text-xs text-[#25382E] font-sans">
+              <div className="rounded-xl border border-[#D9C4B0] bg-[#EBCDB8]/20 px-4 py-3 text-xs text-[#541B1B] font-sans">
                 {message}
               </div>
             )}
@@ -193,7 +191,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
             >
               {isLoading ? (
                 <>
@@ -209,16 +207,16 @@ function LoginContent() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-[#E5DACB] text-xs font-medium tracking-[0.15em] uppercase text-[#25382E] hover:bg-[#F8F2E7] transition-colors disabled:opacity-75 font-sans cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-[#D9C4B0] text-xs font-medium tracking-[0.15em] uppercase text-[#541B1B] hover:bg-[#F8EEE2] transition-colors disabled:opacity-75 font-sans cursor-pointer"
             >
               Continue with Google
             </button>
 
             <div className="flex items-center justify-between gap-4 text-[11px] uppercase tracking-[0.15em] font-medium pt-2 font-sans">
-              <Link href={`/forgot-password?next=${encodeURIComponent(nextPath)}`} className="text-[#5C745F] hover:text-[#25382E] transition-colors">
+              <Link href={`/forgot-password?next=${encodeURIComponent(nextPath)}`} className="text-[#8B454B] hover:text-[#541B1B] transition-colors">
                 Forgot Password?
               </Link>
-              <Link href={`/signup?next=${encodeURIComponent(nextPath)}`} className="text-[#EC8D99] hover:text-[#25382E] transition-colors">
+              <Link href={`/signup?next=${encodeURIComponent(nextPath)}`} className="text-[#541B1B] hover:text-[#722F37] font-semibold transition-colors">
                 Create Account
               </Link>
             </div>
@@ -231,7 +229,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-background" />}>
+    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2]" />}>
       <LoginContent />
     </Suspense>
   );

@@ -33,15 +33,15 @@ export default function DeviceBreakdown({ devices }: DeviceBreakdownProps) {
   };
 
   return (
-    <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-6 shadow-xs h-full flex flex-col justify-between">
+    <div className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl p-6 shadow-xs h-full flex flex-col justify-between">
       <div>
-        <div className="flex justify-between items-center border-b border-[#E5DACB] pb-4 mb-4">
+        <div className="flex justify-between items-center border-b border-[#D9C4B0] pb-4 mb-4">
           <div>
-            <h3 className="font-serif text-lg font-semibold text-[#25382E]">Device Breakdown</h3>
-            <p className="text-xs text-[#5C745F] font-sans mt-0.5">Visitor platform shares</p>
+            <h3 className="font-serif text-lg font-semibold text-[#541B1B]">Device Breakdown</h3>
+            <p className="text-xs text-[#8B454B] font-sans mt-0.5">Visitor platform shares</p>
           </div>
           {!devices && (
-            <span className="text-[8px] bg-[#F8F2E7] border border-[#E5DACB] text-[#5C745F] px-2.5 py-0.5 rounded-full font-sans uppercase font-medium">
+            <span className="text-[8px] bg-[#F8EEE2] border border-[#D9C4B0] text-[#8B454B] px-2.5 py-0.5 rounded-full font-sans uppercase font-medium">
               Coming Soon
             </span>
           )}
@@ -51,14 +51,14 @@ export default function DeviceBreakdown({ devices }: DeviceBreakdownProps) {
           {data.map((item, index) => {
             const Icon = getIcon(item.type);
             return (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-[#E5DACB]/40 last:border-0 last:pb-0 font-sans">
+              <div key={index} className="flex items-center justify-between py-2 border-b border-[#D9C4B0]/40 last:border-0 last:pb-0 font-sans">
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 bg-[#F8F2E7] border border-[#E5DACB] rounded-full flex items-center justify-center text-[#5C745F]">
+                  <div className="w-7 h-7 bg-[#F8EEE2] border border-[#D9C4B0] rounded-full flex items-center justify-center text-[#541B1B]">
                     <Icon size={13} />
                   </div>
-                  <span className="text-xs font-medium text-[#25382E]">{item.type}</span>
+                  <span className="text-xs font-medium text-[#541B1B]">{item.type}</span>
                 </div>
-                <span className="text-xs font-semibold text-[#25382E]">
+                <span className="text-xs font-semibold text-[#541B1B]">
                   {devices ? `${item.percentage}%` : "Pending"}
                 </span>
               </div>

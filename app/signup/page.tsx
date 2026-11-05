@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 function SignupContent() {
-
   const searchParams = useSearchParams();
   const { syncSession } = useCustomerAuth();
   const [fullName, setFullName] = useState("");
@@ -112,7 +111,6 @@ function SignupContent() {
       }
 
       if (data?.url) {
-        // Quick pre-flight check so users don't get thrown onto a raw Supabase 400 error page if the provider is disabled in Supabase dashboard
         try {
           const testRes = await fetch(data.url, {
             method: "GET",
@@ -131,7 +129,7 @@ function SignupContent() {
             }
           }
         } catch {
-          // If pre-flight fetch fails (e.g. network restriction), proceed with normal navigation
+          // If pre-flight fetch fails, proceed with navigation
         }
 
         window.location.assign(data.url);
@@ -144,113 +142,113 @@ function SignupContent() {
   };
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen text-[#25382E]">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen text-[#3B241C]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 max-w-xl order-2 lg:order-1">
-          <Link href="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] transition-colors font-sans">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#8B454B] hover:text-[#541B1B] transition-colors font-sans">
             <ArrowLeft size={12} />
             Back to Boutique
           </Link>
           <div className="space-y-3">
-            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">New Patron</span>
-            <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#25382E] font-light">Join the AaaS Atelier.</h1>
-            <p className="text-sm sm:text-base text-[#5C745F] leading-relaxed max-w-lg font-sans font-light">
+            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#8B454B] font-sans">New Patron</span>
+            <h1 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#541B1B] font-light">Join the AaaS Atelier.</h1>
+            <p className="text-sm sm:text-base text-[#3B241C] leading-relaxed max-w-lg font-sans font-light opacity-85">
               Create an account to save your delivery addresses, track your orders, and enjoy an effortless checkout.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#5C745F] font-sans">
-            <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 shadow-xs">
-              <p className="font-medium text-[#25382E] mb-1 font-serif text-sm">Patron Profile</p>
-              <p className="font-light leading-relaxed">Seamlessly manage your preferred delivery details.</p>
+          <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#8B454B] font-sans">
+            <div className="rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] p-4 shadow-xs">
+              <p className="font-medium text-[#541B1B] mb-1 font-serif text-sm">Patron Profile</p>
+              <p className="font-light leading-relaxed text-[#3B241C]/80">Seamlessly manage your preferred delivery details.</p>
             </div>
-            <div className="rounded-xl border border-[#E5DACB] bg-[#FFFAF1] p-4 shadow-xs">
-              <p className="font-medium text-[#25382E] mb-1 font-serif text-sm">Artisan Archive</p>
-              <p className="font-light leading-relaxed">Review past hand-stitched orders anytime.</p>
+            <div className="rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] p-4 shadow-xs">
+              <p className="font-medium text-[#541B1B] mb-1 font-serif text-sm">Artisan Archive</p>
+              <p className="font-light leading-relaxed text-[#3B241C]/80">Review past hand-stitched orders anytime.</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_16px_rgba(37,56,46,0.03)] p-6 sm:p-8 md:p-10 order-1 lg:order-2">
+        <div className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-[0_2px_16px_rgba(84,27,27,0.03)] p-6 sm:p-8 md:p-10 order-1 lg:order-2">
           <div className="space-y-2 mb-8">
-            <h2 className="font-serif text-3xl text-[#25382E] font-light">Create Account</h2>
-            <p className="text-xs text-[#5C745F] font-sans">Join AaaS Handmade Crochet.</p>
+            <h2 className="font-serif text-3xl text-[#541B1B] font-light">Create Account</h2>
+            <p className="text-xs text-[#8B454B] font-sans">Join AaaS Handmade Crochet.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="signup-name" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="signup-name" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Full Name
               </label>
               <div className="relative">
-                <UserRound size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <UserRound size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="signup-name"
                   type="text"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
                   placeholder="Your full name"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="signup-email" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="signup-email" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Mail size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="signup-email"
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="signup-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="signup-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="signup-password"
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="At least 8 characters"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="signup-confirm" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="signup-confirm" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="signup-confirm"
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   placeholder="Repeat your password"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             {message && (
-              <div className="rounded-xl border border-[#EC8D99]/40 bg-[#EC8D99]/10 px-4 py-3 text-xs text-[#25382E] font-sans">
+              <div className="rounded-xl border border-[#D9C4B0] bg-[#EBCDB8]/20 px-4 py-3 text-xs text-[#541B1B] font-sans">
                 {message}
               </div>
             )}
@@ -258,7 +256,7 @@ function SignupContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
             >
               {isLoading ? (
                 <>
@@ -274,14 +272,14 @@ function SignupContent() {
               type="button"
               onClick={handleGoogleSignup}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-[#E5DACB] text-xs font-medium tracking-[0.15em] uppercase text-[#25382E] hover:bg-[#F8F2E7] transition-colors disabled:opacity-75 font-sans cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full border border-[#D9C4B0] text-xs font-medium tracking-[0.15em] uppercase text-[#541B1B] hover:bg-[#F8EEE2] transition-colors disabled:opacity-75 font-sans cursor-pointer"
             >
               Continue with Google
             </button>
 
             <div className="flex items-center justify-between gap-4 text-[11px] uppercase tracking-[0.15em] font-medium pt-2 font-sans">
-              <span className="text-[#5C745F]">Already a patron?</span>
-              <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="text-[#EC8D99] hover:text-[#25382E] transition-colors">
+              <span className="text-[#8B454B]">Already a patron?</span>
+              <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="text-[#541B1B] hover:text-[#722F37] font-semibold transition-colors">
                 Sign In
               </Link>
             </div>
@@ -294,7 +292,7 @@ function SignupContent() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-background" />}>
+    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2]" />}>
       <SignupContent />
     </Suspense>
   );

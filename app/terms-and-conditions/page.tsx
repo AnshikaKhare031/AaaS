@@ -31,7 +31,7 @@ export default function TermsAndConditionsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <PolicyLayout title="Terms & Conditions" lastUpdated={lastUpdatedDate}>
-      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#5C745F]">
+      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#3B241C]/85">
         
         <p>
           Welcome to AaaS. These Terms and Conditions govern your use of our website and the acquisition of any handcrafted crochet creations and artisan lifestyle pieces from our catalog. By browsing or making a purchase, you agree to comply with these terms.
@@ -39,20 +39,20 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 1 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             1. Handcrafted Product Variations
           </h3>
           <p>
             All products listed in our store are hand-knitted, crocheted, or hand-assembled by our skilled artisans. 
           </p>
-          <p className="mt-2 font-medium text-[#25382E]">
+          <p className="mt-2 font-medium text-[#541B1B]">
             Due to this handcrafted production process, there may be minor variations in stitch tension, yarn hues, textures, or sizes compared to the product photos shown on our website. These variations are not defects; they are the natural hallmark of handmade craftsmanship and ensure that every item you purchase is a unique piece of art.
           </p>
         </div>
 
         {/* Section 2 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             2. Pricing & Product Availability
           </h3>
           <p>
@@ -62,7 +62,7 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 3 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             3. Order Acceptance & Payments
           </h3>
           <p>
@@ -75,7 +75,7 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 4 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             4. Intellectual Property
           </h3>
           <p>
@@ -85,7 +85,7 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 5 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             5. Limitation of Liability
           </h3>
           <p>
@@ -95,14 +95,14 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 6 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             6. Questions and Contact Info
           </h3>
           <p>
             If you need clarification regarding any part of these Terms and Conditions, please contact us:
           </p>
-          <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
+          <div className="bg-[#F8EEE2] p-4 rounded-xl border border-[#D9C4B0] mt-2 space-y-1 font-sans text-sm">
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.supportEmail}</a></p>
             <p><strong>Address:</strong> AaaS Atelier, India</p>
           </div>
         </div>

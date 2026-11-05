@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -84,8 +84,8 @@ export default function Navbar() {
       <div
         className={`transition-all duration-300 ${
           scrolled
-            ? "bg-[#F8F2E7]/95 backdrop-blur-md border-b border-[#E5DACB] py-3.5 shadow-[0_4px_20px_rgba(37,56,46,0.04)]"
-            : "bg-[#F8F2E7] border-b border-[#E5DACB]/60 py-4 md:py-5"
+            ? "bg-[#FFF9F2]/95 backdrop-blur-md border-b border-[#D9C4B0] py-3.5 shadow-[0_4px_20px_rgba(84,27,27,0.04)]"
+            : "bg-[#F8EEE2] border-b border-[#D9C4B0]/60 py-4 md:py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex justify-between items-center">
@@ -107,14 +107,14 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`relative py-1 text-xs uppercase tracking-[0.16em] font-sans font-medium transition-colors duration-200 ${
-                  isActive ? "text-[#25382E] font-semibold" : "text-[#5C745F] hover:text-[#EC8D99]"
+                  isActive ? "text-[#541B1B] font-semibold" : "text-[#8B454B] hover:text-[#541B1B]"
                 }`}
               >
                 {link.label}
                 {isActive && (
                   <motion.span
                     layoutId="activeNavBorder"
-                    className="absolute left-0 right-0 bottom-[-2px] h-[1.5px] bg-[#EC8D99]"
+                    className="absolute left-0 right-0 bottom-[-2px] h-[1.5px] bg-[#541B1B]"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -122,14 +122,14 @@ export default function Navbar() {
             );
           })}
 
-          <div className="h-4 w-px bg-[#E5DACB]" aria-hidden="true" />
+          <div className="h-4 w-px bg-[#D9C4B0]" aria-hidden="true" />
 
           {/* Cart Trigger */}
           <CartButton />
 
           {/* User Auth state */}
           {isLoading ? (
-            <span className="px-5 py-2 rounded-full text-[11px] uppercase tracking-widest bg-[#F6C4C2]/50 text-[#5C745F] font-medium animate-pulse font-sans">
+            <span className="px-5 py-2 rounded-full text-[11px] uppercase tracking-widest bg-[#EBCDB8]/50 text-[#8B454B] font-medium animate-pulse font-sans">
               Loading
             </span>
           ) : user ? (
@@ -137,16 +137,16 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setProfileOpen((current) => !current)}
-                className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full border border-[#E5DACB] bg-[#FFFAF1] hover:border-[#EC8D99] transition-all duration-200 cursor-pointer shadow-xs"
+                className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full border border-[#D9C4B0] bg-[#FFF9F2] hover:border-[#541B1B] transition-all duration-200 cursor-pointer shadow-xs"
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
               >
-                <span className="w-8 h-8 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs shrink-0 font-sans">
+                <span className="w-8 h-8 rounded-full overflow-hidden bg-[#EBCDB8] text-[#541B1B] flex items-center justify-center font-semibold text-xs shrink-0 font-sans">
                   <span>{initials}</span>
                 </span>
                 <ChevronDown
                   size={13}
-                  className={`text-[#5C745F] transition-transform duration-200 ${
+                  className={`text-[#8B454B] transition-transform duration-200 ${
                     profileOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -159,13 +159,13 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                     transition={{ duration: 0.16, ease: "easeOut" }}
-                    className="absolute right-0 top-full mt-2.5 w-64 rounded-2xl border border-[#E5DACB] bg-[#FFFAF1] shadow-[0_16px_40px_rgba(37,56,46,0.08)] overflow-hidden z-50"
+                    className="absolute right-0 top-full mt-2.5 w-64 rounded-2xl border border-[#D9C4B0] bg-[#FFF9F2] shadow-[0_16px_40px_rgba(59,16,24,0.08)] overflow-hidden z-50"
                     role="menu"
                   >
-                    <div className="p-4 border-b border-[#E5DACB]/60 bg-[#F8F2E7]">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5C745F] font-medium font-sans">Signed in as</p>
-                      <p className="mt-1 font-serif text-base text-[#25382E] truncate font-medium">{displayName}</p>
-                      <p className="text-xs text-[#5C745F] truncate font-sans">{user.email}</p>
+                    <div className="p-4 border-b border-[#D9C4B0]/60 bg-[#F8EEE2]">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#8B454B] font-medium font-sans">Signed in as</p>
+                      <p className="mt-1 font-serif text-base text-[#541B1B] truncate font-medium">{displayName}</p>
+                      <p className="text-xs text-[#8B454B] truncate font-sans">{user.email}</p>
                     </div>
                     <div className="p-1.5 font-sans">
                       {profileMenuItems.map((item) => {
@@ -177,25 +177,25 @@ export default function Navbar() {
                             onClick={() => setProfileOpen(false)}
                             className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs tracking-wide transition-colors ${
                               item.muted
-                                ? "text-[#5C745F]/50 cursor-default"
-                                : "text-[#25382E] hover:bg-[#F6C4C2]/30 hover:text-[#25382E]"
+                                ? "text-[#8B454B]/50 cursor-default"
+                                : "text-[#3B241C] hover:bg-[#EBCDB8]/30 hover:text-[#541B1B]"
                             }`}
                           >
-                            <Icon size={14} className="text-[#5C745F]" />
+                            <Icon size={14} className="text-[#8B454B]" />
                             <span>{item.label}</span>
                           </Link>
                         );
                       })}
-                      <div className="my-1 border-t border-[#E5DACB]/60" />
+                      <div className="my-1 border-t border-[#D9C4B0]/60" />
                       <button
                         type="button"
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="flex items-center gap-2.5 w-full rounded-xl px-3.5 py-2.5 text-xs text-[#C96A6A] hover:bg-rose-50/60 transition-colors disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                        className="flex items-center gap-2.5 w-full rounded-xl px-3.5 py-2.5 text-xs text-[#A83232] hover:bg-rose-50/60 transition-colors disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {isLoggingOut ? (
                           <>
-                            <Loader2 size={14} className="animate-spin text-[#C96A6A]" />
+                            <Loader2 size={14} className="animate-spin text-[#A83232]" />
                             <span>Logging out...</span>
                           </>
                         ) : (
@@ -213,7 +213,7 @@ export default function Navbar() {
           ) : (
             <Link
               href={`/login${pathname !== "/login" ? `?next=${encodeURIComponent(pathname || "/")}` : ""}`}
-              className="px-5 py-2 rounded-full text-xs uppercase tracking-[0.16em] font-sans font-medium bg-[#25382E] text-[#FFFAF1] hover:bg-[#405F4C] transition-all duration-200 shadow-xs hover:shadow-sm"
+              className="px-5 py-2 rounded-full text-xs uppercase tracking-[0.16em] font-sans font-medium bg-[#541B1B] text-[#FFF9F2] hover:bg-[#722F37] transition-all duration-200 shadow-xs hover:shadow-sm"
             >
               Sign In
             </Link>
@@ -228,7 +228,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => router.push("/profile")}
-              className="w-9 h-9 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs border border-[#E5DACB]"
+              className="w-9 h-9 rounded-full overflow-hidden bg-[#EBCDB8] text-[#541B1B] flex items-center justify-center font-semibold text-xs border border-[#D9C4B0]"
               aria-label="Open profile"
             >
               <span>{initials}</span>
@@ -236,7 +236,7 @@ export default function Navbar() {
           ) : !isLoading ? (
             <Link
               href={`/login${pathname !== "/login" ? `?next=${encodeURIComponent(pathname || "/")}` : ""}`}
-              className="px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-sans font-medium bg-[#25382E] text-[#FFFAF1] hover:bg-[#405F4C]"
+              className="px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-sans font-medium bg-[#541B1B] text-[#FFF9F2] hover:bg-[#722F37]"
             >
               Login
             </Link>
@@ -244,7 +244,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-[#25382E] hover:text-[#405F4C] transition-colors cursor-pointer"
+            className="p-2 text-[#541B1B] hover:text-[#722F37] transition-colors cursor-pointer"
             aria-label={isOpen ? "Close Menu" : "Open Menu"}
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -261,7 +261,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden bg-[#F8F2E7] border-b border-[#E5DACB] overflow-hidden"
+            className="lg:hidden bg-[#F8EEE2] border-b border-[#D9C4B0] overflow-hidden"
           >
             <nav className="flex flex-col px-6 py-6 space-y-4">
               {navLinks.map((link) => {
@@ -272,7 +272,7 @@ export default function Navbar() {
                     href={link.href}
                     onClick={() => setIsOpen(false)}
                     className={`text-base font-serif tracking-wide py-1.5 transition-colors ${
-                      isActive ? "text-[#25382E] font-semibold" : "text-[#5C745F] hover:text-[#EC8D99]"
+                      isActive ? "text-[#541B1B] font-semibold" : "text-[#8B454B] hover:text-[#541B1B]"
                     }`}
                   >
                     {link.label}
@@ -280,17 +280,17 @@ export default function Navbar() {
                 );
               })}
 
-              <hr className="border-[#E5DACB] my-1" />
+              <hr className="border-[#D9C4B0] my-1" />
 
               {!isLoading && user ? (
                 <>
                   <div className="flex items-center gap-3 px-1 py-1">
-                    <span className="w-10 h-10 rounded-full overflow-hidden bg-[#F6C4C2] text-[#25382E] flex items-center justify-center font-semibold text-xs shrink-0">
+                    <span className="w-10 h-10 rounded-full overflow-hidden bg-[#EBCDB8] text-[#541B1B] flex items-center justify-center font-semibold text-xs shrink-0">
                       <span>{initials}</span>
                     </span>
                     <div className="min-w-0 font-sans">
-                      <p className="font-serif text-base text-[#25382E] truncate font-medium">{displayName}</p>
-                      <p className="text-xs text-[#5C745F] truncate">{user.email}</p>
+                      <p className="font-serif text-base text-[#541B1B] truncate font-medium">{displayName}</p>
+                      <p className="text-xs text-[#8B454B] truncate">{user.email}</p>
                     </div>
                   </div>
 
@@ -298,14 +298,14 @@ export default function Navbar() {
                     <Link
                       href="/profile"
                       onClick={() => setIsOpen(false)}
-                      className="text-center py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium bg-[#25382E] text-[#FFFAF1] hover:bg-[#405F4C]"
+                      className="text-center py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium bg-[#541B1B] text-[#FFF9F2] hover:bg-[#722F37]"
                     >
                       Profile
                     </Link>
                     <Link
                       href="/my-orders"
                       onClick={() => setIsOpen(false)}
-                      className="text-center py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium border border-[#25382E] text-[#25382E] hover:bg-[#25382E] hover:text-[#FFFAF1]"
+                      className="text-center py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium border border-[#541B1B] text-[#541B1B] hover:bg-[#541B1B] hover:text-[#FFF9F2]"
                     >
                       Orders
                     </Link>
@@ -319,11 +319,11 @@ export default function Navbar() {
                       await handleLogout();
                     }}
                     disabled={isLoggingOut}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium border border-[#C96A6A]/40 text-[#C96A6A] hover:bg-rose-50 transition-colors disabled:opacity-75 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-xs uppercase tracking-wider font-sans font-medium border border-[#A83232]/40 text-[#A83232] hover:bg-rose-50 transition-colors disabled:opacity-75 cursor-pointer"
                   >
                     {isLoggingOut ? (
                       <>
-                        <Loader2 size={13} className="animate-spin text-[#C96A6A]" />
+                        <Loader2 size={13} className="animate-spin text-[#A83232]" />
                         <span>Logging out...</span>
                       </>
                     ) : (
@@ -335,7 +335,7 @@ export default function Navbar() {
                 <Link
                   href={`/login${pathname !== "/login" ? `?next=${encodeURIComponent(pathname || "/")}` : ""}`}
                   onClick={() => setIsOpen(false)}
-                  className="w-full text-center py-3 rounded-full text-xs uppercase tracking-widest font-sans font-medium bg-[#4A382D] text-[#F8F3EC]"
+                  className="w-full text-center py-3 rounded-full text-xs uppercase tracking-widest font-sans font-medium bg-[#541B1B] text-[#FFF9F2] hover:bg-[#722F37]"
                 >
                   Sign In
                 </Link>

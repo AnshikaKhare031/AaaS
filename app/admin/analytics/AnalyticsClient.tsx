@@ -118,13 +118,13 @@ export default function AnalyticsClient() {
   }, []);
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-8 font-sans text-[#3B241C]">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5DACB] pb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#D9C4B0] pb-6">
         <div>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-[#EC8D99] font-medium font-sans">Business Intelligence</span>
-          <h1 className="font-serif text-3xl md:text-4xl text-[#25382E] mt-1">Atelier Performance</h1>
-          <p className="text-xs text-[#5C745F] font-light mt-1 mb-2">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-[#B58A58] font-medium font-sans">Business Intelligence</span>
+          <h1 className="font-serif text-3xl md:text-4xl text-[#541B1B] mt-1">Atelier Performance</h1>
+          <p className="text-xs text-[#3B241C]/80 font-light mt-1 mb-2">
             Overview of creation acquisitions, patron engagement, and boutique commerce metrics.
           </p>
           {analytics && <AnalyticsTimestamp timestamp={analytics.lastUpdated} />}
@@ -135,16 +135,16 @@ export default function AnalyticsClient() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="bg-[#FFFAF1] p-6 border border-[#E5DACB] rounded-2xl animate-pulse h-28" />
+              <div key={idx} className="bg-[#FFF9F2] p-6 border border-[#D9C4B0] rounded-2xl animate-pulse h-28" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl animate-pulse h-64" />
-            <div className="lg:col-span-5 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl animate-pulse h-64" />
+            <div className="lg:col-span-7 bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl animate-pulse h-64" />
+            <div className="lg:col-span-5 bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl animate-pulse h-64" />
           </div>
         </div>
       ) : error ? (
-        <div className="bg-[#FFFAF1] border border-[#C96A6A]/30 rounded-2xl p-6 text-[#C96A6A] text-xs flex items-center gap-3">
+        <div className="bg-[#FFF9F2] border border-[#A83232]/30 rounded-2xl p-6 text-[#A83232] text-xs flex items-center gap-3">
           <span>Failed to load atelier business analytics. Please reload the page.</span>
         </div>
       ) : analytics ? (
@@ -152,61 +152,61 @@ export default function AnalyticsClient() {
           {/* Sales Overview KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {/* KPI 1: Orders Today */}
-            <div className="bg-[#FFFAF1] p-4 md:p-6 border border-[#E5DACB] rounded-2xl shadow-xs flex items-center justify-between">
+            <div className="bg-[#FFF9F2] p-4 md:p-6 border border-[#D9C4B0] rounded-2xl shadow-xs flex items-center justify-between">
               <div className="space-y-1">
-                <span className="text-[9px] md:text-[10px] text-[#5C745F] font-medium uppercase tracking-[0.15em] block">
+                <span className="text-[9px] md:text-[10px] text-[#8B454B] font-medium uppercase tracking-[0.15em] block">
                   Orders Today
                 </span>
-                <p className="text-xl md:text-3xl font-serif font-semibold text-[#25382E]">
+                <p className="text-xl md:text-3xl font-serif font-semibold text-[#541B1B]">
                   {analytics.kpis.ordersToday}
                 </p>
               </div>
-              <div className="p-2.5 md:p-3 border bg-[#EC8D99]/20 text-[#25382E] border-[#EC8D99]/40 rounded-xl shrink-0">
+              <div className="p-2.5 md:p-3 border bg-[#722F37]/15 text-[#722F37] border-[#722F37]/30 rounded-xl shrink-0">
                 <ClipboardList size={18} />
               </div>
             </div>
 
             {/* KPI 2: Revenue Today */}
-            <div className="bg-[#FFFAF1] p-4 md:p-6 border border-[#E5DACB] rounded-2xl shadow-xs flex items-center justify-between">
+            <div className="bg-[#FFF9F2] p-4 md:p-6 border border-[#D9C4B0] rounded-2xl shadow-xs flex items-center justify-between">
               <div className="space-y-1">
-                <span className="text-[9px] md:text-[10px] text-[#5C745F] font-medium uppercase tracking-[0.15em] block">
+                <span className="text-[9px] md:text-[10px] text-[#8B454B] font-medium uppercase tracking-[0.15em] block">
                   Revenue Today
                 </span>
-                <p className="text-xl md:text-3xl font-serif font-semibold text-[#25382E]">
+                <p className="text-xl md:text-3xl font-serif font-semibold text-[#541B1B]">
                   ₹{analytics.kpis.revenueToday.toLocaleString("en-IN")}
                 </p>
               </div>
-              <div className="p-2.5 md:p-3 border bg-[#405F4C]/15 text-[#405F4C] border-[#405F4C]/25 rounded-xl shrink-0">
+              <div className="p-2.5 md:p-3 border bg-[#52734D]/15 text-[#52734D] border-[#52734D]/30 rounded-xl shrink-0">
                 <TrendingUp size={18} />
               </div>
             </div>
 
             {/* KPI 3: Pending Orders */}
-            <div className="bg-[#FFFAF1] p-4 md:p-6 border border-[#E5DACB] rounded-2xl shadow-xs flex items-center justify-between">
+            <div className="bg-[#FFF9F2] p-4 md:p-6 border border-[#D9C4B0] rounded-2xl shadow-xs flex items-center justify-between">
               <div className="space-y-1">
-                <span className="text-[9px] md:text-[10px] text-[#5C745F] font-medium uppercase tracking-[0.15em] block">
+                <span className="text-[9px] md:text-[10px] text-[#8B454B] font-medium uppercase tracking-[0.15em] block">
                   Pending Orders
                 </span>
-                <p className="text-xl md:text-3xl font-serif font-semibold text-[#25382E]">
+                <p className="text-xl md:text-3xl font-serif font-semibold text-[#541B1B]">
                   {analytics.kpis.pendingOrders}
                 </p>
               </div>
-              <div className="p-2.5 md:p-3 border bg-[#F5C842]/20 text-[#25382E] border-[#F5C842]/40 rounded-xl shrink-0">
+              <div className="p-2.5 md:p-3 border bg-[#9A681D]/15 text-[#9A681D] border-[#9A681D]/30 rounded-xl shrink-0">
                 <Clock size={18} />
               </div>
             </div>
 
             {/* KPI 4: Visitors Today */}
-            <div className="bg-[#FFFAF1] p-4 md:p-6 border border-[#E5DACB] rounded-2xl shadow-xs flex items-center justify-between relative overflow-hidden">
+            <div className="bg-[#FFF9F2] p-4 md:p-6 border border-[#D9C4B0] rounded-2xl shadow-xs flex items-center justify-between relative overflow-hidden">
               <div className="space-y-1">
-                <span className="text-[9px] md:text-[10px] text-[#5C745F] font-medium uppercase tracking-[0.15em] block">
+                <span className="text-[9px] md:text-[10px] text-[#8B454B] font-medium uppercase tracking-[0.15em] block">
                   Visitors Today
                 </span>
-                <p className={`font-serif font-semibold ${analytics.traffic.visitorsToday === null ? "text-[11px] text-[#5C745F]/70 uppercase tracking-[0.15em] font-sans" : "text-xl md:text-3xl text-[#25382E]"}`}>
+                <p className={`font-serif font-semibold ${analytics.traffic.visitorsToday === null ? "text-[11px] text-[#3B241C]/60 uppercase tracking-[0.15em] font-sans" : "text-xl md:text-3xl text-[#541B1B]"}`}>
                   {analytics.traffic.visitorsToday !== null ? analytics.traffic.visitorsToday.toLocaleString() : "Tracking Soon"}
                 </p>
               </div>
-              <div className="p-2.5 md:p-3 border bg-[#F8F2E7] text-[#5C745F] border-[#E5DACB] rounded-xl shrink-0">
+              <div className="p-2.5 md:p-3 border bg-[#F8EEE2] text-[#8B454B] border-[#D9C4B0] rounded-xl shrink-0">
                 <Users size={18} />
               </div>
             </div>
@@ -230,10 +230,10 @@ export default function AnalyticsClient() {
           </div>
 
           {/* Traffic Overview & Details Row (Phase 3) */}
-          <div className="space-y-6 border-t border-[#E5DACB] pt-6">
+          <div className="space-y-6 border-t border-[#D9C4B0] pt-6">
             <div>
-              <h3 className="font-serif text-xl font-semibold text-[#25382E]">Patron Traffic & Footfall</h3>
-              <p className="text-xs text-[#5C745F] font-sans mt-0.5">Visitor exploration channels and interaction funnel</p>
+              <h3 className="font-serif text-xl font-semibold text-[#541B1B]">Patron Traffic & Footfall</h3>
+              <p className="text-xs text-[#3B241C]/80 font-sans mt-0.5">Visitor exploration channels and interaction funnel</p>
             </div>
             
             <VisitorOverview traffic={analytics.traffic} />

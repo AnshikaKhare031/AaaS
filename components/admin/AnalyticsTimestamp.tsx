@@ -22,8 +22,8 @@ export default function AnalyticsTimestamp({ timestamp }: AnalyticsTimestampProp
   };
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-[#5C745F] font-sans font-light">
-      <Clock size={12} className="text-[#EC8D99]" />
+    <div className="flex items-center gap-1.5 text-xs text-[#8B454B] font-sans font-light">
+      <Clock size={12} className="text-[#B58A58]" />
       <span>Last Synchronized: {formatTime(timestamp)}</span>
     </div>
   );

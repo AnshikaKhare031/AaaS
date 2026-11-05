@@ -49,16 +49,16 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-12 md:py-24 bg-white border-b border-border-custom/50">
+    <section className="py-12 md:py-24 bg-[#F8EEE2] border-b border-[#D9C4B0]/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-8 md:mb-16 space-y-4">
-          <span className="text-xs uppercase tracking-widest font-semibold text-accent">Customer Stories</span>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-foreground">
+          <span className="text-xs uppercase tracking-widest font-semibold text-[#8B454B]">Customer Stories</span>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-[#541B1B]">
             Loved by Collectors
           </h2>
-          <p className="text-foreground/75 font-sans font-light leading-relaxed text-sm sm:text-base">
+          <p className="text-[#3B241C] font-sans font-light leading-relaxed text-sm sm:text-base opacity-80">
             Read what our clients say about the quality, attention to detail, and love put into every creation.
           </p>
         </div>
@@ -75,34 +75,34 @@ export default function Testimonials() {
             <motion.div
               key={idx}
               variants={itemVariants}
-              className="bg-background/30 hover:bg-white border border-border-custom p-5 md:p-8 rounded-2xl flex flex-col justify-between transition-all duration-300 hover:shadow-md group"
+              className="bg-[#FFF9F2] hover:bg-[#FFF9F2] border border-[#D9C4B0] p-5 md:p-8 rounded-2xl flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#722F37]/50 group"
             >
               <div className="space-y-4 md:space-y-6">
                 {/* Rating Stars */}
-                <div className="flex gap-1 text-accent">
+                <div className="flex gap-1 text-[#B58A58]">
                   {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" className="text-accent" />
+                    <Star key={i} size={14} fill="currentColor" className="text-[#B58A58]" />
                   ))}
                 </div>
 
                 {/* Review Text */}
-                <p className="text-foreground/80 font-serif italic text-sm sm:text-base leading-relaxed">
+                <p className="text-[#3B241C] font-serif italic text-sm sm:text-base leading-relaxed opacity-90">
                   &ldquo;{t.review}&rdquo;
                 </p>
               </div>
 
               {/* User Bio Footer */}
-              <div className="mt-6 pt-4 md:mt-8 md:pt-6 border-t border-border-custom/60 flex items-center gap-4">
+              <div className="mt-6 pt-4 md:mt-8 md:pt-6 border-t border-[#D9C4B0]/60 flex items-center gap-4">
                 {/* Customer Photo / Avatar space */}
-                <div className="w-10 h-10 rounded-full border border-border-custom bg-background flex items-center justify-center text-foreground/40 overflow-hidden relative group-hover:border-accent/40 transition-colors duration-300">
+                <div className="w-10 h-10 rounded-full border border-[#D9C4B0] bg-[#F8EEE2] flex items-center justify-center text-[#541B1B] overflow-hidden relative group-hover:border-[#541B1B]/40 transition-colors duration-300">
                   <User size={16} />
                 </div>
                 
                 <div>
-                  <h3 className="font-serif text-sm font-semibold text-foreground tracking-wide">
+                  <h3 className="font-serif text-sm font-semibold text-[#541B1B] tracking-wide">
                     {t.name}
                   </h3>
-                  <p className="text-[10px] uppercase tracking-wider text-foreground/50 font-sans">
+                  <p className="text-[10px] uppercase tracking-wider text-[#8B454B] font-sans">
                     {t.product} &bull; {t.location}
                   </p>
                 </div>

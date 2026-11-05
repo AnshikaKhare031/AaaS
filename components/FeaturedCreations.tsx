@@ -23,13 +23,13 @@ export default function FeaturedCreations() {
 
   if (loading) {
     return (
-      <section className="py-24 bg-white border-b border-border-custom/50">
+      <section className="py-24 bg-[#F8EEE2] border-b border-[#D9C4B0]/50">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="h-8 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-          <div className="h-12 w-96 bg-gray-200 animate-pulse rounded mb-8" />
+          <div className="h-8 w-48 bg-[#EBCDB8]/40 animate-pulse rounded mb-4" />
+          <div className="h-12 w-96 bg-[#EBCDB8]/40 animate-pulse rounded mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="aspect-[4/5] bg-gray-200 animate-pulse rounded-2xl" />
+              <div key={n} className="aspect-[4/5] bg-[#EBCDB8]/30 animate-pulse rounded-2xl" />
             ))}
           </div>
         </div>
@@ -42,15 +42,15 @@ export default function FeaturedCreations() {
   }
 
   return (
-    <section className="py-24 bg-white border-b border-border-custom/50">
+    <section className="py-24 bg-[#F8EEE2] border-b border-[#D9C4B0]/50">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Section Header */}
         <div className="max-w-2xl mb-16 space-y-4">
-          <span className="text-xs uppercase tracking-widest font-semibold text-accent-secondary">Featured Creations</span>
-          <h2 className="font-serif text-4xl sm:text-5xl tracking-tight text-foreground">
+          <span className="text-xs uppercase tracking-widest font-semibold text-[#8B454B]">Featured Creations</span>
+          <h2 className="font-serif text-4xl sm:text-5xl tracking-tight text-[#541B1B]">
             Handcrafted with Heart
           </h2>
-          <p className="text-foreground/75 font-sans font-light leading-relaxed text-sm sm:text-base">
+          <p className="text-[#3B241C] font-sans font-light leading-relaxed text-sm sm:text-base opacity-80">
             A small window into our studio. Every piece is patiently hand-painted or sewn individually, making them truly one of a kind.
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function FeaturedCreations() {
               >
                 <Link href={`/product/${product.id}`} className="block space-y-5">
                   {/* Image Box - Image First */}
-                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-[#E5DACB] bg-[#F8F2E7] shadow-xs transition-shadow duration-500 group-hover:shadow-lg flex items-center justify-center p-3 sm:p-4">
+                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-[#D9C4B0] bg-[#FFF9F2] shadow-xs transition-shadow duration-500 group-hover:shadow-lg flex items-center justify-center p-3 sm:p-4">
                     <Image
                       src={product.image_url}
                       alt={productName}
@@ -79,22 +79,22 @@ export default function FeaturedCreations() {
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
                     {/* Hover Overlay Arrow */}
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-xs p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
-                      <ArrowUpRight size={16} className="text-accent" />
+                    <div className="absolute top-4 right-4 bg-[#FFF9F2]/90 backdrop-blur-xs p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md border border-[#D9C4B0]">
+                      <ArrowUpRight size={16} className="text-[#541B1B]" />
                     </div>
                   </div>
 
                   {/* Text - Minimal & Elegant */}
                   <div className="space-y-1.5 px-1">
                     <div className="flex justify-between items-baseline">
-                      <h3 className="font-serif text-xl sm:text-2xl tracking-wide text-foreground group-hover:text-accent transition-colors duration-300">
+                      <h3 className="font-serif text-xl sm:text-2xl tracking-wide text-[#541B1B] group-hover:text-[#722F37] transition-colors duration-300">
                         {productName}
                       </h3>
-                      <span className="font-serif text-lg text-foreground/80 pl-2">
+                      <span className="font-serif text-lg text-[#541B1B] pl-2 font-medium">
                         ₹{product.price.toLocaleString("en-IN")}
                       </span>
                     </div>
-                    <p className="text-[10px] uppercase tracking-widest text-foreground/50 font-medium">
+                    <p className="text-[10px] uppercase tracking-widest text-[#8B454B] font-medium">
                       {product.category || "Handmade"}
                     </p>
                   </div>

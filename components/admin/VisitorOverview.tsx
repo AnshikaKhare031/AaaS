@@ -25,19 +25,19 @@ export default function VisitorOverview({ traffic }: VisitorOverviewProps) {
       label: "Visitors Today",
       value: visitorsToday,
       icon: Users,
-      color: "bg-[#EC8D99]/20 text-[#25382E] border-[#EC8D99]/40 rounded-xl",
+      color: "bg-[#722F37]/15 text-[#722F37] border-[#722F37]/30 rounded-xl",
     },
     {
       label: "Page Views Today",
       value: pageViews,
       icon: Eye,
-      color: "bg-[#405F4C]/15 text-[#405F4C] border-[#405F4C]/25 rounded-xl",
+      color: "bg-[#52734D]/15 text-[#52734D] border-[#52734D]/30 rounded-xl",
     },
     {
       label: "Unique Visitors",
       value: uniqueVisitors,
       icon: MousePointer,
-      color: "bg-[#F5C842]/20 text-[#25382E] border-[#F5C842]/40 rounded-xl",
+      color: "bg-[#9A681D]/15 text-[#9A681D] border-[#9A681D]/30 rounded-xl",
     },
   ];
 
@@ -49,13 +49,13 @@ export default function VisitorOverview({ traffic }: VisitorOverviewProps) {
         return (
           <div
             key={idx}
-            className="bg-[#FFFAF1] p-4 md:p-6 border border-[#E5DACB] rounded-2xl shadow-xs flex items-center justify-between"
+            className="bg-[#FFF9F2] p-4 md:p-6 border border-[#D9C4B0] rounded-2xl shadow-xs flex items-center justify-between"
           >
             <div className="space-y-1">
-              <span className="text-[9px] md:text-[10px] text-[#5C745F] font-medium font-sans uppercase tracking-[0.15em] block">
+              <span className="text-[9px] md:text-[10px] text-[#8B454B] font-medium font-sans uppercase tracking-[0.15em] block">
                 {card.label}
               </span>
-              <p className={`font-serif font-semibold ${isString ? "text-xs text-[#5C745F] uppercase tracking-[0.15em]" : "text-xl md:text-3xl text-[#25382E]"}`}>
+              <p className={`font-serif font-semibold ${isString ? "text-xs text-[#8B454B] uppercase tracking-[0.15em]" : "text-xl md:text-3xl text-[#541B1B]"}`}>
                 {card.value}
               </p>
             </div>

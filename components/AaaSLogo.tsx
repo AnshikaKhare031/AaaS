@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 
@@ -13,12 +13,12 @@ export default function AaaSLogo({
   size = "md",
   className = "",
 }: AaaSLogoProps) {
-  // Color configuration according to AaaS brand palette
+  // Color configuration according to AAAS brand palette: Burgundy Luxury x Warm Ivory
   const isLight = variant === "light" || variant === "inverted";
-  const primaryColor = isLight ? "#FFFAF1" : "#25382E";
-  const accentColor = isLight ? "#F6C4C2" : "#EC8D99"; // Blush / Bright Pink
-  const secondaryColor = isLight ? "#F6C4C2" : "#5C745F";
-  const sageColor = isLight ? "#F6C4C2" : "#5C745F"; // Muted Sage
+  const primaryColor = isLight ? "#FFF9F2" : "#541B1B";
+  const accentColor = isLight ? "#B58A58" : "#B58A58"; // Antique Gold details
+  const secondaryColor = isLight ? "#EBCDB8" : "#8B454B"; // Blush Beige or Muted Burgundy
+  const sageColor = isLight ? "#EBCDB8" : "#722F37"; // Wine accent
 
   const iconSizes = {
     sm: { width: 34, height: 34, titleClass: "text-xl", subClass: "text-[8px] tracking-[0.26em]" },

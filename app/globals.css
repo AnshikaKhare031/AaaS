@@ -1,38 +1,64 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
-  /* AaaS Official Palette - Modern Artisan Crochet */
-  --color-cream: #F8F2E7;
-  --color-deep-green: #25382E;
-  --color-forest-green: #405F4C;
-  --color-blush: #F6C4C2;
-  --color-pink: #EC8D99;
-  --color-yellow: #F5C842;
-  --color-warm-white: #FFFAF1;
-  --color-sage: #5C745F;
+  --color-burgundy: #541B1B;
+  --color-oxblood: #3B1018;
+  --color-wine: #722F37;
+  --color-muted-burgundy: #8B454B;
+
+  --color-ivory: #F8EEE2;
+  --color-cream: #FFF9F2;
+  --color-blush-beige: #EBCDB8;
+  --color-dusty-rose: #D99B8A;
+
+  --color-espresso: #3B241C;
+  --color-antique-gold: #B58A58;
+  --color-border: #D9C4B0;
+
+  --color-success: #52734D;
+  --color-error: #A83232;
+  --color-warning: #9A681D;
 
   /* Global Semantics */
-  --background: #F8F2E7;
-  --foreground: #25382E;
-  --card: #FFFAF1;
-  --accent: #25382E;
-  --accent-forest: #405F4C;
-  --accent-blush: #F6C4C2;
-  --accent-pink: #EC8D99;
-  --accent-yellow: #F5C842;
-  --accent-sage: #5C745F;
-  --border: #E5DACB;
+  --background: #F8EEE2;
+  --foreground: #3B241C;
+  --card: #FFF9F2;
+  --border: #D9C4B0;
+  --accent: #541B1B;
+  --accent-wine: #722F37;
+  --accent-oxblood: #3B1018;
+  --accent-gold: #B58A58;
+  --accent-rose: #D99B8A;
+  --accent-beige: #EBCDB8;
+
+  /* Legacy semantic mappings for backward compatibility */
+  --color-deep-green: #541B1B;
+  --color-forest-green: #722F37;
+  --color-blush: #EBCDB8;
+  --color-pink: #D99B8A;
+  --color-yellow: #B58A58;
+  --color-warm-white: #FFF9F2;
+  --color-sage: #8B454B;
 }
 
 @theme {
-  --color-cream: #F8F2E7;
-  --color-deep-green: #25382E;
-  --color-forest-green: #405F4C;
-  --color-blush: #F6C4C2;
-  --color-pink: #EC8D99;
-  --color-yellow: #F5C842;
-  --color-warm-white: #FFFAF1;
-  --color-sage: #5C745F;
+  --color-burgundy: #541B1B;
+  --color-oxblood: #3B1018;
+  --color-wine: #722F37;
+  --color-muted-burgundy: #8B454B;
+
+  --color-ivory: #F8EEE2;
+  --color-cream: #FFF9F2;
+  --color-blush-beige: #EBCDB8;
+  --color-dusty-rose: #D99B8A;
+
+  --color-espresso: #3B241C;
+  --color-antique-gold: #B58A58;
+  --color-border: #D9C4B0;
+
+  --color-success: #52734D;
+  --color-error: #A83232;
+  --color-warning: #9A681D;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -60,19 +86,19 @@ body {
   font-family: var(--font-manrope), "Manrope", system-ui, sans-serif;
 }
 
-/* Custom scrollbar matching AaaS Warm Cream & Deep Green tone */
+/* Custom scrollbar matching AAAS Warm Ivory & Burgundy luxury tone */
 ::-webkit-scrollbar {
   width: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #F8F2E7;
+  background: #F8EEE2;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E5DACB;
+  background: #D9C4B0;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5C745F;
+  background: #722F37;
 }
 
 /* Hide scrollbar for clean horizontal scrollers */
@@ -86,7 +112,7 @@ body {
 
 /* Premium Skeleton & Loading Styles */
 .skeleton-shimmer {
-  background-color: #F6C4C2;
+  background-color: #EBCDB8;
   position: relative;
   overflow: hidden;
 }
@@ -98,10 +124,10 @@ body {
   transform: translateX(-100%);
   background-image: linear-gradient(
     90deg,
-    rgba(248, 242, 231, 0) 0%,
-    rgba(255, 250, 241, 0.4) 30%,
-    rgba(255, 250, 241, 0.8) 60%,
-    rgba(248, 242, 231, 0) 100%
+    rgba(248, 238, 226, 0) 0%,
+    rgba(255, 249, 242, 0.45) 30%,
+    rgba(255, 249, 242, 0.85) 60%,
+    rgba(248, 238, 226, 0) 100%
   );
   animation: shimmer-animation 2.2s infinite ease-out;
 }
@@ -130,23 +156,23 @@ body {
 
 /* Button & Card Micro-interactions */
 .aaas-btn-primary {
-  background-color: #25382E;
-  color: #FFFAF1;
+  background-color: #541B1B;
+  color: #FFF9F2;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .aaas-btn-primary:hover {
-  background-color: #405F4C;
+  background-color: #722F37;
 }
 
 .aaas-btn-secondary {
   background-color: transparent;
-  color: #25382E;
-  border: 1px solid #25382E;
+  color: #541B1B;
+  border: 1px solid #541B1B;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .aaas-btn-secondary:hover {
-  background-color: #25382E;
-  color: #FFFAF1;
+  background-color: #541B1B;
+  color: #FFF9F2;
 }
 
 /* Accessibility: Respect prefers-reduced-motion */

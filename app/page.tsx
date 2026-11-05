@@ -35,31 +35,31 @@ export default async function Home() {
   });
 
   return (
-    <div className="relative bg-[#F8F2E7]">
+    <div className="relative bg-[#F8EEE2]">
       {/* 1. Hero Section - Database-Driven Carousel */}
       <Hero initialProducts={activeProducts} />
 
-      {/* 2. Marquee Ticker Band from Figma */}
+      {/* 2. Marquee Ticker Band */}
       <MarqueeBanner />
 
       {/* 3. Curated Collections Section - Database-Driven Category Cards */}
-      <section id="categories" className="py-20 md:py-28 bg-[#F8F2E7] scroll-mt-20 border-b border-[#E5DACB]/70">
+      <section id="categories" className="py-20 md:py-28 bg-[#F8EEE2] scroll-mt-20 border-b border-[#D9C4B0]/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-16 pb-6 border-b border-[#E5DACB]/60">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-16 pb-6 border-b border-[#D9C4B0]/60">
             <div className="max-w-xl space-y-3">
               <div className="inline-flex items-center gap-2">
-                <span className="text-[#EC8D99] text-xs">✦</span>
-                <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F] font-sans">
+                <span className="text-[#B58A58] text-xs">✦</span>
+                <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B] font-sans">
                   Curated Selections
                 </span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-5xl font-light tracking-tight text-[#25382E]">
+              <h2 className="font-serif text-3xl sm:text-5xl font-light tracking-tight text-[#541B1B]">
                 Meet your new favorites
               </h2>
             </div>
-            <p className="max-w-md text-[#5C745F] font-sans font-light leading-relaxed text-sm sm:text-base">
+            <p className="max-w-md text-[#3B241C] font-sans font-light leading-relaxed text-sm sm:text-base opacity-85">
               Thoughtfully curated pieces designed to bring warmth, texture, and quiet luxury into your daily rituals. Select any collection to explore.
             </p>
           </div>

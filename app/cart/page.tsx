@@ -12,10 +12,10 @@ export default function CartPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center pt-24 bg-[#F8F2E7]">
+      <div className="min-h-[60vh] flex items-center justify-center pt-24 bg-[#F8EEE2]">
         <div className="animate-pulse space-y-4 text-center font-sans">
-          <div className="w-12 h-12 rounded-full bg-[#F6C4C2]/50 mx-auto" />
-          <div className="h-3 w-32 bg-[#E5DACB] rounded-full mx-auto" />
+          <div className="w-12 h-12 rounded-full bg-[#EBCDB8]/50 mx-auto" />
+          <div className="h-3 w-32 bg-[#D9C4B0] rounded-full mx-auto" />
         </div>
       </div>
     );
@@ -23,48 +23,48 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-[82vh] flex items-center">
+      <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-[82vh] flex items-center">
         <div className="max-w-md mx-auto px-4 text-center space-y-6 font-sans">
-          <div className="w-20 h-20 bg-[#FFFAF1] border border-[#E5DACB] rounded-full flex items-center justify-center mx-auto shadow-2xs">
-            <ShoppingBag size={28} className="text-[#25382E]" />
+          <div className="w-20 h-20 bg-[#FFF9F2] border border-[#D9C4B0] rounded-full flex items-center justify-center mx-auto shadow-2xs">
+            <ShoppingBag size={28} className="text-[#541B1B]" />
           </div>
           <div className="space-y-2">
-            <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-[#25382E] font-light">
+            <h1 className="font-serif text-3xl sm:text-4xl tracking-tight text-[#541B1B] font-light">
               Your cart is waiting for something handmade.
             </h1>
-            <p className="text-[#5C745F] text-xs sm:text-sm font-light leading-relaxed">
+            <p className="text-[#3B241C] text-xs sm:text-sm font-light leading-relaxed opacity-80">
               Explore our boutique collections of handcrafted crochet handbags, delicate charm keychains, and artisan lifestyle accessories.
             </p>
           </div>
           <div className="pt-2 space-y-4">
             <Link
               href="/products"
-              className="w-full block text-center py-4 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] font-medium uppercase tracking-[0.2em] text-xs transition-colors duration-200 shadow-xs cursor-pointer"
+              className="w-full block text-center py-4 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] font-medium uppercase tracking-[0.2em] text-xs transition-colors duration-200 shadow-xs cursor-pointer"
             >
               Explore Collections
             </Link>
             <div className="grid grid-cols-2 gap-2.5 text-[10px] uppercase tracking-[0.18em] font-medium pt-1">
               <Link
                 href="/category/handbags"
-                className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
+                className="p-3 bg-[#FFF9F2] border border-[#D9C4B0] hover:border-[#541B1B] text-[#541B1B] transition-colors text-center cursor-pointer"
               >
                 Handbags
               </Link>
               <Link
                 href="/category/keychains"
-                className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
+                className="p-3 bg-[#FFF9F2] border border-[#D9C4B0] hover:border-[#541B1B] text-[#541B1B] transition-colors text-center cursor-pointer"
               >
                 Keychains
               </Link>
               <Link
                 href="/category/accessories"
-                className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
+                className="p-3 bg-[#FFF9F2] border border-[#D9C4B0] hover:border-[#541B1B] text-[#541B1B] transition-colors text-center cursor-pointer"
               >
                 Accessories
               </Link>
               <Link
                 href="/products"
-                className="p-3 bg-[#FFFAF1] border border-[#E5DACB] hover:border-[#EC8D99] text-[#25382E] transition-colors text-center cursor-pointer"
+                className="p-3 bg-[#FFF9F2] border border-[#D9C4B0] hover:border-[#541B1B] text-[#541B1B] transition-colors text-center cursor-pointer"
               >
                 All Products
               </Link>
@@ -76,23 +76,23 @@ export default function CartPage() {
   }
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#E5DACB]/70 pb-6 mb-8 md:mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#D9C4B0]/70 pb-6 mb-8 md:mb-12">
           <div className="space-y-1.5">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] font-medium mb-2 transition-colors duration-200 group cursor-pointer font-sans"
+              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#8B454B] hover:text-[#541B1B] font-medium mb-2 transition-colors duration-200 group cursor-pointer font-sans"
             >
               <ArrowLeft size={11} className="group-hover:-translate-x-0.5 transition-transform" />
               <span>Continue Shopping</span>
             </Link>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-[#25382E] font-light">
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight text-[#541B1B] font-light">
               Shopping Bag
             </h1>
           </div>
-          <p className="text-xs uppercase tracking-wider text-[#5C745F] font-sans mt-2 md:mt-0">
+          <p className="text-xs uppercase tracking-wider text-[#8B454B] font-sans mt-2 md:mt-0">
             {cartCount} {cartCount === 1 ? "artisan piece" : "artisan pieces"}
           </p>
         </div>
@@ -100,8 +100,8 @@ export default function CartPage() {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           {/* Cart items list */}
-          <div className="lg:col-span-8 bg-[#FFFAF1] border border-[#E5DACB] p-6 md:p-8 space-y-2 shadow-xs">
-            <div className="divide-y divide-[#E5DACB]/60">
+          <div className="lg:col-span-8 bg-[#FFF9F2] border border-[#D9C4B0] p-6 md:p-8 space-y-2 shadow-xs">
+            <div className="divide-y divide-[#D9C4B0]/60">
               {cart.map((item) => (
                 <CartItem key={item.product.id} item={item} />
               ))}

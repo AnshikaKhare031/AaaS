@@ -16,10 +16,10 @@ const items = [
 
 export default function MarqueeBanner() {
   return (
-    <div className="relative w-full overflow-hidden bg-[#25382E] py-3.5 border-y border-[#405F4C]/40 select-none">
+    <div className="relative w-full overflow-hidden bg-[#3B1018] py-3.5 border-y border-[#722F37]/50 select-none">
       <div className="flex w-max">
         <motion.div
-          className="flex shrink-0 items-center space-x-8 sm:space-x-12 pr-8 sm:pr-12 text-[#FFFAF1] text-xs sm:text-sm font-sans tracking-[0.24em] uppercase font-medium"
+          className="flex shrink-0 items-center space-x-8 sm:space-x-12 pr-8 sm:pr-12 text-[#FFF9F2] text-xs sm:text-sm font-sans tracking-[0.24em] uppercase font-medium"
           animate={{ x: ["0%", "-50%"] }}
           transition={{
             repeat: Infinity,
@@ -31,7 +31,7 @@ export default function MarqueeBanner() {
           {[...items, ...items, ...items, ...items].map((item, idx) => (
             <React.Fragment key={idx}>
               <span className="shrink-0">{item}</span>
-              <span className="text-[#F5C842] shrink-0 text-xs">✦</span>
+              <span className="text-[#B58A58] shrink-0 text-xs">✦</span>
             </React.Fragment>
           ))}
         </motion.div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default function Footer() {
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-[#25382E] text-[#FFFAF1] border-t border-[#405F4C]/40 pt-14 pb-10 md:pt-20 md:pb-14 mt-auto">
+    <footer className="bg-[#3B1018] text-[#FFF9F2] border-t border-[#722F37]/50 pt-14 pb-10 md:pt-20 md:pb-14 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
         
         {/* Brand Information */}
@@ -22,37 +22,37 @@ export default function Footer() {
           <Link href="/" className="inline-block w-fit">
             <AaaSLogo variant="inverted" size="md" />
           </Link>
-          <p className="text-[#FFFAF1]/80 text-xs sm:text-sm max-w-sm leading-relaxed font-sans font-light">
+          <p className="text-[#FFF9F2]/80 text-xs sm:text-sm max-w-sm leading-relaxed font-sans font-light">
             Modern artisan crochet studio meets premium lifestyle boutique. Lovingly crafted heirloom pieces, embroidered fabric pouches, and hand-painted keepsakes.
           </p>
-          <div className="pt-2 text-xs font-serif italic text-[#F6C4C2]">
+          <div className="pt-2 text-xs font-serif italic text-[#B58A58]">
             &ldquo;Thoughtfully crafted by hand, made to cherish.&rdquo;
           </div>
         </div>
 
         {/* Categories / Quick Links */}
         <div className="flex flex-col space-y-3.5">
-          <h4 className="text-[11px] uppercase tracking-[0.24em] font-medium text-[#F6C4C2] font-sans">
+          <h4 className="text-[11px] uppercase tracking-[0.24em] font-medium text-[#B58A58] font-sans">
             Collections
           </h4>
-          <ul className="space-y-2.5 text-xs sm:text-sm text-[#FFFAF1]/85 font-sans font-light">
+          <ul className="space-y-2.5 text-xs sm:text-sm text-[#FFF9F2]/85 font-sans font-light">
             <li>
-              <Link href="/products" className="hover:text-[#EC8D99] transition-colors duration-200">
+              <Link href="/products" className="hover:text-[#D99B8A] transition-colors duration-200">
                 All Products
               </Link>
             </li>
             <li>
-              <Link href="/category/handbags" className="hover:text-[#EC8D99] transition-colors duration-200">
+              <Link href="/category/handbags" className="hover:text-[#D99B8A] transition-colors duration-200">
                 Handbags
               </Link>
             </li>
             <li>
-              <Link href="/category/keychains" className="hover:text-[#EC8D99] transition-colors duration-200">
+              <Link href="/category/keychains" className="hover:text-[#D99B8A] transition-colors duration-200">
                 Keychains
               </Link>
             </li>
             <li>
-              <Link href="/category/accessories" className="hover:text-[#EC8D99] transition-colors duration-200">
+              <Link href="/category/accessories" className="hover:text-[#D99B8A] transition-colors duration-200">
                 Accessories
               </Link>
             </li>
@@ -61,19 +61,19 @@ export default function Footer() {
 
         {/* Contact Links */}
         <div className="flex flex-col space-y-3.5">
-          <h4 className="text-[11px] uppercase tracking-[0.24em] font-medium text-[#F6C4C2] font-sans">
+          <h4 className="text-[11px] uppercase tracking-[0.24em] font-medium text-[#B58A58] font-sans">
             Connect
           </h4>
-          <ul className="space-y-3 text-xs sm:text-sm text-[#FFFAF1]/85 font-sans font-light">
+          <ul className="space-y-3 text-xs sm:text-sm text-[#FFF9F2]/85 font-sans font-light">
             <li>
               <a
                 href={getWhatsAppLink("Hi AaaS! I'd like to ask about your crochet collections.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat with AaaS on WhatsApp"
-                className="flex items-center space-x-2.5 hover:text-[#EC8D99] transition-colors duration-200 group"
+                className="flex items-center space-x-2.5 hover:text-[#D99B8A] transition-colors duration-200 group"
               >
-                <MessageCircle size={15} className="text-[#FFFAF1] group-hover:text-[#EC8D99] group-hover:scale-110 transition-transform" />
+                <MessageCircle size={15} className="text-[#FFF9F2] group-hover:text-[#D99B8A] group-hover:scale-110 transition-transform" />
                 <span>WhatsApp Direct</span>
               </a>
             </li>
@@ -83,9 +83,9 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow AaaS on Instagram"
-                className="flex items-center space-x-2.5 hover:text-[#EC8D99] transition-colors duration-200 group"
+                className="flex items-center space-x-2.5 hover:text-[#D99B8A] transition-colors duration-200 group"
               >
-                <Instagram size={15} className="text-[#FFFAF1] group-hover:text-[#EC8D99] group-hover:scale-110 transition-transform" />
+                <Instagram size={15} className="text-[#FFF9F2] group-hover:text-[#D99B8A] group-hover:scale-110 transition-transform" />
                 <span>{contactConfig.instagramHandle}</span>
               </a>
             </li>
@@ -93,9 +93,9 @@ export default function Footer() {
               <a
                 href={`mailto:${contactConfig.supportEmail}`}
                 aria-label="Email AaaS"
-                className="flex items-center space-x-2.5 hover:text-[#EC8D99] transition-colors duration-200 group"
+                className="flex items-center space-x-2.5 hover:text-[#D99B8A] transition-colors duration-200 group"
               >
-                <Mail size={15} className="text-[#FFFAF1] group-hover:text-[#EC8D99] group-hover:scale-110 transition-transform" />
+                <Mail size={15} className="text-[#FFF9F2] group-hover:text-[#D99B8A] group-hover:scale-110 transition-transform" />
                 <span>{contactConfig.supportEmail}</span>
               </a>
             </li>
@@ -105,13 +105,13 @@ export default function Footer() {
       </div>
 
       {/* Bottom Sub-bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mt-12 md:mt-16 pt-6 border-t border-[#405F4C]/40 flex flex-col sm:flex-row justify-between items-center text-[11px] text-[#FFFAF1]/60 font-sans space-y-3 sm:space-y-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mt-12 md:mt-16 pt-6 border-t border-[#722F37]/50 flex flex-col sm:flex-row justify-between items-center text-[11px] text-[#FFF9F2]/60 font-sans space-y-3 sm:space-y-0">
         <p>&copy; {currentYear} AaaS Studio. All rights reserved.</p>
         <div className="flex flex-wrap gap-4 sm:gap-6 justify-center">
-          <Link href="/privacy-policy" className="hover:text-[#EC8D99] transition-colors">Privacy Policy</Link>
-          <Link href="/terms-and-conditions" className="hover:text-[#EC8D99] transition-colors">Terms of Service</Link>
-          <Link href="/shipping-policy" className="hover:text-[#EC8D99] transition-colors">Shipping Policy</Link>
-          <Link href="/refund-policy" className="hover:text-[#EC8D99] transition-colors">Refunds & Returns</Link>
+          <Link href="/privacy-policy" className="hover:text-[#D99B8A] transition-colors">Privacy Policy</Link>
+          <Link href="/terms-and-conditions" className="hover:text-[#D99B8A] transition-colors">Terms of Service</Link>
+          <Link href="/shipping-policy" className="hover:text-[#D99B8A] transition-colors">Shipping Policy</Link>
+          <Link href="/refund-policy" className="hover:text-[#D99B8A] transition-colors">Refunds & Returns</Link>
         </div>
       </div>
     </footer>

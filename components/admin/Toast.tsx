@@ -46,25 +46,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -16, scale: 0.98, transition: { duration: 0.2 } }}
-              className={`p-4 border rounded-xl flex items-start gap-3 shadow-md transition-all bg-[#FFFAF1] ${
+              className={`p-4 border rounded-xl flex items-start gap-3 shadow-md transition-all bg-[#FFF9F2] ${
                 toast.type === "success"
-                  ? "border-[#405F4C]/40 text-[#25382E]"
+                  ? "border-[#52734D]/40 text-[#541B1B]"
                   : toast.type === "error"
-                  ? "border-[#C96A6A]/50 text-[#25382E]"
-                  : "border-[#EC8D99]/50 text-[#25382E]"
+                  ? "border-[#A83232]/50 text-[#541B1B]"
+                  : "border-[#B58A58]/50 text-[#541B1B]"
               }`}
             >
-              {toast.type === "success" && <CheckCircle size={16} className="shrink-0 mt-0.5 text-[#405F4C]" />}
-              {toast.type === "error" && <AlertCircle size={16} className="shrink-0 mt-0.5 text-[#C96A6A]" />}
-              {toast.type === "info" && <Info size={16} className="shrink-0 mt-0.5 text-[#EC8D99]" />}
+              {toast.type === "success" && <CheckCircle size={16} className="shrink-0 mt-0.5 text-[#52734D]" />}
+              {toast.type === "error" && <AlertCircle size={16} className="shrink-0 mt-0.5 text-[#A83232]" />}
+              {toast.type === "info" && <Info size={16} className="shrink-0 mt-0.5 text-[#B58A58]" />}
               
-              <div className="flex-grow text-xs font-sans font-medium text-[#25382E] leading-relaxed">
+              <div className="flex-grow text-xs font-sans font-medium text-[#541B1B] leading-relaxed">
                 {toast.message}
               </div>
               
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-[#5C745F] hover:text-[#25382E] transition-colors cursor-pointer"
+                className="text-[#8B454B] hover:text-[#541B1B] transition-colors cursor-pointer"
               >
                 <X size={14} />
               </button>

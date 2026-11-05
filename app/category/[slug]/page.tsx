@@ -62,7 +62,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   ]);
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-28 min-h-screen bg-[#F8F2E7]">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-28 min-h-screen bg-[#F8EEE2]">
       {/* Breadcrumb JSON-LD Structured Data */}
       <script
         type="application/ld+json"
@@ -70,17 +70,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Category Header */}
-        <div className="max-w-2xl border-b border-[#E5DACB] pb-6 md:pb-10 mb-10 md:mb-14 space-y-3 font-sans">
+        <div className="max-w-2xl border-b border-[#D9C4B0] pb-6 md:pb-10 mb-10 md:mb-14 space-y-3 font-sans">
           <div className="inline-flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99]" />
-            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B58A58]" />
+            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B]">
               Atelier Collection
             </span>
           </div>
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl tracking-tight text-[#25382E] font-light">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl tracking-tight text-[#541B1B] font-light">
             {category.name}
           </h1>
-          <p className="text-[#5C745F] font-light leading-relaxed text-sm sm:text-base">
+          <p className="text-[#3B241C] font-light leading-relaxed text-sm sm:text-base opacity-85">
             {category.description}
           </p>
         </div>

@@ -48,21 +48,21 @@ export default function WhyHandmade() {
   };
 
   return (
-    <section className="py-20 md:py-28 bg-[#F8F2E7] border-b border-[#E5DACB]/70">
+    <section className="py-20 md:py-28 bg-[#F8EEE2] border-b border-[#D9C4B0]/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         
         {/* Header */}
         <div className="text-center max-w-xl mx-auto mb-12 md:mb-16 space-y-3">
           <div className="inline-flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F5C842]" />
-            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F] font-sans">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B58A58]" />
+            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B] font-sans">
               Artisan Philosophy
             </span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#25382E]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#541B1B]">
             Why Choose Handmade?
           </h2>
-          <p className="text-[#5C745F] font-sans font-light leading-relaxed text-sm sm:text-base">
+          <p className="text-[#3B241C] font-sans font-light leading-relaxed text-sm sm:text-base opacity-85">
             Handcrafted pieces carry an intangible warmth and quiet luxury that mass-produced items can never replicate.
           </p>
         </div>
@@ -81,15 +81,15 @@ export default function WhyHandmade() {
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className="bg-[#FFFAF1] border border-[#E5DACB] p-6 sm:p-8 rounded-2xl transition-all duration-300 hover:border-[#EC8D99]/60 hover:shadow-[0_8px_24px_rgba(37,56,46,0.06)] hover:-translate-y-0.5 group"
+                className="bg-[#FFF9F2] border border-[#D9C4B0] p-6 sm:p-8 rounded-2xl transition-all duration-300 hover:border-[#722F37]/60 hover:shadow-[0_8px_24px_rgba(84,27,27,0.06)] hover:-translate-y-0.5 group"
               >
-                <div className="w-11 h-11 rounded-xl bg-[#F6C4C2]/35 border border-[#F6C4C2]/60 flex items-center justify-center mb-5 text-[#25382E] group-hover:bg-[#25382E] group-hover:text-[#FFFAF1] group-hover:border-[#25382E] transition-colors duration-300">
+                <div className="w-11 h-11 rounded-xl bg-[#EBCDB8]/40 border border-[#EBCDB8]/70 flex items-center justify-center mb-5 text-[#541B1B] group-hover:bg-[#541B1B] group-hover:text-[#FFF9F2] group-hover:border-[#541B1B] transition-colors duration-300">
                   <Icon size={19} />
                 </div>
-                <h3 className="font-serif text-xl tracking-wide text-[#25382E] mb-2 font-medium">
+                <h3 className="font-serif text-xl tracking-wide text-[#541B1B] mb-2 font-medium">
                   {feature.title}
                 </h3>
-                <p className="text-[#5C745F] text-xs sm:text-sm leading-relaxed font-sans font-light">
+                <p className="text-[#3B241C] text-xs sm:text-sm leading-relaxed font-sans font-light opacity-80">
                   {feature.description}
                 </p>
               </motion.div>

@@ -24,7 +24,7 @@ export default function AdminLayout({
   if (pathname === "/admin/login") {
     return (
       <ToastProvider>
-        <div className="min-h-screen bg-[#F8F2E7] flex items-center justify-center p-4 font-sans text-[#25382E]">
+        <div className="min-h-screen bg-[#F8EEE2] flex items-center justify-center p-4 font-sans text-[#3B241C]">
           {children}
         </div>
       </ToastProvider>
@@ -33,16 +33,16 @@ export default function AdminLayout({
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[#F8F2E7] flex text-[#25382E] font-sans">
+      <div className="min-h-screen bg-[#F8EEE2] flex text-[#3B241C] font-sans">
         
         {/* Mobile Header */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#FFFAF1] border-b border-[#E5DACB] z-40 px-6 flex items-center justify-between">
-          <Link href="/admin" className="font-serif text-lg font-light tracking-wide text-[#25382E]">
-            AaaS <span className="text-[#EC8D99] font-light italic font-sans text-xs">Atelier Admin</span>
+        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#FFF9F2] border-b border-[#D9C4B0] z-40 px-6 flex items-center justify-between">
+          <Link href="/admin" className="font-serif text-lg font-light tracking-wide text-[#541B1B]">
+            AaaS <span className="text-[#B58A58] font-light italic font-sans text-xs">Atelier Admin</span>
           </Link>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 text-[#5C745F] hover:text-[#25382E] transition-colors cursor-pointer"
+            className="p-2 text-[#8B454B] hover:text-[#541B1B] transition-colors cursor-pointer"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -51,26 +51,26 @@ export default function AdminLayout({
         {/* Sidebar backdrop for mobile */}
         {sidebarOpen && (
           <div
-            className="lg:hidden fixed inset-0 bg-[#25382E]/30 backdrop-blur-xs z-40"
+            className="lg:hidden fixed inset-0 bg-[#3B1018]/40 backdrop-blur-xs z-40"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <aside
-          className={`fixed lg:sticky top-0 left-0 bottom-0 w-64 bg-[#FFFAF1] border-r border-[#E5DACB] z-50 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed lg:sticky top-0 left-0 bottom-0 w-64 bg-[#FFF9F2] border-r border-[#D9C4B0] z-50 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } h-screen`}
         >
           <div>
             {/* Sidebar Logo Header */}
-            <div className="h-20 border-b border-[#E5DACB] px-6 flex items-center justify-between">
-              <Link href="/admin" className="font-serif text-xl font-light tracking-wide text-[#25382E]">
-                AaaS <span className="text-[#EC8D99] font-light italic font-sans text-xs">Atelier</span>
+            <div className="h-20 border-b border-[#D9C4B0] px-6 flex items-center justify-between">
+              <Link href="/admin" className="font-serif text-xl font-light tracking-wide text-[#541B1B]">
+                AaaS <span className="text-[#B58A58] font-light italic font-sans text-xs">Atelier</span>
               </Link>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-1 text-[#5C745F] hover:text-[#25382E] cursor-pointer"
+                className="lg:hidden p-1 text-[#8B454B] hover:text-[#541B1B] cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -92,8 +92,8 @@ export default function AdminLayout({
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs uppercase tracking-[0.15em] font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-[#25382E] text-[#FFFAF1]"
-                        : "text-[#5C745F] hover:bg-[#F8F2E7] hover:text-[#25382E]"
+                        ? "bg-[#541B1B] text-[#FFF9F2]"
+                        : "text-[#3B241C] hover:bg-[#F8EEE2] hover:text-[#541B1B]"
                     }`}
                   >
                     <Icon size={16} />
@@ -105,7 +105,7 @@ export default function AdminLayout({
           </div>
 
           {/* Sidebar Footer Link back to public site */}
-          <div className="p-4 border-t border-[#E5DACB] space-y-2">
+          <div className="p-4 border-t border-[#D9C4B0] space-y-2">
             <button
               onClick={async () => {
                 try {
@@ -117,13 +117,13 @@ export default function AdminLayout({
                   console.error("Logout failed:", err);
                 }
               }}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-[#EC8D99]/40 hover:bg-[#EC8D99]/10 text-[10px] font-medium text-[#25382E] tracking-[0.2em] uppercase transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-[#A83232]/40 hover:bg-[#A83232]/10 text-[10px] font-medium text-[#A83232] tracking-[0.2em] uppercase transition-colors cursor-pointer"
             >
               <span>Log Out</span>
             </button>
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-[#E5DACB] hover:bg-[#F8F2E7] text-[10px] font-medium text-[#5C745F] hover:text-[#25382E] tracking-[0.2em] uppercase transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-[#D9C4B0] hover:bg-[#F8EEE2] text-[10px] font-medium text-[#8B454B] hover:text-[#541B1B] tracking-[0.2em] uppercase transition-colors"
             >
               <ArrowLeft size={13} />
               <span>Back to Boutique</span>

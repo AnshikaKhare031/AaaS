@@ -67,32 +67,32 @@ export default function CTASection() {
   ];
 
   return (
-    <section id="contact" className="py-20 md:py-32 bg-[#F8F2E7] relative overflow-hidden scroll-mt-20 border-t border-[#E5DACB]/80">
+    <section id="contact" className="py-20 md:py-32 bg-[#F8EEE2] relative overflow-hidden scroll-mt-20 border-t border-[#D9C4B0]/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative z-10">
         
-        {/* Playful & Sophisticated Blush Pink Newsletter Block per prompt */}
+        {/* Blush Beige Newsletter Block */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="bg-[#F6C4C2] rounded-3xl p-8 sm:p-12 md:p-14 mb-20 md:mb-24 relative overflow-hidden border border-[#EC8D99]/40 shadow-xs"
+          className="bg-[#EBCDB8] rounded-3xl p-8 sm:p-12 md:p-14 mb-20 md:mb-24 relative overflow-hidden border border-[#D9C4B0] shadow-xs"
         >
-          {/* Sunny Yellow playful star accents */}
-          <div className="absolute top-6 right-8 text-[#F5C842] text-xl select-none" aria-hidden="true">✦</div>
-          <div className="absolute bottom-6 left-8 text-[#F5C842] text-lg select-none" aria-hidden="true">✦</div>
+          {/* Antique Gold subtle star accents */}
+          <div className="absolute top-6 right-8 text-[#B58A58] text-xl select-none" aria-hidden="true">✦</div>
+          <div className="absolute bottom-6 left-8 text-[#B58A58] text-lg select-none" aria-hidden="true">✦</div>
           
           <div className="max-w-2xl mx-auto text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFFAF1]/60 text-[10px] tracking-[0.24em] uppercase text-[#25382E] font-medium font-sans">
-              <span className="text-[#F5C842]">✦</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF9F2]/80 text-[10px] tracking-[0.24em] uppercase text-[#541B1B] font-medium font-sans">
+              <span className="text-[#B58A58]">✦</span>
               <span>Atelier Dispatch</span>
             </div>
             
-            <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#25382E] font-light tracking-tight">
+            <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#541B1B] font-light tracking-tight">
               Stories from the Atelier
             </h3>
             
-            <p className="text-sm sm:text-base text-[#25382E]/90 font-sans font-light leading-relaxed max-w-lg mx-auto">
+            <p className="text-sm sm:text-base text-[#3B241C] font-sans font-light leading-relaxed max-w-lg mx-auto opacity-90">
               Subscribe to receive intimate updates on new one-of-a-kind crochet drops, seasonal yarn colorways, and artisan notes.
             </p>
 
@@ -103,11 +103,11 @@ export default function CTASection() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="flex-grow px-5 py-3.5 rounded-full bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F] border border-[#E5DACB] focus:outline-none focus:border-[#EC8D99] transition-colors font-sans shadow-2xs"
+                className="flex-grow px-5 py-3.5 rounded-full bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/70 border border-[#D9C4B0] focus:outline-none focus:border-[#541B1B] transition-colors font-sans shadow-2xs"
               />
               <button
                 type="submit"
-                className="px-7 py-3.5 rounded-full bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium uppercase tracking-[0.18em] font-sans transition-all duration-200 shrink-0 cursor-pointer shadow-xs hover:shadow-md"
+                className="px-7 py-3.5 rounded-full bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium uppercase tracking-[0.18em] font-sans transition-all duration-200 shrink-0 cursor-pointer shadow-xs hover:shadow-md"
               >
                 {isSubscribed ? (
                   <span className="flex items-center gap-1.5 justify-center">
@@ -130,17 +130,17 @@ export default function CTASection() {
           className="space-y-4 flex flex-col items-center text-center mb-12 md:mb-16"
         >
           <div className="inline-flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F5C842]" />
-            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F] font-sans">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B58A58]" />
+            <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B] font-sans">
               Direct Atelier Contact
             </span>
           </div>
           
-          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-[#25382E] leading-[1.12]">
+          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-[#541B1B] leading-[1.12]">
             CONNECT WITH OUR ATELIER
           </h2>
           
-          <p className="text-[#5C745F] text-sm sm:text-base max-w-xl leading-relaxed font-sans font-light">
+          <p className="text-[#3B241C] text-sm sm:text-base max-w-xl leading-relaxed font-sans font-light opacity-85">
             Have questions about our collections, sizing, or caring for your handmade pieces? We are always happy to chat directly.
           </p>
         </motion.div>
@@ -160,25 +160,25 @@ export default function CTASection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: idx * 0.12 }}
-                className="group block p-6 md:p-8 bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl transition-all duration-300 hover:border-[#EC8D99] hover:shadow-[0_8px_24px_rgba(37,56,46,0.06)] hover:-translate-y-0.5 active:translate-y-0"
+                className="group block p-6 md:p-8 bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl transition-all duration-300 hover:border-[#541B1B] hover:shadow-[0_8px_24px_rgba(84,27,27,0.06)] hover:-translate-y-0.5 active:translate-y-0"
               >
                 <div className="flex flex-col h-full justify-between space-y-6">
                   <div className="space-y-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-[#F8F2E7] border border-[#E5DACB]/60 flex items-center justify-center text-[#25382E] group-hover:bg-[#25382E] group-hover:text-[#FFFAF1] group-hover:border-[#25382E] transition-colors duration-300">
+                    <div className="w-11 h-11 rounded-xl bg-[#F8EEE2] border border-[#D9C4B0]/60 flex items-center justify-center text-[#541B1B] group-hover:bg-[#541B1B] group-hover:text-[#FFF9F2] group-hover:border-[#541B1B] transition-colors duration-300">
                       <Icon size={19} />
                     </div>
                     <div>
-                      <h3 className="font-serif text-xl font-medium text-[#25382E]">{method.title}</h3>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5C745F] font-sans font-medium mt-0.5">{method.label}</p>
+                      <h3 className="font-serif text-xl font-medium text-[#541B1B]">{method.title}</h3>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#8B454B] font-sans font-medium mt-0.5">{method.label}</p>
                     </div>
-                    <p className="text-[#5C745F] text-xs sm:text-sm font-sans font-light leading-relaxed">
+                    <p className="text-[#3B241C] text-xs sm:text-sm font-sans font-light leading-relaxed opacity-80">
                       {method.description}
                     </p>
                   </div>
 
-                  <div className="pt-2 flex items-center text-xs font-sans font-medium uppercase tracking-[0.16em] text-[#25382E] group-hover:text-[#EC8D99] transition-colors duration-200">
+                  <div className="pt-2 flex items-center text-xs font-sans font-medium uppercase tracking-[0.16em] text-[#541B1B] group-hover:text-[#722F37] transition-colors duration-200">
                     <span>{method.btnText}</span>
-                    <span className="ml-1.5 transform transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+                    <span className="ml-1.5 transform transition-transform duration-200 group-hover:translate-x-1 text-[#B58A58]">&rarr;</span>
                   </div>
                 </div>
               </motion.a>
@@ -186,7 +186,7 @@ export default function CTASection() {
           })}
         </div>
 
-        <p className="text-[10px] uppercase tracking-[0.22em] text-[#5C745F]/70 text-center pt-10 md:pt-14 font-sans font-medium">
+        <p className="text-[10px] uppercase tracking-[0.22em] text-[#8B454B]/80 text-center pt-10 md:pt-14 font-sans font-medium">
           Thoughtfully crafted • Inquiries answered within 24 hours
         </p>
       </div>

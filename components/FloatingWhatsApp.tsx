@@ -26,7 +26,7 @@ export default function FloatingWhatsApp() {
   return (
     <div className="fixed bottom-6 right-6 z-50 group">
       {/* Tooltip */}
-      <span className="absolute right-14 top-1/2 -translate-y-1/2 bg-[#25382E] text-[#FFFAF1] text-[10px] font-medium tracking-[0.2em] uppercase px-3.5 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-md font-sans border border-[#25382E]">
+      <span className="absolute right-14 top-1/2 -translate-y-1/2 bg-[#541B1B] text-[#FFF9F2] text-[10px] font-medium tracking-[0.2em] uppercase px-3.5 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-md font-sans border border-[#541B1B]">
         Chat with Artisan
       </span>
 
@@ -36,12 +36,12 @@ export default function FloatingWhatsApp() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with AaaS on WhatsApp"
-        className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFFAF1] border border-[#E5DACB] shadow-[0_6px_20px_rgba(37,56,46,0.12)] hover:border-[#EC8D99] transition-all duration-300 hover:scale-105 active:scale-95 group cursor-pointer"
+        className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFF9F2] border border-[#D9C4B0] shadow-[0_6px_20px_rgba(84,27,27,0.12)] hover:border-[#541B1B] transition-all duration-300 hover:scale-105 active:scale-95 group cursor-pointer"
       >
         <svg
           role="img"
           viewBox="0 0 24 24"
-          className="w-5 h-5 text-[#25382E] group-hover:text-[#EC8D99] transition-colors duration-200"
+          className="w-5 h-5 text-[#541B1B] group-hover:text-[#722F37] transition-colors duration-200"
           fill="currentColor"
         >
           <title>WhatsApp</title>

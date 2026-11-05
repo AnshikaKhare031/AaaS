@@ -107,7 +107,7 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
   ]);
 
   return (
-    <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-[#F8F2E7]">
+    <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-[#F8EEE2]">
       {/* Product JSON-LD Structured Data */}
       <script
         type="application/ld+json"
@@ -122,14 +122,14 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
         {/* Back Link */}
         <Link
           href={categoryPath}
-          className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] font-medium mb-6 md:mb-10 transition-colors duration-200 group font-sans"
+          className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#8B454B] hover:text-[#541B1B] font-medium mb-6 md:mb-10 transition-colors duration-200 group font-sans"
         >
           <ChevronLeft size={13} className="group-hover:-translate-x-0.5 transition-transform" />
           <span>Back to {canonicalCategory}</span>
         </Link>
 
         {/* Product Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start pb-12 md:pb-20 border-b border-[#E5DACB]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start pb-12 md:pb-20 border-b border-[#D9C4B0]">
           {/* Left: Product Images Frame */}
           <div className="lg:col-span-6 relative lg:sticky lg:top-28 self-start w-full">
             <ProductImage src={product.image_url} alt={productName} />
@@ -139,21 +139,21 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
           <div className="lg:col-span-6 flex flex-col space-y-6 md:space-y-8 font-sans">
             {/* Header info */}
             <div className="space-y-3 order-1 lg:order-1">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#5C745F] font-medium">
-                <span className="text-[#EC8D99]">{canonicalCategory}</span>
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#8B454B] font-medium">
+                <span className="text-[#541B1B] font-semibold">{canonicalCategory}</span>
                 <span>•</span>
-                <span className="text-[#5C745F]">100% Handcrafted</span>
+                <span className="text-[#8B454B]">100% Handcrafted</span>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl tracking-tight text-[#25382E] leading-[1.12] font-light">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl tracking-tight text-[#541B1B] leading-[1.12] font-light">
                 {productName}
               </h1>
 
               <div className="flex items-center gap-4 pt-1">
-                <span className="font-serif text-2xl lg:text-3xl font-semibold text-[#25382E]">
+                <span className="font-serif text-2xl lg:text-3xl font-semibold text-[#541B1B]">
                   ₹{product.price.toLocaleString("en-IN")}
                 </span>
-                <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-[#25382E] bg-[#F6C4C2]/50 px-3 py-1 rounded-full">
+                <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-[#541B1B] bg-[#EBCDB8]/50 px-3 py-1 rounded-full">
                   Made to Order
                 </span>
               </div>
@@ -162,7 +162,7 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
             {/* Story & Details */}
             <div className="order-3">
               <CollapsibleSection title="Artisan Story & Details">
-                <p className="text-[#5C745F] text-sm sm:text-base font-light leading-relaxed whitespace-pre-line">
+                <p className="text-[#3B241C] text-sm sm:text-base font-light leading-relaxed whitespace-pre-line opacity-85">
                   {product.description}
                 </p>
               </CollapsibleSection>
@@ -173,17 +173,17 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
               <ProductPurchaseSection product={product} />
 
               {/* Trust factors */}
-              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-[#E5DACB] text-[10px] uppercase tracking-[0.18em] text-[#5C745F] text-center font-medium">
+              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-[#D9C4B0] text-[10px] uppercase tracking-[0.18em] text-[#8B454B] text-center font-medium">
                 <div className="flex flex-col items-center gap-1.5">
-                  <Shield size={15} className="text-[#5C745F]" />
+                  <Shield size={15} className="text-[#8B454B]" />
                   <span>Secure Order</span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
-                  <Sparkles size={15} className="text-[#F5C842]" />
+                  <Sparkles size={15} className="text-[#B58A58]" />
                   <span>Artisan Craft</span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
-                  <RefreshCw size={15} className="text-[#5C745F]" />
+                  <RefreshCw size={15} className="text-[#8B454B]" />
                   <span>Made to Order</span>
                 </div>
               </div>
@@ -196,12 +196,12 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
           <div className="pt-14 md:pt-20 space-y-8 md:space-y-10">
             <div className="text-center max-w-xl mx-auto space-y-2 font-sans">
               <div className="inline-flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#EC8D99]" />
-                <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#5C745F]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B58A58]" />
+                <span className="text-[10px] uppercase tracking-[0.24em] font-medium text-[#8B454B]">
                   Artisan Recommendations
                 </span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-[#25382E] font-light">
+              <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-[#541B1B] font-light">
                 You May Also Cherish
               </h2>
             </div>

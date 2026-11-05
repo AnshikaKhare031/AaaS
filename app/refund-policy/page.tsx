@@ -31,7 +31,7 @@ export default function RefundPolicyPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <PolicyLayout title="Refund & Cancellation Policy" lastUpdated={lastUpdatedDate}>
-      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#5C745F]">
+      <div className="space-y-6 font-sans text-sm md:text-base leading-relaxed text-[#3B241C]/85">
         
         <p>
           At AaaS, we put our heart into creating unique handmade crochet products for you. Because of the bespoke, artisanal nature of our creations, we follow a balanced return, cancellation, and refund process.
@@ -39,7 +39,7 @@ export default function RefundPolicyPage() {
 
         {/* Section 1 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             1. Order Cancellations
           </h3>
           <p>
@@ -52,7 +52,7 @@ export default function RefundPolicyPage() {
 
         {/* Section 2 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             2. Damaged or Incorrect Products
           </h3>
           <p>
@@ -67,7 +67,7 @@ export default function RefundPolicyPage() {
 
         {/* Section 3 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             3. Customized & Personalized Items
           </h3>
           <p>
@@ -77,7 +77,7 @@ export default function RefundPolicyPage() {
 
         {/* Section 4 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             4. Nature of Handmade Art
           </h3>
           <p>
@@ -87,7 +87,7 @@ export default function RefundPolicyPage() {
 
         {/* Section 5 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             5. Refund Process & Timelines
           </h3>
           <p>
@@ -100,15 +100,15 @@ export default function RefundPolicyPage() {
 
         {/* Section 6 */}
         <div className="space-y-2">
-          <h3 className="font-serif font-bold text-[#25382E] text-lg md:text-xl border-b border-[#E5DACB] pb-2">
+          <h3 className="font-serif font-bold text-[#541B1B] text-lg md:text-xl border-b border-[#D9C4B0] pb-2">
             6. Get In Touch
           </h3>
           <p>
             For refund queries or to submit proof of damage, please reach out to us:
           </p>
-          <div className="bg-[#F8F2E7] p-4 rounded-xl border border-[#E5DACB] mt-2 space-y-1 font-sans text-sm">
-            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline hover:text-[#EC8D99]">{contactConfig.supportEmail}</a></p>
-            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EC8D99]">{contactConfig.instagramHandle}</a></p>
+          <div className="bg-[#F8EEE2] p-4 rounded-xl border border-[#D9C4B0] mt-2 space-y-1 font-sans text-sm">
+            <p><strong>Email:</strong> <a href={`mailto:${contactConfig.supportEmail}`} className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.supportEmail}</a></p>
+            <p><strong>Instagram:</strong> <a href={contactConfig.instagramUrl} target="_blank" rel="noopener noreferrer" className="underline text-[#541B1B] hover:text-[#722F37]">{contactConfig.instagramHandle}</a></p>
           </div>
         </div>
 

@@ -25,19 +25,19 @@ export default function CollapsibleSection({ title, children }: CollapsibleSecti
   const showContent = !isMobile || isOpen;
 
   return (
-    <div className="border-b border-[#E5DACB] pb-3.5 lg:pb-0 lg:border-none">
+    <div className="border-b border-[#D9C4B0] pb-3.5 lg:pb-0 lg:border-none">
       <button
         onClick={() => isMobile && setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-2 lg:py-0 text-left cursor-pointer lg:cursor-default lg:pointer-events-none focus:outline-none"
         disabled={!isMobile}
       >
-        <h3 className="text-[11px] uppercase tracking-[0.2em] font-medium text-[#25382E] font-sans">
+        <h3 className="text-[11px] uppercase tracking-[0.2em] font-medium text-[#541B1B] font-sans">
           {title}
         </h3>
         {isMobile && (
           <ChevronDown
             size={14}
-            className={`text-[#5C745F] transition-transform duration-300 ${
+            className={`text-[#8B454B] transition-transform duration-300 ${
               isOpen ? "rotate-180" : ""
             }`}
           />

@@ -22,11 +22,11 @@ function ResetPasswordContent() {
 
   if (authLoading) {
     return (
-      <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen flex items-center justify-center text-[#25382E]">
-        <div className="w-full max-w-md bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl p-8 shadow-xs text-center space-y-4 font-sans">
-          <Loader2 size={24} className="mx-auto animate-spin text-[#EC8D99]" />
-          <h1 className="font-serif text-3xl text-[#25382E] font-light">Verifying Session</h1>
-          <p className="text-xs text-[#5C745F]">Please wait while we confirm your recovery credentials.</p>
+      <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen flex items-center justify-center text-[#3B241C]">
+        <div className="w-full max-w-md bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl p-8 shadow-xs text-center space-y-4 font-sans">
+          <Loader2 size={24} className="mx-auto animate-spin text-[#541B1B]" />
+          <h1 className="font-serif text-3xl text-[#541B1B] font-light">Verifying Session</h1>
+          <p className="text-xs text-[#8B454B]">Please wait while we confirm your recovery credentials.</p>
         </div>
       </section>
     );
@@ -66,18 +66,18 @@ function ResetPasswordContent() {
   };
 
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8F2E7] min-h-screen text-[#25382E]">
+    <section className="pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2] min-h-screen text-[#3B241C]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-12">
-        <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#5C745F] hover:text-[#25382E] transition-colors mb-8 font-sans">
+        <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#8B454B] hover:text-[#541B1B] transition-colors mb-8 font-sans">
           <ArrowLeft size={12} />
           Back to Sign In
         </Link>
 
-        <div className="bg-[#FFFAF1] border border-[#E5DACB] rounded-2xl shadow-[0_2px_16px_rgba(37,56,46,0.03)] p-6 sm:p-8 md:p-10 max-w-xl mx-auto">
+        <div className="bg-[#FFF9F2] border border-[#D9C4B0] rounded-2xl shadow-[0_2px_16px_rgba(84,27,27,0.03)] p-6 sm:p-8 md:p-10 max-w-xl mx-auto">
           <div className="space-y-2 mb-8">
-            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#EC8D99] font-sans">Patron Credentials</span>
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#25382E] font-light">Set a New Password</h1>
-            <p className="text-xs text-[#5C745F] font-sans font-light">
+            <span className="text-[10px] uppercase tracking-[0.25em] font-medium text-[#8B454B] font-sans">Patron Credentials</span>
+            <h1 className="font-serif text-3xl sm:text-4xl text-[#541B1B] font-light">Set a New Password</h1>
+            <p className="text-xs text-[#8B454B] font-sans font-light">
               {hasSession
                 ? "Choose a new secure password for your atelier account."
                 : "Open this page from your email recovery link to continue."}
@@ -86,43 +86,43 @@ function ResetPasswordContent() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="reset-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="reset-password" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 New Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="reset-password"
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="At least 8 characters"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label htmlFor="reset-confirm" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#5C745F]">
+              <label htmlFor="reset-confirm" className="text-[11px] uppercase tracking-[0.15em] font-medium text-[#8B454B]">
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-3.5 text-[#5C745F]/50" />
+                <Lock size={16} className="absolute left-4 top-3.5 text-[#8B454B]/50" />
                 <input
                   id="reset-confirm"
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   placeholder="Repeat your password"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E5DACB] bg-[#FFFAF1] text-sm text-[#25382E] placeholder-[#5C745F]/40 focus:outline-none focus:border-[#EC8D99] focus:ring-1 focus:ring-[#EC8D99] transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#D9C4B0] bg-[#FFF9F2] text-sm text-[#3B241C] placeholder-[#8B454B]/40 focus:outline-none focus:border-[#541B1B] focus:ring-1 focus:ring-[#541B1B] transition-all"
                   required
                 />
               </div>
             </div>
 
             {message && (
-              <div className="rounded-xl border border-[#EC8D99]/40 bg-[#EC8D99]/10 px-4 py-3 text-xs text-[#25382E] font-sans">
+              <div className="rounded-xl border border-[#D9C4B0] bg-[#EBCDB8]/20 px-4 py-3 text-xs text-[#541B1B] font-sans">
                 {message}
               </div>
             )}
@@ -130,7 +130,7 @@ function ResetPasswordContent() {
             <button
               type="submit"
               disabled={isLoading || !hasSession}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#25382E] hover:bg-[#405F4C] text-[#FFFAF1] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#541B1B] hover:bg-[#722F37] text-[#FFF9F2] text-xs font-medium tracking-[0.2em] uppercase rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 font-sans"
             >
               {isLoading ? (
                 <>
@@ -150,7 +150,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-background" />}>
+    <Suspense fallback={<div className="min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 bg-[#F8EEE2]" />}>
       <ResetPasswordContent />
     </Suspense>
   );
