@@ -38,6 +38,7 @@ export async function getCustomerSession(): Promise<CustomerSessionPayload | nul
 }
 
 export async function setCustomerSession(_payload?: CustomerSessionPayload) {
+  void _payload;
   // Supabase SSR automatically persists session cookies
 }
 

@@ -41,22 +41,30 @@ interface RazorpaySuccessResponse {
   razorpay_signature?: string;
 }
 
+interface RazorpayFailureResponse {
+  error?: {
+    code?: string;
+    description?: string;
+    source?: string;
+    step?: string;
+    reason?: string;
+    metadata?: {
+      payment_id?: string;
+      order_id?: string;
+      [key: string]: unknown;
+    };
+  };
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+}
+
 interface RazorpayWindow extends Window {
   Razorpay?: new (options: Record<string, unknown>) => {
     open: () => void;
     close?: () => void;
     on: (
       event: string,
-      callback: (response: {
-        error?: {
-          code?: string;
-          description?: string;
-          source?: string;
-          step?: string;
-          reason?: string;
-          metadata?: Record<string, unknown>;
-        };
-      }) => void
+      callback: (response: RazorpayFailureResponse) => void | Promise<void>
     ) => void;
   };
 }
@@ -518,16 +526,23 @@ function CheckoutContent() {
             if (paymentOutcome === "failed" && latestFailureMessage) {
               setSubmitError(latestFailureMessage);
 
+              // Secondary safeguard to ensure failure status is logged in Supabase
               if (orderId) {
                 try {
-                  await fetch("/api/orders", {
-                    method: "PATCH",
+                  await fetch("/api/razorpay/payment-failed", {
+                    method: "POST",
                     headers: {
                       "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                       orderId: orderId,
-                      payment_status: "failed",
+                      orderNumber: orderNumber,
+                      razorpay_order_id: razorpayOrderId,
+                      error: {
+                        code: "CHECKOUT_MODAL_DISMISSED",
+                        description: latestFailureMessage,
+                        reason: "payment_failed_and_dismissed",
+                      },
                     }),
                   });
                 } catch (err) {
@@ -545,21 +560,21 @@ function CheckoutContent() {
 
       const rzp = new (window as unknown as RazorpayWindow).Razorpay!(options);
 
-      rzp.on("payment.failed", function (response: {
-        error?: {
-          code?: string;
-          description?: string;
-          source?: string;
-          step?: string;
-          reason?: string;
-          metadata?: Record<string, unknown>;
-        };
-      }) {
+      rzp.on("payment.failed", async function (response: RazorpayFailureResponse) {
         try {
           paymentOutcome = "failed";
           const error = response?.error;
           console.warn("Razorpay payment failure response:", error ?? response);
           setIsSubmitting(false);
+
+          const rzpPaymentId =
+            response?.razorpay_payment_id ||
+            error?.metadata?.payment_id ||
+            null;
+          const rzpOrderId =
+            response?.razorpay_order_id ||
+            error?.metadata?.order_id ||
+            razorpayOrderId;
 
           const rawDescription = error?.description?.trim();
           latestFailureMessage = rawDescription
@@ -567,6 +582,32 @@ function CheckoutContent() {
             : "Payment failed. Your order has not been marked as paid. Please try again.";
 
           setSubmitError(latestFailureMessage);
+
+          // Asynchronously send failed payment details to backend endpoint
+          try {
+            await fetch("/api/razorpay/payment-failed", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                orderId: orderId,
+                orderNumber: orderNumber,
+                razorpay_order_id: rzpOrderId,
+                razorpay_payment_id: rzpPaymentId,
+                error: {
+                  code: error?.code,
+                  description: error?.description,
+                  source: error?.source,
+                  step: error?.step,
+                  reason: error?.reason,
+                  metadata: error?.metadata,
+                },
+              }),
+            });
+          } catch (logErr) {
+            console.warn("Failed to send payment failure to backend:", logErr);
+          }
         } catch (unexpectedErr) {
           paymentOutcome = "failed";
           setIsSubmitting(false);

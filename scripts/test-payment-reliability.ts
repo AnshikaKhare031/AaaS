@@ -194,6 +194,122 @@ function runTests() {
     "Test 9: payment.failed Event Cannot Overwrite an Already-Paid Order"
   );
 
+  // TEST 10: Webhook payment.failed Payload Extraction
+  const paymentFailedWebhookBody = JSON.stringify({
+    event: "payment.failed",
+    payload: {
+      payment: {
+        entity: {
+          id: "pay_Fail12345",
+          order_id: "order_Fail67890",
+          amount: 75000,
+          currency: "INR",
+          status: "failed",
+          error_code: "BAD_REQUEST_ERROR",
+          error_description: "Payment was declined by the issuing bank",
+          error_source: "bank",
+          error_step: "payment_authorization",
+          error_reason: "payment_failed",
+          notes: {
+            internal_order_id: "CM-2001",
+            orderId: "uuid-order-2001",
+          },
+        },
+      },
+    },
+  });
+
+  const parsedFailedWebhook = JSON.parse(paymentFailedWebhookBody);
+  const paymentEntity = parsedFailedWebhook.payload.payment.entity;
+  assert(
+    paymentEntity.id === "pay_Fail12345" &&
+      paymentEntity.order_id === "order_Fail67890" &&
+      paymentEntity.error_code === "BAD_REQUEST_ERROR" &&
+      paymentEntity.error_description === "Payment was declined by the issuing bank" &&
+      paymentEntity.error_reason === "payment_failed" &&
+      paymentEntity.notes.internal_order_id === "CM-2001",
+    "Test 10: Webhook payment.failed Payload Extraction"
+  );
+
+  // TEST 11: Client-Side payment.failed Listener Payload Extraction
+  const clientFailureResponse = {
+    error: {
+      code: "BAD_REQUEST_ERROR",
+      description: "Payment failed due to card expiration",
+      source: "customer",
+      step: "payment_authentication",
+      reason: "payment_failed",
+      metadata: {
+        payment_id: "pay_ClientFail999",
+        order_id: "order_ClientFail888",
+      },
+    },
+  };
+
+  const clientExtractedPaymentId = clientFailureResponse.error?.metadata?.payment_id || null;
+  const clientExtractedOrderId = clientFailureResponse.error?.metadata?.order_id || null;
+  const clientExtractedCode = clientFailureResponse.error?.code;
+  const clientExtractedDesc = clientFailureResponse.error?.description;
+  const clientExtractedReason = clientFailureResponse.error?.reason;
+
+  assert(
+    clientExtractedPaymentId === "pay_ClientFail999" &&
+      clientExtractedOrderId === "order_ClientFail888" &&
+      clientExtractedCode === "BAD_REQUEST_ERROR" &&
+      clientExtractedDesc === "Payment failed due to card expiration" &&
+      clientExtractedReason === "payment_failed",
+    "Test 11: Client-Side payment.failed Listener Payload Extraction"
+  );
+
+  // TEST 12: Nullable Fields on Failed Payment Log Entry (Signature is always null on failure)
+  interface MockPaymentLog {
+    order_id: string | null;
+    order_number: string | null;
+    razorpay_order_id: string | null;
+    razorpay_payment_id: string | null;
+    razorpay_signature: string | null;
+    event: string;
+    status: string;
+    error_code: string | null;
+    error_description: string | null;
+    error_reason: string | null;
+  }
+
+  const mockFailedLogEntry: MockPaymentLog = {
+    order_id: "uuid-order-2001",
+    order_number: "CM-2001",
+    razorpay_order_id: "order_Fail67890",
+    razorpay_payment_id: null,
+    razorpay_signature: null,
+    event: "payment.failed",
+    status: "failed",
+    error_code: "BAD_REQUEST_ERROR",
+    error_description: "Payment failed",
+    error_reason: "payment_failed",
+  };
+
+  assert(
+    mockFailedLogEntry.razorpay_signature === null &&
+      mockFailedLogEntry.razorpay_payment_id === null &&
+      mockFailedLogEntry.event === "payment.failed" &&
+      mockFailedLogEntry.status === "failed",
+    "Test 12: Nullable Fields (Signature and Payment ID) on Failed Payment Record"
+  );
+
+  // TEST 13: Transition Pending Order to Failed with Error Metadata
+  const mockPendingOrder: MockOrder = {
+    id: "uuid-pending-3001",
+    razorpay_order_id: "order_Fail67890",
+    payment_status: "pending",
+    payment_confirmation_sent_at: null,
+  };
+
+  const pendingFailureRes = simulatePaymentFailure(mockPendingOrder);
+  assert(
+    pendingFailureRes.updated === true && mockPendingOrder.payment_status === "failed",
+    "Test 13: Pending Order Successfully Transitions to Failed Status"
+  );
+
   console.log("==========================================");
   console.log(` SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("==========================================");

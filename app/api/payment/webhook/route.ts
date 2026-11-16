@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reconcileOrderPayment } from "@/lib/payment/reconcile";
+import { recordPaymentFailure } from "@/lib/payment/record-failure";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import crypto from "crypto";
 
@@ -8,7 +9,7 @@ export async function POST(req: NextRequest) {
     // 1. Read raw request body as text BEFORE any JSON parsing
     const rawBody = await req.text();
 
-    // 2. Extract headers
+    // 2. Extract headers (case-insensitive via Web Headers API)
     const signature = req.headers.get("x-razorpay-signature");
     const eventId = req.headers.get("x-razorpay-event-id");
 
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Razorpay Webhook] Received valid event: ${event} (Event ID: ${eventId || "none"})`);
 
-    // 6. Check for duplicate event using X-Razorpay-Event-Id header
+    // 6. Check for duplicate event using X-Razorpay-Event-Id header with admin client
     if (eventId) {
       const supabase = createServerSupabaseClient();
       try {
@@ -140,30 +141,34 @@ export async function POST(req: NextRequest) {
 
     if (event === "payment.failed") {
       const paymentEntity = payload.payload?.payment?.entity;
+      const razorpayPaymentId = paymentEntity?.id;
       const razorpayOrderId = paymentEntity?.order_id;
       const orderNumber =
-        paymentEntity?.notes?.internal_order_id || paymentEntity?.notes?.order_number;
+        paymentEntity?.notes?.internal_order_id ||
+        paymentEntity?.notes?.order_number ||
+        paymentEntity?.receipt;
+      const orderId = paymentEntity?.notes?.orderId || paymentEntity?.notes?.id;
 
-      if (razorpayOrderId || orderNumber) {
-        const supabase = createServerSupabaseClient();
-        let query = supabase
-          .from("orders")
-          .update({
-            payment_status: "failed",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("payment_status", "pending");
-
-        if (orderNumber) {
-          query = query.eq("order_number", orderNumber);
-        } else if (razorpayOrderId) {
-          query = query.eq("razorpay_order_id", razorpayOrderId);
-        }
-        await query;
-      }
+      const result = await recordPaymentFailure({
+        orderId: orderId || undefined,
+        orderNumber: orderNumber || undefined,
+        razorpay_order_id: razorpayOrderId || undefined,
+        razorpay_payment_id: razorpayPaymentId || undefined,
+        razorpay_signature: null,
+        error: {
+          code: paymentEntity?.error_code || null,
+          description: paymentEntity?.error_description || null,
+          source: paymentEntity?.error_source || null,
+          step: paymentEntity?.error_step || null,
+          reason: paymentEntity?.error_reason || null,
+          metadata: paymentEntity?.error_metadata || null,
+        },
+        rawPayload: payload,
+        source: "webhook",
+      });
 
       return NextResponse.json(
-        { success: true, message: "Payment failure recorded" },
+        { success: true, message: result.message, alreadyPaid: result.alreadyPaid || false },
         { status: 200 }
       );
     }

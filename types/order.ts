@@ -50,6 +50,7 @@ export interface Order {
   payment_id?: string | null;
   razorpay_payment_id?: string | null;
   razorpay_order_id?: string | null;
+  razorpay_signature?: string | null;
   payment_confirmation_sent_at?: string | null;
 
   // Embedded items
@@ -66,4 +67,32 @@ export interface Order {
   pin_code?: string;
 }
 
+export interface PaymentLog {
+  id?: string;
+  order_id?: string | null;
+  order_number?: string | null;
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  razorpay_signature?: string | null;
+  event: string;
+  status: string;
+  amount?: number | null;
+  currency?: string | null;
+  error_code?: string | null;
+  error_description?: string | null;
+  error_source?: string | null;
+  error_step?: string | null;
+  error_reason?: string | null;
+  error_metadata?: Record<string, unknown> | null;
+  raw_payload?: Record<string, unknown> | null;
+  created_at?: string;
+}
 
+export interface PaymentFailureDetails {
+  code?: string | null;
+  description?: string | null;
+  source?: string | null;
+  step?: string | null;
+  reason?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
