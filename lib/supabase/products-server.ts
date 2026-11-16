@@ -37,8 +37,17 @@ export async function getProductsServer(): Promise<Product[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Server error fetching products:", error);
-    throw new Error(error.message);
+    console.error("Server error fetching products:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error(
+      error.details
+        ? `${error.message}: ${error.details}`
+        : error.message || "Failed to fetch products"
+    );
   }
 
   return (data || []).map(parseProduct);
@@ -56,8 +65,17 @@ export async function getActiveProductsServer(): Promise<Product[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Server error fetching active products:", error);
-    throw new Error(error.message);
+    console.error("Server error fetching active products:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error(
+      error.details
+        ? `${error.message}: ${error.details}`
+        : error.message || "Failed to fetch active products"
+    );
   }
 
   return (data || []).map(parseProduct);
