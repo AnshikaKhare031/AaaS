@@ -7,13 +7,13 @@ import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy | Crafty Mind Studio",
-  description: "Learn about our processing timelines, estimated domestic shipping times, and tracking details at Crafty Mind Studio.",
+  title: "Shipping Policy | AaaS Atelier",
+  description: "Learn about our processing timelines, estimated domestic shipping times, and tracking details at AaaS Atelier.",
   alternates: {
     canonical: getCanonicalUrl("/shipping-policy"),
   },
   openGraph: {
-    title: "Shipping Policy | Crafty Mind Studio",
+    title: "Shipping Policy | AaaS Atelier",
     description: "Read details about order processing, packing precautions, and estimated delivery dates across India.",
   },
 };

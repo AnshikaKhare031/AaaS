@@ -32,7 +32,7 @@ export default function CustomerOrderEmail({ order }: CustomerOrderEmailProps) {
       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
     },
     header: {
-      backgroundColor: "#A56A43", // Crafty Minds warm terracotta accent
+      backgroundColor: "#541B1B", // AaaS luxury burgundy
       padding: "40px 24px",
       textAlign: "center" as const,
     },
@@ -40,7 +40,7 @@ export default function CustomerOrderEmail({ order }: CustomerOrderEmailProps) {
       color: "#ffffff",
       fontSize: "28px",
       fontWeight: "bold",
-      letterSpacing: "1px",
+      letterSpacing: "2px",
       margin: 0,
       fontFamily: "'Playfair Display', Georgia, serif",
     },
@@ -137,7 +137,7 @@ export default function CustomerOrderEmail({ order }: CustomerOrderEmailProps) {
       padding: "16px 8px",
       fontSize: "16px",
       fontWeight: "bold" as const,
-      color: "#A56A43",
+      color: "#541B1B",
       textAlign: "right" as const,
     },
     footer: {
@@ -160,8 +160,8 @@ export default function CustomerOrderEmail({ order }: CustomerOrderEmailProps) {
       <div style={styles.container}>
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.logo}>Crafty Minds</h1>
-          <div style={styles.logoSub}>Handmade with Love</div>
+          <h1 style={styles.logo}>AaaS Atelier</h1>
+          <div style={styles.logoSub}>Luxury Handcrafted Crochet</div>
         </div>
 
         {/* Content */}
@@ -263,10 +263,10 @@ export default function CustomerOrderEmail({ order }: CustomerOrderEmailProps) {
         {/* Footer */}
         <div style={styles.footer}>
           <p style={styles.footerText}>
-            Thank you for supporting hand-crafted art!
+            Thank you for supporting slow handcrafted artisan crochet!
           </p>
           <p style={{ ...styles.footerText, marginTop: "8px", fontSize: "10px", opacity: 0.8 }}>
-            Crafty Minds, India. If you have questions about your order, please contact our support team.
+            AaaS Atelier, India. If you have questions about your order, please contact our support team at hello@aaasatelier.in.
           </p>
         </div>
       </div>

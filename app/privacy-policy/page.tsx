@@ -6,13 +6,13 @@ import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Crafty Mind Studio",
-  description: "Learn how we handle, process, and protect your order details and shipping information at Crafty Mind Studio.",
+  title: "Privacy Policy | AaaS Atelier",
+  description: "Learn how we handle, process, and protect your order details and shipping information at AaaS Atelier.",
   alternates: {
     canonical: getCanonicalUrl("/privacy-policy"),
   },
   openGraph: {
-    title: "Privacy Policy | Crafty Mind Studio",
+    title: "Privacy Policy | AaaS Atelier",
     description: "Read our privacy guidelines regarding order tracking, secure Razorpay checkout, and personal data protection.",
   },
 };

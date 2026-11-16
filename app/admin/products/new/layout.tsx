@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Add Product | Crafty Minds Admin",
+  title: "Add Product | AaaS Admin",
   description: "Create a new handmade creation in the store inventory.",
   robots: {
     index: false,

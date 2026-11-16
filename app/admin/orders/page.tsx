@@ -6,7 +6,7 @@ import OrdersClient from "./OrdersClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Manage Orders | Crafty Minds Admin",
+  title: "Manage Orders | AaaS Admin",
   description: "View, update, and manage customer orders and payment records.",
   robots: {
     index: false,

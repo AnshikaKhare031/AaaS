@@ -61,7 +61,7 @@ function parseEmail(raw?: string) {
 
   if (!trimmed) {
     return {
-      email: "craftymindstudios@gmail.com",
+      email: "hello@aaasatelier.in",
       isConfigured: false,
     };
   }

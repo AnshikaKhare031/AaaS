@@ -56,7 +56,7 @@ export const metadata: Metadata = {
         url: siteConfig.defaultOgImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - Handcrafted Wood Art and Pouches`,
+        alt: `${siteConfig.name} - Luxury Handcrafted Crochet & Artisan Creations`,
       },
     ],
   },

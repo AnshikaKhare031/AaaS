@@ -1,19 +1,20 @@
-# Crafty Mind Studio
+# AaaS Atelier
 
-A premium Next.js e-commerce storefront for handcrafted arts (MDF Arts, Pouches, Magnets, Rakhis, and Crochet). Built with Next.js, Tailwind CSS, Supabase, and Razorpay.
+A luxury handcrafted crochet storefront and artisan lifestyle boutique. Built with Next.js 15, Tailwind CSS, Supabase SSR, and Razorpay.
 
 ## Features
-- **Storefront**: Premium, dynamic catalog filtering and product detail views.
-- **Cart & Checkout**: Real-time persistent shopping cart supporting guest and logged-in checkouts.
-- **Razorpay Integration**: Seamless payment flows with support for payment recovery, retries, and automatic failed-order cleanup.
+- **Artisan Catalog**: Dynamic collection filtering across Handbags, Keychains, and Accessories.
+- **Made-to-Order Craft**: Thoughtfully prepared artisan crochet items with transparent creation turnaround timelines.
+- **Member-Only Checkout**: Authenticated checkout flow linking order history and saved addresses to customer profiles.
+- **Razorpay Integration**: Enterprise-grade payment gateway integration featuring distributed mutex locking, CAS concurrency safeguards, failure logging, and automated payment recovery.
 - **Secure Authentication**: Consolidated Supabase auth synchronization with server cookies, protecting admin and customer dashboards.
-- **Guest Order Linking**: Automatically links historical guest orders with newly created/logged-in customer accounts sharing the same email address.
+- **Automated Order Reconciliation**: Webhook-driven idempotency ensuring orders and notifications sync cleanly across asynchronous gateway states.
 
 ---
 
 ## Environment Variables
 
-To run this application locally or in production, configure the following environment variables in your `.env.local` or hosting provider:
+Configure the following environment variables in your `.env.local` or hosting provider dashboard (e.g., Vercel):
 
 ```env
 # Supabase Configuration
@@ -22,18 +23,25 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=       # Your public Supabase anonymous key
 SUPABASE_SERVICE_ROLE_KEY=           # Supabase service role key (keep secret, server-only)
 
 # Authentication Secrets
-ADMIN_PASSWORD=                      # Password for the admin dashboard session encryption
-CUSTOMER_SESSION_SECRET=             # 64-character hex string for signing customer cookies
+ADMIN_PASSWORD=                      # Master password for admin dashboard access
+ADMIN_SESSION_SECRET=                # 64-character secret for signing admin session tokens
+CUSTOMER_SESSION_SECRET=             # 64-character secret for customer sessions
 
 # Razorpay Integration
-NEXT_PUBLIC_RAZORPAY_KEY_ID=         # Public Razorpay key ID
-RAZORPAY_KEY_ID=                     # Secret Razorpay key ID
-RAZORPAY_KEY_SECRET=                 # Razorpay key secret (keep secret, server-only)
+NEXT_PUBLIC_RAZORPAY_KEY_ID=         # Public Razorpay key ID (e.g. rzp_live_...)
+RAZORPAY_KEY_ID=                     # Server Razorpay key ID
+RAZORPAY_KEY_SECRET=                 # Server Razorpay key secret
+RAZORPAY_WEBHOOK_SECRET=             # Razorpay webhook signing secret configured in Razorpay Dashboard
 
-# Email Notifications
+# Email Notifications (Resend)
 RESEND_API_KEY=                      # Resend service API key
-RESEND_FROM_EMAIL=                   # Source email for transactional updates (e.g., Crafty Mind Studio <orders@craftymindstudio.in>)
-RESEND_REPLY_TO=                     # Reply-to email for customer replies (e.g., hello@craftymindstudio.in)
+RESEND_FROM_EMAIL=                   # Source email (e.g. AaaS Atelier <orders@aaasatelier.in>)
+RESEND_REPLY_TO=                     # Reply-to email for customer inquiries (e.g. hello@aaasatelier.in)
+ADMIN_NOTIFICATION_EMAIL=            # Administrator inbox for new order alerts
+
+# Automation & Cron
+CRON_SECRET=                         # Bearer token for securing /api/cron/expire-orders
+NEXT_PUBLIC_SITE_URL=                # Public canonical website URL (e.g. https://www.aaasatelier.in)
 ```
 
 ---
@@ -60,6 +68,10 @@ npm run start
 ---
 
 ## Production Deployment Checklist
-1. Configure all required environment variables in your hosting provider (e.g., Vercel, Netlify).
-2. Configure Razorpay webhooks pointing to your production host `/api/payment/verify` endpoint.
-3. Keep database indexes up-to-date in Supabase (specifically `orders(user_id)` and `orders(email)`).
+1. Configure all required environment variables in your hosting provider (Vercel, AWS Amplify, etc.).
+2. Configure Razorpay webhooks pointing to your production host `/api/payment/webhook` endpoint with events:
+   - `order.paid`
+   - `payment.captured`
+   - `payment.failed`
+3. Configure scheduled cron invoking `/api/cron/expire-orders` with `Authorization: Bearer <CRON_SECRET>` every 15 minutes.
+4. Verify Supabase indexes on `orders(user_id)`, `orders(order_number)`, `orders(payment_status)`, and `payment_logs(order_id)`.

@@ -6,13 +6,13 @@ import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | Crafty Mind Studio",
-  description: "Read our website terms of use, payment rules, and handcrafted product policies at Crafty Mind Studio.",
+  title: "Terms and Conditions | AaaS Atelier",
+  description: "Read our website terms of use, payment rules, and handcrafted product policies at AaaS Atelier.",
   alternates: {
     canonical: getCanonicalUrl("/terms-and-conditions"),
   },
   openGraph: {
-    title: "Terms and Conditions | Crafty Mind Studio",
+    title: "Terms and Conditions | AaaS Atelier",
     description: "Understand our guidelines, checkout policies, and information regarding handcrafted variances.",
   },
 };

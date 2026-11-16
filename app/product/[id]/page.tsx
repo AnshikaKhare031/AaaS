@@ -157,6 +157,10 @@ async function ProductDetailsContent({ params }: ProductPageProps) {
                   Made to Order
                 </span>
               </div>
+              <p className="text-xs text-[#8B454B] flex items-center gap-1.5 pt-0.5 font-light">
+                <Sparkles size={13} className="text-[#B58A58] shrink-0" />
+                <span>Handcrafted upon order • Estimated 7–10 business days artisan crafting time.</span>
+              </p>
             </div>
 
             {/* Story & Details */}

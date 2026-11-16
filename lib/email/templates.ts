@@ -38,9 +38,9 @@ export function renderCustomerOrderHtml(order: Order): string {
     <div style="font-family: 'Playfair Display', Georgia, serif; background-color: #fafafa; padding: 32px 16px; margin: 0; color: #334155;">
       <div style="max-width: 600px; background-color: #ffffff; margin: 0 auto; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <!-- Header -->
-        <div style="background-color: #A56A43; padding: 40px 24px; text-align: center;">
-          <h1 style="color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 1px; margin: 0; font-family: 'Playfair Display', Georgia, serif;">Crafty Minds</h1>
-          <div style="color: #f3e8ff; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; opacity: 0.8;">Handmade with Love</div>
+        <div style="background-color: #541B1B; padding: 40px 24px; text-align: center;">
+          <h1 style="color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif;">AaaS Atelier</h1>
+          <div style="color: #f3e8ff; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; opacity: 0.8;">Luxury Handcrafted Crochet</div>
         </div>
 
         <!-- Content -->
@@ -119,7 +119,7 @@ export function renderCustomerOrderHtml(order: Order): string {
               <!-- Grand Total row -->
               <tr style="background-color: #fafafa;">
                 <td colspan="2" style="padding: 16px 8px; font-size: 14px; font-weight: bold; color: #1e293b; text-align: right; border-top: 1px solid #f1f5f9;">Grand Total</td>
-                <td style="padding: 16px 8px; font-size: 16px; font-weight: bold; color: #A56A43; text-align: right; border-top: 1px solid #f1f5f9;">₹${order.total.toLocaleString("en-IN")}</td>
+                <td style="padding: 16px 8px; font-size: 16px; font-weight: bold; color: #541B1B; text-align: right; border-top: 1px solid #f1f5f9;">₹${order.total.toLocaleString("en-IN")}</td>
               </tr>
             </tbody>
           </table>
@@ -128,10 +128,10 @@ export function renderCustomerOrderHtml(order: Order): string {
         <!-- Footer -->
         <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 24px; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
           <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.4;">
-            Thank you for supporting hand-crafted art!
+            Thank you for supporting slow handcrafted artisan crochet!
           </p>
           <p style="font-size: 10px; color: #64748b; margin: 8px 0 0 0; line-height: 1.4; opacity: 0.8;">
-            Crafty Minds, India. If you have questions about your order, please contact our support team.
+            AaaS Atelier, India. If you have questions about your order, please contact our support team at hello@aaasatelier.in.
           </p>
         </div>
       </div>
@@ -177,9 +177,9 @@ export function renderAdminOrderHtml(order: Order): string {
     <div style="font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; padding: 24px 16px; margin: 0; color: #334155;">
       <div style="max-width: 600px; background-color: #ffffff; margin: 0 auto; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden;">
         <!-- Header -->
-        <div style="background-color: #0f172a; padding: 32px 24px; text-align: center;">
-          <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; letter-spacing: 1px; margin: 0;">Crafty Minds</h1>
-          <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px;">Admin Notification</div>
+        <div style="background-color: #541B1B; padding: 32px 24px; text-align: center;">
+          <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; letter-spacing: 2px; margin: 0;">AaaS Atelier</h1>
+          <div style="color: #f3e8ff; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; opacity: 0.85;">Admin Notification</div>
         </div>
 
         <!-- Content -->

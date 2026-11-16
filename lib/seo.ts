@@ -1,29 +1,27 @@
 export const siteConfig = {
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.craftymindstudio.in",
-  name: "Crafty Mind Studio",
-  brandName: "Crafty Mind Studio",
-  defaultTitle: "Crafty Mind Studio | Handcrafted with Love",
-  defaultDescription: "Beautiful hand-painted MDF Board Arts, hand-painted pouches, and adorable fridge magnets. Lovingly handmade by a real artisan. Order securely on our website.",
-  defaultOgImage: "https://buswdznodxyugbipflnc.supabase.co/storage/v1/object/public/product-images/1783099587508_ChatGPT_Image_Jul_3__2026__10_55_05_PM.png",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.aaasatelier.in",
+  name: "AaaS Atelier",
+  brandName: "AaaS Atelier",
+  defaultTitle: "AaaS Atelier | Luxury Handcrafted Crochet & Artisan Creations",
+  defaultDescription: "Artisan-stitched crochet handbags, delicate floral charm keychains, heirloom pouches, and wearable crochet accessories. Lovingly handmade in India.",
+  defaultOgImage: "https://seyqdbdvcofdvgjxsvbt.supabase.co/storage/v1/object/public/product-images/1792234991928_product5.png",
   twitterCard: "summary_large_image" as const,
   locale: "en_IN",
   keywords: [
-    "handmade crafts",
-    "MDF Board Art",
-    "hand-painted pouches",
-    "fridge magnets",
-    "handmade Rakhis",
-    "crochet creations",
-    "amigurumi",
-    "home decor India",
-    "artisan shop",
-    "handcrafted gifts",
-    "personalized plaques",
-    "quilted cotton pouches"
+    "handmade crochet",
+    "crochet handbags",
+    "artisan crochet",
+    "amigurumi keychains",
+    "crochet accessories",
+    "luxury handcrafted gifts",
+    "handmade in India",
+    "AaaS Atelier",
+    "slow fashion crochet",
+    "artisan boutique"
   ],
   author: {
-    name: "Crafty Mind Studio Team",
-    url: "https://www.craftymindstudio.in"
+    name: "AaaS Atelier Team",
+    url: "https://www.aaasatelier.in"
   }
 };
 

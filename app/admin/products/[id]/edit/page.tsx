@@ -12,7 +12,7 @@ interface EditProductPageProps {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Edit Product | Crafty Minds Admin",
+  title: "Edit Product | AaaS Admin",
   description: "Update product features, price, description and replace image.",
   robots: {
     index: false,

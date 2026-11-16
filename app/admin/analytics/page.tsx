@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import AnalyticsClient from "./AnalyticsClient";
 
 export const metadata: Metadata = {
-  title: "Store Analytics | Crafty Minds Admin",
+  title: "Store Analytics | AaaS Admin",
   description: "Comprehensive overview of store sales, product conversion metrics, and website traffic performance.",
   robots: {
     index: false,

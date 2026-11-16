@@ -31,7 +31,7 @@ export default function AdminOrderEmail({ order }: AdminOrderEmailProps) {
       overflow: "hidden",
     },
     header: {
-      backgroundColor: "#0f172a", // Dark header for admin notification
+      backgroundColor: "#541B1B", // Luxury burgundy header for admin notification
       padding: "32px 24px",
       textAlign: "center" as const,
     },
@@ -39,15 +39,16 @@ export default function AdminOrderEmail({ order }: AdminOrderEmailProps) {
       color: "#ffffff",
       fontSize: "20px",
       fontWeight: "bold",
-      letterSpacing: "1px",
+      letterSpacing: "2px",
       margin: 0,
     },
     logoSub: {
-      color: "#94a3b8",
+      color: "#f3e8ff",
       fontSize: "11px",
       textTransform: "uppercase" as const,
       letterSpacing: "2px",
       marginTop: "4px",
+      opacity: 0.85,
     },
     content: {
       padding: "32px 24px",
@@ -131,7 +132,7 @@ export default function AdminOrderEmail({ order }: AdminOrderEmailProps) {
       <div style={styles.container}>
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.logo}>Crafty Minds</h1>
+          <h1 style={styles.logo}>AaaS Atelier</h1>
           <div style={styles.logoSub}>Admin Notification</div>
         </div>
 

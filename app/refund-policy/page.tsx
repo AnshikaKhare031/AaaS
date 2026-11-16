@@ -6,13 +6,13 @@ import { contactConfig } from "@/lib/contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund and Cancellation Policy | Crafty Mind Studio",
-  description: "Read our balance refund terms, cancellation timelines, and damage reporting instructions at Crafty Mind Studio.",
+  title: "Refund and Cancellation Policy | AaaS Atelier",
+  description: "Read our balance refund terms, cancellation timelines, and damage reporting instructions at AaaS Atelier.",
   alternates: {
     canonical: getCanonicalUrl("/refund-policy"),
   },
   openGraph: {
-    title: "Refund and Cancellation Policy | Crafty Mind Studio",
+    title: "Refund and Cancellation Policy | AaaS Atelier",
     description: "Read details about returns, pre-dispatch cancellations, customized order exceptions, and Razorpay refunds.",
   },
 };

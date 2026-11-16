@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerSession } from "@/lib/auth/customer-session-server";
-import { expirePendingOrders } from "@/lib/supabase/expire-orders";
 
 export async function GET() {
   try {
@@ -11,9 +10,6 @@ export async function GET() {
     }
 
     const supabase = createServerSupabaseClient();
-
-    // Clean up any abandoned pending orders
-    await expirePendingOrders(supabase);
 
     const { data, error } = await supabase
       .from("orders")

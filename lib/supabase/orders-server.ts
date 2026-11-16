@@ -1,19 +1,12 @@
 import { createServerSupabaseClient } from "./server";
 import { Order } from "@/types/order";
-import { expirePendingOrders } from "./expire-orders";
 
 /**
  * Fetch all customer orders on the server, ordered by created_at desc.
+ * Note: Order expiration sweeps are decoupled and handled asynchronously via /api/cron/expire-orders.
  */
 export async function getOrdersServer(): Promise<Order[]> {
   const supabase = createServerSupabaseClient();
-  
-  // Clean up any abandoned pending orders safely without crashing admin orders page
-  try {
-    await expirePendingOrders(supabase);
-  } catch (sweepErr) {
-    console.error("[Order Expiration Sweep] Error in sweep:", sweepErr);
-  }
 
   const { data, error } = await supabase
     .from("orders")
