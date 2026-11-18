@@ -1,6 +1,6 @@
 # AaaS Atelier
 
-A luxury handcrafted crochet storefront and artisan lifestyle boutique. Built with Next.js 15, Tailwind CSS, Supabase SSR, and Razorpay.
+A Premium handcrafted crochet storefront and artisan lifestyle boutique. Built with Next.js 15, Tailwind CSS, Supabase SSR, and Razorpay.
 
 ## Features
 - **Artisan Catalog**: Dynamic collection filtering across Handbags, Keychains, and Accessories.
