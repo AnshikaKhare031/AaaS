@@ -880,7 +880,7 @@ async function runSuite() {
     assert(
       resA.status === 500 &&
         dataA.success === false &&
-        dataA.error === "Missing NEXT_PUBLIC_RAZORPAY_KEY_ID." &&
+        (dataA.error === "Missing RAZORPAY_KEY_ID." || dataA.error === "Missing NEXT_PUBLIC_RAZORPAY_KEY_ID.") &&
         resB.status === 500 &&
         dataB.success === false &&
         dataB.error.includes("Missing server-side Razorpay API credentials"),

@@ -15,6 +15,7 @@ export interface CreateOrderDependencies {
   createServerSupabaseClient?: () => SupabaseClient | any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRazorpayServerClient?: () => Razorpay | any;
+  keyId?: string;
   publicKey?: string;
   sleep?: (ms: number) => Promise<void>;
 }
@@ -46,7 +47,11 @@ export async function handleCreatePaymentOrder(
     const getSession = deps.getCustomerSession || getCustomerSession;
     const getSupabase = deps.createServerSupabaseClient || createServerSupabaseClient;
     const getRazorpay = deps.getRazorpayServerClient || getRazorpayServerClient;
-    const publicKey = deps.publicKey ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const keyId =
+      deps.keyId ??
+      deps.publicKey ??
+      process.env.RAZORPAY_KEY_ID ??
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
     // 1. Authenticate customer session
     const customerSession = await getSession();
@@ -159,10 +164,10 @@ export async function handleCreatePaymentOrder(
     }
 
     // 7. Verify Razorpay credentials & configuration
-    if (!publicKey || typeof publicKey !== "string" || publicKey.trim() === "") {
-      console.error("[Payment Create-Order] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID.");
+    if (!keyId || typeof keyId !== "string" || keyId.trim() === "") {
+      console.error("[Payment Create-Order] Missing RAZORPAY_KEY_ID.");
       return NextResponse.json(
-        { success: false, error: "Missing NEXT_PUBLIC_RAZORPAY_KEY_ID." },
+        { success: false, error: "Missing RAZORPAY_KEY_ID." },
         { status: 500 }
       );
     }
@@ -236,7 +241,8 @@ export async function handleCreatePaymentOrder(
                     amount: dbTotal,
                     amountInPaise: existingRzp.amount ?? amountInPaise,
                     currency: existingRzp.currency || "INR",
-                    key: publicKey,
+                    keyId: keyId,
+                    key: keyId,
                   },
                 };
               } else {
@@ -325,7 +331,8 @@ export async function handleCreatePaymentOrder(
                     amount: polledAmount,
                     amountInPaise: polledPaise,
                     currency: polledOrder.currency || "INR",
-                    key: publicKey,
+                    keyId: keyId,
+                    key: keyId,
                   },
                 };
               }
@@ -524,7 +531,8 @@ export async function handleCreatePaymentOrder(
               amount: latestDbTotal,
               amountInPaise: latestAmountInPaise,
               currency: latestCurrency,
-              key: publicKey,
+              keyId: keyId,
+              key: keyId,
             },
           };
         }
@@ -538,7 +546,8 @@ export async function handleCreatePaymentOrder(
             amount: dbTotal,
             amountInPaise: razorpayOrder.amount ?? amountInPaise,
             currency: razorpayOrder.currency || "INR",
-            key: publicKey,
+            keyId: keyId,
+            key: keyId,
           },
         };
       } finally {

@@ -447,14 +447,19 @@ function CheckoutContent() {
         throw new Error(paymentData.error || "Failed to initialize payment gateway order.");
       }
 
-      const { razorpayOrderId, key, amountInPaise, currency } = paymentData;
+      const { razorpayOrderId, keyId, key, amountInPaise, currency } = paymentData;
+      const razorpayKey = keyId || key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+      if (!razorpayKey) {
+        throw new Error("Missing Razorpay key configuration.");
+      }
 
       // 5. Load Razorpay Checkout Popup
       let paymentOutcome: "idle" | "failed" | "success" | "verifying" | "verification_failed" = "idle";
       let latestFailureMessage: string | null = null;
 
       const options: Record<string, unknown> = {
-        key: key,
+        key: razorpayKey,
         amount: amountInPaise,
         currency: currency,
         name: "AaaS",
