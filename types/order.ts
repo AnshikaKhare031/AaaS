@@ -96,3 +96,16 @@ export interface PaymentFailureDetails {
   reason?: string | null;
   metadata?: Record<string, unknown> | null;
 }
+
+export interface WebhookEventRecord {
+  id?: string;
+  event_id: string;
+  event_type: string;
+  provider: string;
+  payload: Record<string, unknown> | null;
+  order_id?: string | null;
+  status: string;
+  error_message?: string | null;
+  processed_at?: string;
+}
+

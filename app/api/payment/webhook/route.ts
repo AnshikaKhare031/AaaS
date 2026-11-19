@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reconcileOrderPayment } from "@/lib/payment/reconcile";
 import { recordPaymentFailure } from "@/lib/payment/record-failure";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  recordWebhookEvent,
+  getExistingWebhookEvent,
+  UUID_REGEX,
+} from "@/lib/payment/webhook-events";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
+  let parsedPayload: Record<string, unknown> | null = null;
+  let parsedEvent: string | null = null;
+  let parsedEventId: string | null = null;
+
   try {
     // 1. Read raw request body as text BEFORE any JSON parsing
     const rawBody = await req.text();
 
     // 2. Extract headers (case-insensitive via Web Headers API)
     const signature = req.headers.get("x-razorpay-signature");
-    const eventId = req.headers.get("x-razorpay-event-id");
+    const headerEventId = req.headers.get("x-razorpay-event-id");
 
     if (!signature) {
       return NextResponse.json(
@@ -53,28 +61,49 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Parse JSON payload only after valid signature verification
-    const payload = JSON.parse(rawBody);
-    const event = payload.event;
+    try {
+      parsedPayload = JSON.parse(rawBody);
+    } catch (parseErr) {
+      console.error("[Razorpay Webhook] Invalid JSON payload:", parseErr);
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON payload" },
+        { status: 400 }
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload = parsedPayload as Record<string, any>;
+    const event = typeof payload.event === "string" ? payload.event : "";
+    parsedEvent = event;
+
+    const eventId =
+      headerEventId ||
+      (typeof payload?.event_id === "string" ? payload.event_id : null) ||
+      (typeof payload?.id === "string" && payload.id.startsWith("event_") ? payload.id : null);
+    parsedEventId = eventId;
 
     console.log(`[Razorpay Webhook] Received valid event: ${event} (Event ID: ${eventId || "none"})`);
 
-    // 6. Check for duplicate event using X-Razorpay-Event-Id header with admin client
+    // 6. Check for duplicate event using X-Razorpay-Event-Id header with service-role admin client
     if (eventId) {
-      const supabase = createServerSupabaseClient();
-      try {
-        const { error: eventError } = await supabase
-          .from("webhook_events")
-          .insert([{ id: eventId, event_type: event }]);
+      const existing = await getExistingWebhookEvent(eventId);
+      if (existing && existing.status === "processed") {
+        console.log(`[Razorpay Webhook] Event ${eventId} already processed. Returning 200 OK.`);
+        // Safely update processed_at timestamp on duplicate retry without re-reconciling
+        await recordWebhookEvent({
+          eventId,
+          eventType: event,
+          provider: "razorpay",
+          payload,
+          orderId: existing.order_id,
+          status: "processed",
+          processedAt: new Date().toISOString(),
+        });
 
-        if (eventError && eventError.code === "23505") {
-          console.log(`[Razorpay Webhook] Event ${eventId} already processed. Returning 200 OK.`);
-          return NextResponse.json(
-            { success: true, message: "Event already processed" },
-            { status: 200 }
-          );
-        }
-      } catch (err) {
-        console.warn("[Razorpay Webhook] Could not query webhook_events table:", err);
+        return NextResponse.json(
+          { success: true, message: "Event already processed" },
+          { status: 200 }
+        );
       }
     }
 
@@ -88,10 +117,27 @@ export async function POST(req: NextRequest) {
       const orderNumber =
         orderEntity?.receipt ||
         orderEntity?.notes?.internal_order_id ||
-        orderEntity?.notes?.order_number;
-      const orderId = orderEntity?.notes?.orderId || orderEntity?.notes?.id;
+        orderEntity?.notes?.order_number ||
+        paymentEntity?.notes?.internal_order_id ||
+        paymentEntity?.notes?.order_number;
+      const orderId =
+        orderEntity?.notes?.orderId ||
+        orderEntity?.notes?.id ||
+        paymentEntity?.notes?.orderId ||
+        paymentEntity?.notes?.id;
 
       if (!razorpayOrderId) {
+        await recordWebhookEvent({
+          eventId,
+          eventType: event,
+          provider: "razorpay",
+          payload,
+          orderId: null,
+          status: "failed",
+          errorMessage: "Missing razorpay_order_id in order.paid payload",
+          processedAt: new Date().toISOString(),
+        });
+
         return NextResponse.json(
           { success: false, error: "Missing razorpay_order_id in order.paid payload" },
           { status: 400 }
@@ -104,6 +150,28 @@ export async function POST(req: NextRequest) {
         razorpay_order_id: razorpayOrderId,
         razorpay_payment_id: razorpayPaymentId,
       });
+
+      const resolvedOrderId =
+        result.order?.id ||
+        (orderId && UUID_REGEX.test(orderId.trim()) ? orderId.trim() : null);
+
+      await recordWebhookEvent({
+        eventId,
+        eventType: event,
+        provider: "razorpay",
+        payload,
+        orderId: resolvedOrderId,
+        status: result.success ? "processed" : "failed",
+        errorMessage: result.success ? null : (result.error || result.message),
+        processedAt: new Date().toISOString(),
+      });
+
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, error: result.error || result.message },
+          { status: 400 }
+        );
+      }
 
       return NextResponse.json(
         { success: true, message: result.message, alreadyPaid: result.alreadyPaid },
@@ -120,6 +188,17 @@ export async function POST(req: NextRequest) {
       const orderId = paymentEntity?.notes?.orderId || paymentEntity?.notes?.id;
 
       if (!razorpayOrderId || !razorpayPaymentId) {
+        await recordWebhookEvent({
+          eventId,
+          eventType: event,
+          provider: "razorpay",
+          payload,
+          orderId: null,
+          status: "failed",
+          errorMessage: "Missing Razorpay identifiers in payment.captured payload",
+          processedAt: new Date().toISOString(),
+        });
+
         return NextResponse.json(
           { success: false, error: "Missing Razorpay identifiers in payment.captured payload" },
           { status: 400 }
@@ -132,6 +211,28 @@ export async function POST(req: NextRequest) {
         razorpay_order_id: razorpayOrderId,
         razorpay_payment_id: razorpayPaymentId,
       });
+
+      const resolvedOrderId =
+        result.order?.id ||
+        (orderId && UUID_REGEX.test(orderId.trim()) ? orderId.trim() : null);
+
+      await recordWebhookEvent({
+        eventId,
+        eventType: event,
+        provider: "razorpay",
+        payload,
+        orderId: resolvedOrderId,
+        status: result.success ? "processed" : "failed",
+        errorMessage: result.success ? null : (result.error || result.message),
+        processedAt: new Date().toISOString(),
+      });
+
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, error: result.error || result.message },
+          { status: 400 }
+        );
+      }
 
       return NextResponse.json(
         { success: true, message: result.message, alreadyPaid: result.alreadyPaid },
@@ -167,6 +268,21 @@ export async function POST(req: NextRequest) {
         source: "webhook",
       });
 
+      const resolvedOrderId =
+        result.order?.id ||
+        (orderId && UUID_REGEX.test(orderId.trim()) ? orderId.trim() : null);
+
+      await recordWebhookEvent({
+        eventId,
+        eventType: event,
+        provider: "razorpay",
+        payload,
+        orderId: resolvedOrderId,
+        status: result.success ? "processed" : "failed",
+        errorMessage: result.success ? null : (result.error || result.message),
+        processedAt: new Date().toISOString(),
+      });
+
       return NextResponse.json(
         { success: true, message: result.message, alreadyPaid: result.alreadyPaid || false },
         { status: 200 }
@@ -174,6 +290,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Unhandled event types respond with HTTP 200 OK so Razorpay does not retry unnecessarily
+    await recordWebhookEvent({
+      eventId,
+      eventType: event || "unknown",
+      provider: "razorpay",
+      payload,
+      orderId: null,
+      status: "processed",
+      processedAt: new Date().toISOString(),
+    });
+
     return NextResponse.json(
       { success: true, message: `Event ${event} received and acknowledged` },
       { status: 200 }
@@ -181,6 +307,24 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     console.error("Error processing Razorpay webhook:", err);
     const errorMessage = err instanceof Error ? err.message : "Internal server error";
+
+    try {
+      if (parsedPayload && parsedEvent) {
+        await recordWebhookEvent({
+          eventId: parsedEventId,
+          eventType: parsedEvent,
+          provider: "razorpay",
+          payload: parsedPayload,
+          orderId: null,
+          status: "failed",
+          errorMessage,
+          processedAt: new Date().toISOString(),
+        });
+      }
+    } catch (logErr) {
+      console.error("[Razorpay Webhook] Failed to record error event in catch block:", logErr);
+    }
+
     return NextResponse.json(
       { success: false, error: errorMessage },
       { status: 500 }
