@@ -3,7 +3,7 @@
  */
 
 export const SHIPPING_FREE_THRESHOLD = 999;
-export const SHIPPING_FLAT_CHARGE = 79;
+export const SHIPPING_FLAT_CHARGE = 0; // TODO: Revert shipping fee back to 79 after ₹1 live payment test
 
 /**
  * Calculate shipping charges based on order subtotal
